@@ -2,7 +2,15 @@
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useGetTaskByIdQuery } from "@/lib/services/api";
+import { useState } from "react";
+import {
+  useGetTaskByIdQuery,
+  useGetTaskHistoryQuery,
+  useGetTaskDocumentsQuery,
+  useAddTaskHistoryNoteMutation,
+  useUploadTaskDocumentMutation,
+  useDeleteTaskDocumentMutation
+} from "@/lib/services/api";
 import {
   Loader2,
   ArrowLeft,
@@ -29,9 +37,18 @@ export default function TaskDashboard() {
   const { taskId } = useParams();
   const router = useRouter();
 
-  const { data: task, isLoading } = useGetTaskByIdQuery(taskId as string);
+  const { data: task, isLoading: isTaskLoading } = useGetTaskByIdQuery(taskId as string);
+  const { data: history = [], isLoading: isHistoryLoading } = useGetTaskHistoryQuery(taskId as string);
+  const { data: allDocs = [], isLoading: isDocsLoading } = useGetTaskDocumentsQuery({ taskId: taskId as string });
+  
+  const [addNote] = useAddTaskHistoryNoteMutation();
+  const [noteContent, setNoteContent] = useState("");
 
-  if (isLoading) {
+  const documents = allDocs.filter((d: any) => d.category === 'document');
+  const supportingFiles = allDocs.filter((d: any) => d.category === 'supporting_file');
+  const notesOnly = history.filter((h: any) => h.action === 'Note Added');
+
+  if (isTaskLoading) {
     return (
       <div className="flex h-[80vh] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -46,6 +63,16 @@ export default function TaskDashboard() {
       </div>
     );
   }
+
+  const handleAddNote = async () => {
+    if (!noteContent.trim()) return;
+    try {
+      await addNote({ taskId: taskId as string, content: noteContent }).unwrap();
+      setNoteContent("");
+    } catch (error) {
+      console.error("Failed to add note:", error);
+    }
+  };
 
   return (
     <div className="space-y-6 max-w-6xl">
@@ -320,14 +347,39 @@ export default function TaskDashboard() {
                 </Button>
               </CardHeader>
               <CardContent className="p-6 space-y-4">
-                {task.notes && task.notes.length > 0 ? (
-                  <div className="space-y-3">
-                    {task.notes.map((note: any, i: number) => (
+                <div className="flex gap-2">
+                  <input 
+                    type="text" 
+                    placeholder="Type a note..." 
+                    className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                    value={noteContent}
+                    onChange={(e) => setNoteContent(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleAddNote(); }}
+                  />
+                  <Button size="sm" onClick={handleAddNote}>
+                    Add Note
+                  </Button>
+                </div>
+
+                {notesOnly && notesOnly.length > 0 ? (
+                  <div className="space-y-3 mt-4">
+                    {notesOnly.map((note: any, i: number) => (
                       <div
                         key={i}
-                        className="p-3 bg-accent/50 rounded-lg border text-sm text-foreground"
+                        className="p-3 bg-accent/50 rounded-lg border text-sm text-foreground flex flex-col gap-1"
                       >
-                        {note.content}
+                        <p>{note.details}</p>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                          <Avatar className="h-4 w-4">
+                            <AvatarImage src={note.createdBy?.photoUrl} />
+                            <AvatarFallback className="text-[8px] bg-primary text-primary-foreground">
+                              {note.createdBy?.name?.charAt(0) || '?'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span>{note.createdBy?.name || 'Unknown'}</span>
+                          <span>•</span>
+                          <span>{formatDate(note.createdAt)}</span>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -350,22 +402,101 @@ export default function TaskDashboard() {
         </TabsContent>
         <TabsContent value="documents">
           <Card className="shadow-sm border-border">
-            <CardContent className="p-12 text-center text-muted-foreground">
-              Documents content
+            <CardHeader className="pb-3 border-b flex flex-row items-center justify-between">
+              <CardTitle className="text-sm font-semibold">Documents</CardTitle>
+              <Button size="sm">Upload Document</Button>
+            </CardHeader>
+            <CardContent className="p-6">
+              {documents && documents.length > 0 ? (
+                <div className="space-y-3">
+                  {documents.map((doc: any) => (
+                    <div key={doc._id} className="flex items-center justify-between p-3 border rounded-lg bg-background">
+                      <div className="flex items-center gap-3">
+                        <FileText className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="text-sm font-medium">{doc.fileName}</p>
+                          <p className="text-xs text-muted-foreground">Uploaded by {doc.uploadedBy?.name} on {formatDate(doc.createdAt)}</p>
+                        </div>
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={() => window.open(doc.fileUrl, '_blank')}>View</Button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-12 text-center text-muted-foreground flex flex-col items-center justify-center">
+                  <FileText className="h-8 w-8 mb-2 opacity-20" />
+                  <p>No documents uploaded yet.</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
         <TabsContent value="supporting_files">
           <Card className="shadow-sm border-border">
-            <CardContent className="p-12 text-center text-muted-foreground">
-              Supporting Files content
+            <CardHeader className="pb-3 border-b flex flex-row items-center justify-between">
+              <CardTitle className="text-sm font-semibold">Supporting Files</CardTitle>
+              <Button size="sm">Upload File</Button>
+            </CardHeader>
+            <CardContent className="p-6">
+              {supportingFiles && supportingFiles.length > 0 ? (
+                <div className="space-y-3">
+                  {supportingFiles.map((doc: any) => (
+                    <div key={doc._id} className="flex items-center justify-between p-3 border rounded-lg bg-background">
+                      <div className="flex items-center gap-3">
+                        <FileText className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="text-sm font-medium">{doc.fileName}</p>
+                          <p className="text-xs text-muted-foreground">Uploaded by {doc.uploadedBy?.name} on {formatDate(doc.createdAt)}</p>
+                        </div>
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={() => window.open(doc.fileUrl, '_blank')}>View</Button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-12 text-center text-muted-foreground flex flex-col items-center justify-center">
+                  <FileText className="h-8 w-8 mb-2 opacity-20" />
+                  <p>No supporting files uploaded yet.</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
         <TabsContent value="task_history">
           <Card className="shadow-sm border-border">
-            <CardContent className="p-12 text-center text-muted-foreground">
-              Task History content
+            <CardHeader className="pb-3 border-b">
+              <CardTitle className="text-sm font-semibold">Task History & Audit Log</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              {history && history.length > 0 ? (
+                <div className="space-y-6">
+                  {history.map((log: any) => (
+                    <div key={log._id} className="flex gap-4">
+                      <div className="flex flex-col items-center">
+                        <div className="h-2 w-2 rounded-full bg-primary mt-1.5" />
+                        <div className="w-px h-full bg-border my-1" />
+                      </div>
+                      <div className="pb-4">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium">{log.action}</p>
+                          <span className="text-xs text-muted-foreground">• {formatDate(log.createdAt)}</span>
+                        </div>
+                        {log.details && (
+                          <p className="text-sm text-muted-foreground mt-1 bg-muted p-2 rounded-md">
+                            {log.details}
+                          </p>
+                        )}
+                        <p className="text-xs text-muted-foreground mt-1">by {log.createdBy?.name}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-12 text-center text-muted-foreground flex flex-col items-center justify-center">
+                  <Clock className="h-8 w-8 mb-2 opacity-20" />
+                  <p>No history recorded yet.</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

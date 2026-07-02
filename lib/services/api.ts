@@ -159,6 +159,41 @@ export const applicationApi = createApi({
       invalidatesTags: ["Task"],
       transformResponse: (response: { data: any }) => response.data,
     }),
+    getTaskHistory: builder.query({
+      query: (taskId) => `/tasks/${taskId}/history`,
+      providesTags: (result, error, taskId) => [{ type: "Task", id: `${taskId}-history` }],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    addTaskHistoryNote: builder.mutation({
+      query: ({ taskId, content }) => ({
+        url: `/tasks/${taskId}/notes`,
+        method: "POST",
+        body: { content },
+      }),
+      invalidatesTags: (result, error, { taskId }) => [{ type: "Task", id: `${taskId}-history` }],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    getTaskDocuments: builder.query({
+      query: ({ taskId, category }) => ({ url: `/documents/task/${taskId}`, params: { category } }),
+      providesTags: (result, error, { taskId }) => [{ type: "Task", id: `${taskId}-documents` }],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    uploadTaskDocument: builder.mutation({
+      query: ({ taskId, ...body }) => ({
+        url: `/documents/task/${taskId}`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (result, error, { taskId }) => [{ type: "Task", id: `${taskId}-documents` }],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    deleteTaskDocument: builder.mutation({
+      query: ({ id, taskId }) => ({
+        url: `/documents/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, { taskId }) => [{ type: "Task", id: `${taskId}-documents` }],
+    }),
 
     // Clients
     getClients: builder.query({
@@ -305,6 +340,11 @@ export const {
   useGetTagsQuery,
   useCreateTaskMutation,
   useUpdateTaskStatusMutation,
+  useGetTaskHistoryQuery,
+  useAddTaskHistoryNoteMutation,
+  useGetTaskDocumentsQuery,
+  useUploadTaskDocumentMutation,
+  useDeleteTaskDocumentMutation,
   useGetClientsQuery,
   useGetClientByIdQuery,
   useCreateClientMutation,
