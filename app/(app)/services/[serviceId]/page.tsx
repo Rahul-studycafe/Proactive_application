@@ -13,17 +13,29 @@ import {
   FileText,
   X,
   Loader2,
+  Calendar,
+  User,
+  GripVertical,
+  Pencil,
+  Equal,
 } from "lucide-react";
 import {
   useGetServiceByIdQuery,
   useUpdateServiceMutation,
   useDeleteServiceMutation,
+  useGetUsersQuery,
 } from "@/lib/services/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -61,14 +73,58 @@ import {
 import { toast } from "sonner";
 
 // DB types mapping
-const FREQUENCIES = [
-  "monthly",
-  "quarterly",
-  "half_yearly",
-  "yearly",
-  "one_time",
-];
+const FREQUENCIES = ["monthly", "quarterly", "half_yearly", "yearly", "one_time"];
 const GST_OPTIONS = ["0", "5", "12", "18", "28"];
+
+const getOrdinal = (n: number) => {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+};
+const DAYS = Array.from({ length: 31 }, (_, i) => i + 1);
+const QUARTER_OFFSETS = ["First", "Second", "Third", "Last"];
+const HALF_YEARLY_OFFSETS = [
+  "Apr & Oct",
+  "Jan & Jul",
+  "Feb & Aug",
+  "Mar & Sep",
+  "May & Nov",
+  "Jun & Dec",
+];
+
+function ToggleField({
+  label,
+  checked,
+  onChange,
+  info,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  info?: string;
+}) {
+  return (
+    <div className="flex items-center space-x-2">
+      <Switch checked={checked} onCheckedChange={onChange} id={`toggle-${label.replace(/\s+/g, '-')}`} />
+      <Label htmlFor={`toggle-${label.replace(/\s+/g, '-')}`} className="flex items-center gap-1.5 text-sm font-medium leading-none cursor-pointer">
+        {label}
+        {info && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-[250px]">
+                <p>{info}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+      </Label>
+    </div>
+  );
+}
+
 const FIELD_TYPES = ["text", "number", "select", "date"];
 
 export default function ServiceDetailPage() {
@@ -82,6 +138,9 @@ export default function ServiceDetailPage() {
     error,
   } = useGetServiceByIdQuery(serviceId);
   const svc = response; // Response returns the object directly
+
+  const { data: usersResponse, isLoading: isUsersLoading } = useGetUsersQuery(undefined);
+  const users = Array.isArray(usersResponse) ? usersResponse : usersResponse?.users || [];
 
   const [updateService, { isLoading: isUpdating }] = useUpdateServiceMutation();
   const [deleteService] = useDeleteServiceMutation();
@@ -99,23 +158,32 @@ export default function ServiceDetailPage() {
     setFormData((prev: any) => ({ ...prev, ...patch }));
   };
 
+  const hasChanges = useMemo(() => {
+    if (!svc || !formData) return false;
+    return JSON.stringify(svc) !== JSON.stringify(formData);
+  }, [svc, formData]);
+
   const handleSave = async () => {
     try {
       // Ensure frequency object exists if recurring
       const payload = { ...formData };
 
-      if (payload.isRecurring && !payload.frequency?.type) {
+      if (payload.isRecurring) {
         payload.frequency = {
-          ...payload.frequency,
-          type: "monthly",
-          periodLogic: "recently_completed",
-          creationDay: 1,
-          dueDay: 10,
+          type: payload.frequency?.type || "monthly",
+          periodLogic: payload.frequency?.periodLogic || "recently_completed",
+          creationDay: payload.frequency?.creationDay || 1,
+          dueDay: payload.frequency?.dueDay || 10,
         };
+      } else {
+        // If not recurring, remove frequency from payload so Zod doesn't try to validate an empty/partial object
+        delete payload.frequency;
       }
 
       await updateService({ id: serviceId, ...payload }).unwrap();
       toast.success("Service saved successfully");
+      
+      // The API response will update 'svc', which will then trigger useEffect and recalculate hasChanges.
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to save service");
     }
@@ -177,7 +245,7 @@ export default function ServiceDetailPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button onClick={handleSave} disabled={isUpdating}>
+          <Button onClick={handleSave} disabled={isUpdating || !hasChanges}>
             {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Save Changes
           </Button>
@@ -232,7 +300,7 @@ export default function ServiceDetailPage() {
 
         {/* Settings */}
         <TabsContent value="settings" className="space-y-4">
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid gap-4 lg:grid-cols-2 ">
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Basic Details</CardTitle>
@@ -248,7 +316,7 @@ export default function ServiceDetailPage() {
                     onChange={(e) => update({ name: e.target.value })}
                   />
                 </div>
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+                <div className="flex flex-wrap items-center gap-x-8 gap-y-4 pt-1 pb-1">
                   <ToggleField
                     label="Is Enabled?"
                     checked={formData.isEnabled ?? true}
@@ -260,37 +328,153 @@ export default function ServiceDetailPage() {
                     onChange={(v) => update({ isChecklistRequired: v })}
                     info="If enabled, tasks for this service cannot be marked complete until every checklist item is done."
                   />
+                  <ToggleField
+                    label="Is Recurring?"
+                    checked={formData.isRecurring ?? false}
+                    onChange={(v) => update({ isRecurring: v })}
+                  />
                 </div>
-                <ToggleField
-                  label="Is Recurring?"
-                  checked={formData.isRecurring ?? false}
-                  onChange={(v) => update({ isRecurring: v })}
-                />
                 {formData.isRecurring && (
-                  <div className="space-y-1.5">
-                    <Label>
-                      Auto Task Creation Frequency{" "}
-                      <span className="text-destructive">*</span>
-                    </Label>
-                    <Select
-                      value={formData.frequency?.type || "monthly"}
-                      onValueChange={(v) =>
-                        update({
-                          frequency: { ...formData.frequency, type: v },
-                        })
-                      }
-                    >
-                      <SelectTrigger className="capitalize">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {FREQUENCIES.map((f) => (
-                          <SelectItem key={f} value={f} className="capitalize">
-                            {f.replace("_", " ")}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <Label>
+                        Auto Task Creation Frequency{" "}
+                        <span className="text-destructive">*</span>
+                      </Label>
+                      <Select
+                        value={formData.frequency?.type || "monthly"}
+                        onValueChange={(v) =>
+                          update({
+                            frequency: { type: v }, // Reset other fields when changing type
+                          })
+                        }
+                      >
+                        <SelectTrigger className="capitalize">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {FREQUENCIES.map((f) => (
+                            <SelectItem key={f} value={f} className="capitalize">
+                              {f.replace("_", "-")}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {formData.frequency?.type === "monthly" && (
+                      <div className="space-y-4">
+                        <div className="space-y-1.5">
+                          <Label>Creation Date <span className="text-destructive">*</span></Label>
+                          <div className="flex items-center gap-3">
+                            <Select value={String(formData.frequency?.creationDay || "1")} onValueChange={(v) => update({ frequency: { ...formData.frequency, creationDay: Number(v) }})}>
+                              <SelectTrigger className="w-24"><SelectValue/></SelectTrigger>
+                              <SelectContent>{DAYS.map(d => <SelectItem key={d} value={String(d)}>{getOrdinal(d)}</SelectItem>)}</SelectContent>
+                            </Select>
+                            <span className="text-sm">of every month</span>
+                          </div>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label>Due Date <span className="text-destructive">*</span></Label>
+                          <div className="flex items-center gap-3">
+                            <Select value={String(formData.frequency?.dueDay || "1")} onValueChange={(v) => update({ frequency: { ...formData.frequency, dueDay: Number(v) }})}>
+                              <SelectTrigger className="w-24"><SelectValue/></SelectTrigger>
+                              <SelectContent>{DAYS.map(d => <SelectItem key={d} value={String(d)}>{getOrdinal(d)}</SelectItem>)}</SelectContent>
+                            </Select>
+                            <span className="text-sm">of every month</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {formData.frequency?.type === "quarterly" && (
+                      <div className="space-y-4">
+                        <div className="space-y-1.5">
+                          <Label>Creation Date</Label>
+                          <div className="flex flex-wrap items-center gap-3">
+                            <Select value={String(formData.frequency?.creationDay || "1")} onValueChange={(v) => update({ frequency: { ...formData.frequency, creationDay: Number(v) }})}>
+                              <SelectTrigger className="w-24"><SelectValue/></SelectTrigger>
+                              <SelectContent>{DAYS.map(d => <SelectItem key={d} value={String(d)}>{getOrdinal(d)}</SelectItem>)}</SelectContent>
+                            </Select>
+                            <span className="text-sm">of</span>
+                            <Select value={formData.frequency?.creationMonthOffset || "First"} onValueChange={(v) => update({ frequency: { ...formData.frequency, creationMonthOffset: v }})}>
+                              <SelectTrigger className="w-32"><SelectValue/></SelectTrigger>
+                              <SelectContent>{QUARTER_OFFSETS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                            </Select>
+                            <span className="text-sm">month of every quarter</span>
+                          </div>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label>Due Date</Label>
+                          <div className="flex flex-wrap items-center gap-3">
+                            <Select value={String(formData.frequency?.dueDay || "1")} onValueChange={(v) => update({ frequency: { ...formData.frequency, dueDay: Number(v) }})}>
+                              <SelectTrigger className="w-24"><SelectValue/></SelectTrigger>
+                              <SelectContent>{DAYS.map(d => <SelectItem key={d} value={String(d)}>{getOrdinal(d)}</SelectItem>)}</SelectContent>
+                            </Select>
+                            <span className="text-sm">of</span>
+                            <Select value={formData.frequency?.dueMonthOffset || "First"} onValueChange={(v) => update({ frequency: { ...formData.frequency, dueMonthOffset: v }})}>
+                              <SelectTrigger className="w-32"><SelectValue/></SelectTrigger>
+                              <SelectContent>{QUARTER_OFFSETS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                            </Select>
+                            <span className="text-sm">month of every quarter</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {formData.frequency?.type === "half_yearly" && (
+                      <div className="space-y-4">
+                        <div className="space-y-1.5">
+                          <Label>Creation Date</Label>
+                          <div className="flex flex-wrap items-center gap-3">
+                            <Select value={String(formData.frequency?.creationDay || "1")} onValueChange={(v) => update({ frequency: { ...formData.frequency, creationDay: Number(v) }})}>
+                              <SelectTrigger className="w-24"><SelectValue/></SelectTrigger>
+                              <SelectContent>{DAYS.map(d => <SelectItem key={d} value={String(d)}>{getOrdinal(d)}</SelectItem>)}</SelectContent>
+                            </Select>
+                            <span className="text-sm">of</span>
+                            <Select value={formData.frequency?.creationMonthOffset || "Apr & Oct"} onValueChange={(v) => update({ frequency: { ...formData.frequency, creationMonthOffset: v }})}>
+                              <SelectTrigger className="w-32"><SelectValue/></SelectTrigger>
+                              <SelectContent>{HALF_YEARLY_OFFSETS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                            </Select>
+                            <span className="text-sm">month</span>
+                          </div>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label>Due Date</Label>
+                          <div className="flex flex-wrap items-center gap-3">
+                            <Select value={String(formData.frequency?.dueDay || "1")} onValueChange={(v) => update({ frequency: { ...formData.frequency, dueDay: Number(v) }})}>
+                              <SelectTrigger className="w-24"><SelectValue/></SelectTrigger>
+                              <SelectContent>{DAYS.map(d => <SelectItem key={d} value={String(d)}>{getOrdinal(d)}</SelectItem>)}</SelectContent>
+                            </Select>
+                            <span className="text-sm">of</span>
+                            <Select value={formData.frequency?.dueMonthOffset || "Apr & Oct"} onValueChange={(v) => update({ frequency: { ...formData.frequency, dueMonthOffset: v }})}>
+                              <SelectTrigger className="w-32"><SelectValue/></SelectTrigger>
+                              <SelectContent>{HALF_YEARLY_OFFSETS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                            </Select>
+                            <span className="text-sm">month</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {formData.frequency?.type === "yearly" && (
+                      <div className="space-y-4">
+                        <div className="space-y-1.5">
+                          <Label>Creation Date <span className="text-destructive">*</span></Label>
+                          <div className="flex items-center gap-3">
+                            <Input type="date" className="w-[160px]" value={formData.frequency?.creationDate || ""} onChange={(e) => update({ frequency: { ...formData.frequency, creationDate: e.target.value }})} />
+                            <span className="text-sm">of every year</span>
+                          </div>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label>Due Date <span className="text-destructive">*</span></Label>
+                          <div className="flex items-center gap-3">
+                            <Input type="date" className="w-[160px]" value={formData.frequency?.dueDate || ""} onChange={(e) => update({ frequency: { ...formData.frequency, dueDate: e.target.value }})} />
+                            <span className="text-sm">of every year</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
                 <div className="space-y-1.5">
@@ -330,7 +514,7 @@ export default function ServiceDetailPage() {
                       GST % <span className="text-destructive">*</span>
                     </Label>
                     <Select
-                      value={String(formData.gstPercentage || "18")}
+                      value={String(formData.gstPercentage ?? "18")}
                       onValueChange={(v) =>
                         update({ gstPercentage: Number(v) })
                       }
@@ -369,11 +553,133 @@ export default function ServiceDetailPage() {
                     />
                   </div>
                 </div>
+                  <ToggleField
+                    label="Mark its tasks billable by default"
+                    checked={formData.isBillable ?? true}
+                    onChange={(v) => update({ isBillable: v })}
+                  />
+              </CardContent>
+            </Card>
+
+            <Card className="">
+              <CardHeader>
+                <CardTitle className="text-lg">Document Collection Request</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-5">
                 <ToggleField
-                  label="Mark its tasks billable by default"
-                  checked={formData.isBillable ?? true}
-                  onChange={(v) => update({ isBillable: v })}
+                  label="Create Document Collection Request Automatically?"
+                  checked={formData.autoDocCollection?.isEnabled ?? false}
+                  onChange={(v) =>
+                    update({
+                      autoDocCollection: {
+                        ...(formData.autoDocCollection || {}),
+                        isEnabled: v,
+                      },
+                    })
+                  }
                 />
+                {formData.autoDocCollection?.isEnabled && (
+                  <div className="space-y-1.5 pt-2">
+                    <Label>
+                      Doc. Collection Request Default Message <span className="text-destructive">*</span>
+                    </Label>
+                    <Textarea
+                      rows={4}
+                      placeholder="Please provide the following documents..."
+                      value={formData.autoDocCollection?.defaultMessage || ""}
+                      onChange={(e) =>
+                        update({
+                          autoDocCollection: {
+                            ...(formData.autoDocCollection || {}),
+                            defaultMessage: e.target.value,
+                          },
+                        })
+                      }
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="">
+              <CardHeader>
+                <CardTitle className="text-lg">Assign Auto Tasks to (Users)</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                  <div className="space-y-1.5 lg:w-1/2">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className="w-full justify-between font-normal"
+                        >
+                          {formData.assignedUsers && formData.assignedUsers.length > 0
+                            ? `${formData.assignedUsers.length} user(s) selected`
+                            : "Select..."}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[300px] p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Search users..." />
+                          <CommandList>
+                            <CommandEmpty>No user found.</CommandEmpty>
+                            <CommandGroup>
+                              {users.map((u: any) => {
+                                const currentIds = (formData.assignedUsers || []).map((x: any) => x._id || x);
+                                const isSelected = currentIds.includes(u._id);
+                                return (
+                                  <CommandItem
+                                    key={u._id}
+                                    value={u.name}
+                                    onSelect={() => {
+                                      if (isSelected) {
+                                        update({ assignedUsers: currentIds.filter((id: string) => id !== u._id) });
+                                      } else {
+                                        update({ assignedUsers: [...currentIds, u._id] });
+                                      }
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        isSelected ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    {u.name}
+                                  </CommandItem>
+                                );
+                              })}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    
+                    {/* Display selected badges */}
+                    {formData.assignedUsers && formData.assignedUsers.length > 0 && (
+                      <div className="flex flex-wrap gap-2 pt-2">
+                        {formData.assignedUsers.map((id: any) => {
+                          const uid = id._id || id;
+                          const userObj = users.find((u: any) => u._id === uid);
+                          if (!userObj) return null;
+                          return (
+                            <Badge key={uid} variant="secondary" className="flex items-center gap-1">
+                              {userObj.name}
+                              <X
+                                className="h-3 w-3 cursor-pointer hover:text-destructive"
+                                onClick={() => {
+                                  const currentIds = (formData.assignedUsers || []).map((x: any) => x._id || x);
+                                  update({ assignedUsers: currentIds.filter((x: string) => x !== uid) });
+                                }}
+                              />
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
               </CardContent>
             </Card>
           </div>
@@ -455,23 +761,32 @@ export default function ServiceDetailPage() {
 
         {/* Subtasks */}
         <TabsContent value="subtasks">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-lg">Default Subtasks</CardTitle>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() =>
-                  update({
-                    subtasks: [
-                      ...(formData.subtasks || []),
-                      { _id: `temp_${Date.now()}`, title: "New subtask" },
-                    ],
-                  })
-                }
-              >
-                <Plus className="mr-2 h-4 w-4" /> Add subtask
-              </Button>
+          <Card className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+            <CardHeader className="flex px-16 flex-row items-center justify-between pb-6">
+              <div className="flex items-center gap-4">
+                <CardTitle className="text-xl font-semibold">Update Subtasks</CardTitle>
+                <div className="flex items-center gap-2 border rounded-full px-3 py-1.5 bg-background shadow-sm">
+                  <Switch
+                    id="workflow-toggle"
+                    checked={formData.isWorkflowEnabled ?? false}
+                    onCheckedChange={(v) => update({ isWorkflowEnabled: v })}
+                  />
+                  <Label htmlFor="workflow-toggle" className="text-sm font-medium cursor-pointer">
+                    Enable Workflow
+                  </Label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-4 w-4 text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent className="bg-zinc-900 text-white p-3 text-sm max-w-[250px] leading-relaxed">
+                        Once a subtask is completed, the next one will be automatically generated.
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              </div>
+             
             </CardHeader>
             <CardContent>
               {!formData.subtasks || formData.subtasks.length === 0 ? (
@@ -480,44 +795,199 @@ export default function ServiceDetailPage() {
                   description="Auto-add subtasks to every task created for this service."
                 />
               ) : (
-                <ul className="space-y-2">
+                <ul className="space-y-4">
                   {formData.subtasks.map((st: any) => (
-                    <li
-                      key={st._id}
-                      className="grid grid-cols-12 items-center gap-2 rounded-md border bg-card p-2"
-                    >
-                      <Input
-                        className="col-span-11"
-                        value={st.title || ""}
-                        placeholder="Subtask title"
-                        onChange={(e) =>
-                          update({
-                            subtasks: formData.subtasks.map((x: any) =>
-                              x._id === st._id
-                                ? { ...x, title: e.target.value }
-                                : x,
-                            ),
-                          })
-                        }
-                      />
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="col-span-1"
-                        onClick={() =>
-                          update({
-                            subtasks: formData.subtasks.filter(
-                              (x: any) => x._id !== st._id,
-                            ),
-                          })
-                        }
-                      >
-                        <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
-                      </Button>
+                    <li key={st._id} className="flex items-center gap-4 ">
+                      <div className="text-slate-400  cursor-grab active:cursor-grabbing hover:text-slate-600 transition-colors">
+                        <Equal className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1 flex bg-slate-50/30 items-stretch rounded-xl border shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] overflow-hidden">
+                        
+                        {/* Left Side: Inputs */}
+                        <div className="flex-1 p-5 space-y-4">
+                          <Input
+                            placeholder="Title"
+                            value={st.title || ""}
+                            onChange={(e) =>
+                              update({
+                                subtasks: formData.subtasks.map((x: any) =>
+                                  x._id === st._id ? { ...x, title: e.target.value } : x
+                                ),
+                              })
+                            }
+                            className="border-slate-200 focus-visible:ring-1"
+                          />
+                          <Textarea
+                            placeholder="Description"
+                            value={st.description || ""}
+                            onChange={(e) =>
+                              update({
+                                subtasks: formData.subtasks.map((x: any) =>
+                                  x._id === st._id ? { ...x, description: e.target.value } : x
+                                ),
+                              })
+                            }
+                            className="border-slate-200 min-h-[80px] resize-none focus-visible:ring-1"
+                          />
+                        </div>
+
+                        {/* Middle Side: Configs */}
+                        <div className="w-[280px] p-5 flex flex-col justify-center space-y-6 text-sm text-slate-600">
+                           {/* Due Date Popover */}
+                           <Popover>
+                             <PopoverTrigger className="flex items-center gap-3 hover:text-blue-600 group text-left">
+                               <div className="border border-slate-200 rounded-full p-2 group-hover:border-blue-300 transition-colors shadow-sm shrink-0">
+                                 <Calendar className="h-4 w-4 text-slate-500 group-hover:text-blue-600" />
+                               </div>
+                               <div className="flex-1 text-xs leading-tight">
+                                 {st.relativeDueDays !== undefined && st.relativeDueDays !== null ? (
+                                   <>
+                                     <span className="block">Due Date: Creation</span>
+                                     <span className="block">Date + {st.relativeDueDays} Days</span>
+                                   </>
+                                 ) : (
+                                   <span>No Due Date</span>
+                                 )}
+                               </div>
+                             </PopoverTrigger>
+                             <PopoverContent className="w-80">
+                               <div className="space-y-4">
+                                 <h4 className="font-medium text-sm">Set Due Date</h4>
+                                 <div className="flex items-center gap-2 text-sm">
+                                   <span>Creation Date +</span>
+                                   <Input 
+                                     type="number" 
+                                     className="w-20" 
+                                     value={st.relativeDueDays ?? ""}
+                                     onChange={(e) => update({
+                                       subtasks: formData.subtasks.map((x: any) => x._id === st._id ? { ...x, relativeDueDays: e.target.value ? Number(e.target.value) : undefined } : x)
+                                     })}
+                                   />
+                                   <span>Days</span>
+                                 </div>
+                               </div>
+                             </PopoverContent>
+                           </Popover>
+
+                           {/* Target Date Popover */}
+                           <Popover>
+                             <PopoverTrigger className="flex items-center gap-3 hover:text-blue-600 group text-left">
+                               <div className="border border-slate-200 rounded-full p-2 group-hover:border-blue-300 transition-colors shadow-sm shrink-0">
+                                 <Calendar className="h-4 w-4 text-slate-500 group-hover:text-blue-600" />
+                               </div>
+                               <div className="flex-1 text-xs leading-tight">
+                                 {st.relativeTargetDays !== undefined && st.relativeTargetDays !== null ? (
+                                   <>
+                                     <span className="block">Target Date: Creation</span>
+                                     <span className="block">Date + {st.relativeTargetDays} Days</span>
+                                   </>
+                                 ) : (
+                                   <span>No Target Date</span>
+                                 )}
+                               </div>
+                             </PopoverTrigger>
+                             <PopoverContent className="w-80">
+                               <div className="space-y-4">
+                                 <h4 className="font-medium text-sm">Set Target Date</h4>
+                                 <div className="flex items-center gap-2 text-sm">
+                                   <span>Creation Date +</span>
+                                   <Input 
+                                     type="number" 
+                                     className="w-20" 
+                                     value={st.relativeTargetDays ?? ""}
+                                     onChange={(e) => update({
+                                       subtasks: formData.subtasks.map((x: any) => x._id === st._id ? { ...x, relativeTargetDays: e.target.value ? Number(e.target.value) : undefined } : x)
+                                     })}
+                                   />
+                                   <span>Days</span>
+                                 </div>
+                               </div>
+                             </PopoverContent>
+                           </Popover>
+
+                           {/* Assign Users Popover */}
+                           <Popover>
+                             <PopoverTrigger className="flex items-center gap-3 hover:text-blue-600 group text-left">
+                               {st.assignedUserIds && st.assignedUserIds.length > 0 ? (
+                                 <div className="flex -space-x-1.5 shrink-0">
+                                   {st.assignedUserIds.map((uid: string) => {
+                                     const user = users.find((u:any) => u._id === uid);
+                                     return (
+                                       <Avatar key={uid} className="h-8 w-8 border-2 border-white text-xs shadow-sm">
+                                         <AvatarFallback className="bg-slate-600 text-white font-medium uppercase">{user?.name?.slice(0, 2) || "U"}</AvatarFallback>
+                                       </Avatar>
+                                     );
+                                   })}
+                                 </div>
+                               ) : (
+                                 <div className="border border-slate-200 rounded-full p-2 group-hover:border-blue-300 transition-colors shadow-sm shrink-0">
+                                   <User className="h-4 w-4 text-slate-500 group-hover:text-blue-600" />
+                                 </div>
+                               )}
+                             </PopoverTrigger>
+                             <PopoverContent className="w-[300px] p-0" align="start">
+                               <Command>
+                                 <CommandInput placeholder="Search users..." />
+                                 <CommandList>
+                                   <CommandEmpty>No user found.</CommandEmpty>
+                                   <CommandGroup>
+                                     {users.map((u: any) => {
+                                       const currentIds = st.assignedUserIds || [];
+                                       const isSelected = currentIds.includes(u._id);
+                                       return (
+                                         <CommandItem
+                                           key={u._id}
+                                           value={u.name}
+                                           onSelect={() => {
+                                              const newIds = isSelected ? currentIds.filter((id: string) => id !== u._id) : [...currentIds, u._id];
+                                              update({
+                                                subtasks: formData.subtasks.map((x: any) => x._id === st._id ? { ...x, assignedUserIds: newIds } : x)
+                                              });
+                                           }}
+                                         >
+                                           <Check className={cn("mr-2 h-4 w-4", isSelected ? "opacity-100" : "opacity-0")} />
+                                           {u.name}
+                                         </CommandItem>
+                                       );
+                                     })}
+                                   </CommandGroup>
+                                 </CommandList>
+                               </Command>
+                             </PopoverContent>
+                           </Popover>
+                        </div>
+
+                        {/* Right Side: Delete Action */}
+                        <div className="w-[80px] flex flex-col items-center justify-center border-l border-slate-100/80 bg-slate-50/30">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="bg-red-50 hover:bg-red-100 text-red-500 h-11 w-11 rounded-lg"
+                            onClick={() => update({ subtasks: formData.subtasks.filter((x: any) => x._id !== st._id) })}
+                          >
+                            <Trash2 className="h-5 w-5" />
+                          </Button>
+                        </div>
+                      </div>
                     </li>
                   ))}
                 </ul>
               )}
+              <div className="mt-8 flex justify-center">
+                <Button
+                  className="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-6 font-normal shadow-sm"
+                  onClick={() =>
+                    update({
+                      subtasks: [
+                        ...(formData.subtasks || []),
+                        { _id: `temp_${Date.now()}`, title: "", description: "" },
+                      ],
+                    })
+                  }
+                >
+                  <Plus className="mr-2 h-4 w-4" /> Add Subtask
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -626,34 +1096,6 @@ export default function ServiceDetailPage() {
   );
 }
 
-function ToggleField({
-  label,
-  checked,
-  onChange,
-  info,
-}: {
-  label: string;
-  checked: boolean;
-  onChange: (v: boolean) => void;
-  info?: string;
-}) {
-  return (
-    <div className="flex items-center gap-2">
-      <Switch checked={checked} onCheckedChange={onChange} />
-      <span className="text-sm">{label}</span>
-      {info && (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Info className="h-3.5 w-3.5 text-muted-foreground" />
-            </TooltipTrigger>
-            <TooltipContent className="max-w-xs text-xs">{info}</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      )}
-    </div>
-  );
-}
 
 function Empty({ title, description }: { title: string; description: string }) {
   return (

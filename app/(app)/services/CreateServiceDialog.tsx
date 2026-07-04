@@ -37,7 +37,6 @@ const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
   isEnabled: z.boolean(),
   isRecurring: z.boolean(),
-  assignmentMode: z.enum(["manual", "auto_rotate", "auto_group"]),
   sacCode: z.string().optional(),
   gstPercentage: z.coerce.number().min(0),
   defaultBillingRate: z.coerce.number().min(0),
@@ -58,7 +57,6 @@ export function CreateServiceDialog({
       name: "",
       isEnabled: true,
       isRecurring: false,
-      assignmentMode: "manual",
       sacCode: "",
       gstPercentage: 0,
       defaultBillingRate: 0,
@@ -147,47 +145,23 @@ export function CreateServiceDialog({
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="assignmentMode"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Assignment Mode</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select mode" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="manual">Manual</SelectItem>
-                      <SelectItem value="auto_rotate">Auto Rotate</SelectItem>
-                      <SelectItem value="auto_group">Auto Group</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
-            <div className="grid grid-cols-2 gap-4 border rounded-md p-4 bg-muted/50 mt-2">
+            <div className="flex flex-wrap items-center gap-x-8 gap-y-4 pt-2">
               <FormField
                 control={form.control}
                 name="isRecurring"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between">
-                    <FormLabel className="text-sm font-medium">
-                      Recurring
-                    </FormLabel>
+                  <FormItem className="flex items-center space-x-2 space-y-0">
                     <FormControl>
                       <Switch
                         checked={field.value}
                         onCheckedChange={field.onChange}
+                        id="recurring-dialog"
                       />
                     </FormControl>
+                    <FormLabel htmlFor="recurring-dialog" className="text-sm font-medium cursor-pointer">
+                      Recurring
+                    </FormLabel>
                   </FormItem>
                 )}
               />
@@ -195,16 +169,17 @@ export function CreateServiceDialog({
                 control={form.control}
                 name="isBillable"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between">
-                    <FormLabel className="text-sm font-medium">
-                      Billable
-                    </FormLabel>
+                  <FormItem className="flex items-center space-x-2 space-y-0">
                     <FormControl>
                       <Switch
                         checked={field.value}
                         onCheckedChange={field.onChange}
+                        id="billable-dialog"
                       />
                     </FormControl>
+                    <FormLabel htmlFor="billable-dialog" className="text-sm font-medium cursor-pointer">
+                      Billable
+                    </FormLabel>
                   </FormItem>
                 )}
               />
