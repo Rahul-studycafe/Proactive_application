@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState, useEffect } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   ChevronRight,
@@ -32,8 +32,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -73,7 +84,13 @@ import {
 import { toast } from "sonner";
 
 // DB types mapping
-const FREQUENCIES = ["monthly", "quarterly", "half_yearly", "yearly", "one_time"];
+const FREQUENCIES = [
+  "monthly",
+  "quarterly",
+  "half_yearly",
+  "yearly",
+  "one_time",
+];
 const GST_OPTIONS = ["0", "5", "12", "18", "28"];
 
 const getOrdinal = (n: number) => {
@@ -105,8 +122,15 @@ function ToggleField({
 }) {
   return (
     <div className="flex items-center space-x-2">
-      <Switch checked={checked} onCheckedChange={onChange} id={`toggle-${label.replace(/\s+/g, '-')}`} />
-      <Label htmlFor={`toggle-${label.replace(/\s+/g, '-')}`} className="flex items-center gap-1.5 text-sm font-medium leading-none cursor-pointer">
+      <Switch
+        checked={checked}
+        onCheckedChange={onChange}
+        id={`toggle-${label.replace(/\s+/g, "-")}`}
+      />
+      <Label
+        htmlFor={`toggle-${label.replace(/\s+/g, "-")}`}
+        className="flex items-center gap-1.5 text-sm font-medium leading-none cursor-pointer"
+      >
         {label}
         {info && (
           <TooltipProvider>
@@ -130,6 +154,8 @@ const FIELD_TYPES = ["text", "number", "select", "date"];
 export default function ServiceDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const currentTab = searchParams.get("tab") || "settings";
   const serviceId = params?.serviceId as string;
 
   const {
@@ -139,8 +165,11 @@ export default function ServiceDetailPage() {
   } = useGetServiceByIdQuery(serviceId);
   const svc = response; // Response returns the object directly
 
-  const { data: usersResponse, isLoading: isUsersLoading } = useGetUsersQuery(undefined);
-  const users = Array.isArray(usersResponse) ? usersResponse : usersResponse?.users || [];
+  const { data: usersResponse, isLoading: isUsersLoading } =
+    useGetUsersQuery(undefined);
+  const users = Array.isArray(usersResponse)
+    ? usersResponse
+    : usersResponse?.users || [];
 
   const [updateService, { isLoading: isUpdating }] = useUpdateServiceMutation();
   const [deleteService] = useDeleteServiceMutation();
@@ -180,9 +209,37 @@ export default function ServiceDetailPage() {
         delete payload.frequency;
       }
 
+      // Strip temporary IDs from subtasks and custom fields so Mongoose can generate real ObjectIds
+      if (payload.subtasks) {
+        payload.subtasks = payload.subtasks.map((st: any) => {
+          if (st._id && st._id.toString().startsWith("temp_")) {
+            const { _id, ...rest } = st;
+            return rest;
+          }
+          return st;
+        });
+      }
+
+      if (payload.customFieldsDef) {
+        payload.customFieldsDef = payload.customFieldsDef.map((cf: any) => {
+          if (cf._id && cf._id.toString().startsWith("temp_")) {
+            const { _id, ...rest } = cf;
+            return rest;
+          }
+          return cf;
+        });
+      }
+
+      // Convert assignedUsers to an array of string IDs (since API populates it as an array of objects)
+      if (payload.assignedUsers && Array.isArray(payload.assignedUsers)) {
+        payload.assignedUsers = payload.assignedUsers.map((u: any) =>
+          typeof u === "string" ? u : u._id,
+        );
+      }
+
       await updateService({ id: serviceId, ...payload }).unwrap();
       toast.success("Service saved successfully");
-      
+
       // The API response will update 'svc', which will then trigger useEffect and recalculate hasChanges.
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to save service");
@@ -280,7 +337,7 @@ export default function ServiceDetailPage() {
         </div>
       </div>
 
-      <Tabs defaultValue="settings" className="space-y-4">
+      <Tabs value={currentTab} onValueChange={(v) => router.replace(`?tab=${v}`, { scroll: false })} className="space-y-4">
         <TabsList className="h-auto w-full justify-start gap-1 rounded-none border-b bg-transparent p-0">
           {[
             { v: "settings", l: "Settings" },
@@ -354,7 +411,11 @@ export default function ServiceDetailPage() {
                         </SelectTrigger>
                         <SelectContent>
                           {FREQUENCIES.map((f) => (
-                            <SelectItem key={f} value={f} className="capitalize">
+                            <SelectItem
+                              key={f}
+                              value={f}
+                              className="capitalize"
+                            >
                               {f.replace("_", "-")}
                             </SelectItem>
                           ))}
@@ -365,21 +426,64 @@ export default function ServiceDetailPage() {
                     {formData.frequency?.type === "monthly" && (
                       <div className="space-y-4">
                         <div className="space-y-1.5">
-                          <Label>Creation Date <span className="text-destructive">*</span></Label>
+                          <Label>
+                            Creation Date{" "}
+                            <span className="text-destructive">*</span>
+                          </Label>
                           <div className="flex items-center gap-3">
-                            <Select value={String(formData.frequency?.creationDay || "1")} onValueChange={(v) => update({ frequency: { ...formData.frequency, creationDay: Number(v) }})}>
-                              <SelectTrigger className="w-24"><SelectValue/></SelectTrigger>
-                              <SelectContent>{DAYS.map(d => <SelectItem key={d} value={String(d)}>{getOrdinal(d)}</SelectItem>)}</SelectContent>
+                            <Select
+                              value={String(
+                                formData.frequency?.creationDay || "1",
+                              )}
+                              onValueChange={(v) =>
+                                update({
+                                  frequency: {
+                                    ...formData.frequency,
+                                    creationDay: Number(v),
+                                  },
+                                })
+                              }
+                            >
+                              <SelectTrigger className="w-24">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {DAYS.map((d) => (
+                                  <SelectItem key={d} value={String(d)}>
+                                    {getOrdinal(d)}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
                             </Select>
                             <span className="text-sm">of every month</span>
                           </div>
                         </div>
                         <div className="space-y-1.5">
-                          <Label>Due Date <span className="text-destructive">*</span></Label>
+                          <Label>
+                            Due Date <span className="text-destructive">*</span>
+                          </Label>
                           <div className="flex items-center gap-3">
-                            <Select value={String(formData.frequency?.dueDay || "1")} onValueChange={(v) => update({ frequency: { ...formData.frequency, dueDay: Number(v) }})}>
-                              <SelectTrigger className="w-24"><SelectValue/></SelectTrigger>
-                              <SelectContent>{DAYS.map(d => <SelectItem key={d} value={String(d)}>{getOrdinal(d)}</SelectItem>)}</SelectContent>
+                            <Select
+                              value={String(formData.frequency?.dueDay || "1")}
+                              onValueChange={(v) =>
+                                update({
+                                  frequency: {
+                                    ...formData.frequency,
+                                    dueDay: Number(v),
+                                  },
+                                })
+                              }
+                            >
+                              <SelectTrigger className="w-24">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {DAYS.map((d) => (
+                                  <SelectItem key={d} value={String(d)}>
+                                    {getOrdinal(d)}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
                             </Select>
                             <span className="text-sm">of every month</span>
                           </div>
@@ -392,31 +496,114 @@ export default function ServiceDetailPage() {
                         <div className="space-y-1.5">
                           <Label>Creation Date</Label>
                           <div className="flex flex-wrap items-center gap-3">
-                            <Select value={String(formData.frequency?.creationDay || "1")} onValueChange={(v) => update({ frequency: { ...formData.frequency, creationDay: Number(v) }})}>
-                              <SelectTrigger className="w-24"><SelectValue/></SelectTrigger>
-                              <SelectContent>{DAYS.map(d => <SelectItem key={d} value={String(d)}>{getOrdinal(d)}</SelectItem>)}</SelectContent>
+                            <Select
+                              value={String(
+                                formData.frequency?.creationDay || "1",
+                              )}
+                              onValueChange={(v) =>
+                                update({
+                                  frequency: {
+                                    ...formData.frequency,
+                                    creationDay: Number(v),
+                                  },
+                                })
+                              }
+                            >
+                              <SelectTrigger className="w-24">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {DAYS.map((d) => (
+                                  <SelectItem key={d} value={String(d)}>
+                                    {getOrdinal(d)}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
                             </Select>
                             <span className="text-sm">of</span>
-                            <Select value={formData.frequency?.creationMonthOffset || "First"} onValueChange={(v) => update({ frequency: { ...formData.frequency, creationMonthOffset: v }})}>
-                              <SelectTrigger className="w-32"><SelectValue/></SelectTrigger>
-                              <SelectContent>{QUARTER_OFFSETS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                            <Select
+                              value={
+                                formData.frequency?.creationMonthOffset ||
+                                "First"
+                              }
+                              onValueChange={(v) =>
+                                update({
+                                  frequency: {
+                                    ...formData.frequency,
+                                    creationMonthOffset: v,
+                                  },
+                                })
+                              }
+                            >
+                              <SelectTrigger className="w-32">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {QUARTER_OFFSETS.map((o) => (
+                                  <SelectItem key={o} value={o}>
+                                    {o}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
                             </Select>
-                            <span className="text-sm">month of every quarter</span>
+                            <span className="text-sm">
+                              month of every quarter
+                            </span>
                           </div>
                         </div>
                         <div className="space-y-1.5">
                           <Label>Due Date</Label>
                           <div className="flex flex-wrap items-center gap-3">
-                            <Select value={String(formData.frequency?.dueDay || "1")} onValueChange={(v) => update({ frequency: { ...formData.frequency, dueDay: Number(v) }})}>
-                              <SelectTrigger className="w-24"><SelectValue/></SelectTrigger>
-                              <SelectContent>{DAYS.map(d => <SelectItem key={d} value={String(d)}>{getOrdinal(d)}</SelectItem>)}</SelectContent>
+                            <Select
+                              value={String(formData.frequency?.dueDay || "1")}
+                              onValueChange={(v) =>
+                                update({
+                                  frequency: {
+                                    ...formData.frequency,
+                                    dueDay: Number(v),
+                                  },
+                                })
+                              }
+                            >
+                              <SelectTrigger className="w-24">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {DAYS.map((d) => (
+                                  <SelectItem key={d} value={String(d)}>
+                                    {getOrdinal(d)}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
                             </Select>
                             <span className="text-sm">of</span>
-                            <Select value={formData.frequency?.dueMonthOffset || "First"} onValueChange={(v) => update({ frequency: { ...formData.frequency, dueMonthOffset: v }})}>
-                              <SelectTrigger className="w-32"><SelectValue/></SelectTrigger>
-                              <SelectContent>{QUARTER_OFFSETS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                            <Select
+                              value={
+                                formData.frequency?.dueMonthOffset || "First"
+                              }
+                              onValueChange={(v) =>
+                                update({
+                                  frequency: {
+                                    ...formData.frequency,
+                                    dueMonthOffset: v,
+                                  },
+                                })
+                              }
+                            >
+                              <SelectTrigger className="w-32">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {QUARTER_OFFSETS.map((o) => (
+                                  <SelectItem key={o} value={o}>
+                                    {o}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
                             </Select>
-                            <span className="text-sm">month of every quarter</span>
+                            <span className="text-sm">
+                              month of every quarter
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -427,14 +614,55 @@ export default function ServiceDetailPage() {
                         <div className="space-y-1.5">
                           <Label>Creation Date</Label>
                           <div className="flex flex-wrap items-center gap-3">
-                            <Select value={String(formData.frequency?.creationDay || "1")} onValueChange={(v) => update({ frequency: { ...formData.frequency, creationDay: Number(v) }})}>
-                              <SelectTrigger className="w-24"><SelectValue/></SelectTrigger>
-                              <SelectContent>{DAYS.map(d => <SelectItem key={d} value={String(d)}>{getOrdinal(d)}</SelectItem>)}</SelectContent>
+                            <Select
+                              value={String(
+                                formData.frequency?.creationDay || "1",
+                              )}
+                              onValueChange={(v) =>
+                                update({
+                                  frequency: {
+                                    ...formData.frequency,
+                                    creationDay: Number(v),
+                                  },
+                                })
+                              }
+                            >
+                              <SelectTrigger className="w-24">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {DAYS.map((d) => (
+                                  <SelectItem key={d} value={String(d)}>
+                                    {getOrdinal(d)}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
                             </Select>
                             <span className="text-sm">of</span>
-                            <Select value={formData.frequency?.creationMonthOffset || "Apr & Oct"} onValueChange={(v) => update({ frequency: { ...formData.frequency, creationMonthOffset: v }})}>
-                              <SelectTrigger className="w-32"><SelectValue/></SelectTrigger>
-                              <SelectContent>{HALF_YEARLY_OFFSETS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                            <Select
+                              value={
+                                formData.frequency?.creationMonthOffset ||
+                                "Apr & Oct"
+                              }
+                              onValueChange={(v) =>
+                                update({
+                                  frequency: {
+                                    ...formData.frequency,
+                                    creationMonthOffset: v,
+                                  },
+                                })
+                              }
+                            >
+                              <SelectTrigger className="w-32">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {HALF_YEARLY_OFFSETS.map((o) => (
+                                  <SelectItem key={o} value={o}>
+                                    {o}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
                             </Select>
                             <span className="text-sm">month</span>
                           </div>
@@ -442,14 +670,53 @@ export default function ServiceDetailPage() {
                         <div className="space-y-1.5">
                           <Label>Due Date</Label>
                           <div className="flex flex-wrap items-center gap-3">
-                            <Select value={String(formData.frequency?.dueDay || "1")} onValueChange={(v) => update({ frequency: { ...formData.frequency, dueDay: Number(v) }})}>
-                              <SelectTrigger className="w-24"><SelectValue/></SelectTrigger>
-                              <SelectContent>{DAYS.map(d => <SelectItem key={d} value={String(d)}>{getOrdinal(d)}</SelectItem>)}</SelectContent>
+                            <Select
+                              value={String(formData.frequency?.dueDay || "1")}
+                              onValueChange={(v) =>
+                                update({
+                                  frequency: {
+                                    ...formData.frequency,
+                                    dueDay: Number(v),
+                                  },
+                                })
+                              }
+                            >
+                              <SelectTrigger className="w-24">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {DAYS.map((d) => (
+                                  <SelectItem key={d} value={String(d)}>
+                                    {getOrdinal(d)}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
                             </Select>
                             <span className="text-sm">of</span>
-                            <Select value={formData.frequency?.dueMonthOffset || "Apr & Oct"} onValueChange={(v) => update({ frequency: { ...formData.frequency, dueMonthOffset: v }})}>
-                              <SelectTrigger className="w-32"><SelectValue/></SelectTrigger>
-                              <SelectContent>{HALF_YEARLY_OFFSETS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                            <Select
+                              value={
+                                formData.frequency?.dueMonthOffset ||
+                                "Apr & Oct"
+                              }
+                              onValueChange={(v) =>
+                                update({
+                                  frequency: {
+                                    ...formData.frequency,
+                                    dueMonthOffset: v,
+                                  },
+                                })
+                              }
+                            >
+                              <SelectTrigger className="w-32">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {HALF_YEARLY_OFFSETS.map((o) => (
+                                  <SelectItem key={o} value={o}>
+                                    {o}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
                             </Select>
                             <span className="text-sm">month</span>
                           </div>
@@ -460,16 +727,45 @@ export default function ServiceDetailPage() {
                     {formData.frequency?.type === "yearly" && (
                       <div className="space-y-4">
                         <div className="space-y-1.5">
-                          <Label>Creation Date <span className="text-destructive">*</span></Label>
+                          <Label>
+                            Creation Date{" "}
+                            <span className="text-destructive">*</span>
+                          </Label>
                           <div className="flex items-center gap-3">
-                            <Input type="date" className="w-[160px]" value={formData.frequency?.creationDate || ""} onChange={(e) => update({ frequency: { ...formData.frequency, creationDate: e.target.value }})} />
+                            <Input
+                              type="date"
+                              className="w-[160px]"
+                              value={formData.frequency?.creationDate || ""}
+                              onChange={(e) =>
+                                update({
+                                  frequency: {
+                                    ...formData.frequency,
+                                    creationDate: e.target.value,
+                                  },
+                                })
+                              }
+                            />
                             <span className="text-sm">of every year</span>
                           </div>
                         </div>
                         <div className="space-y-1.5">
-                          <Label>Due Date <span className="text-destructive">*</span></Label>
+                          <Label>
+                            Due Date <span className="text-destructive">*</span>
+                          </Label>
                           <div className="flex items-center gap-3">
-                            <Input type="date" className="w-[160px]" value={formData.frequency?.dueDate || ""} onChange={(e) => update({ frequency: { ...formData.frequency, dueDate: e.target.value }})} />
+                            <Input
+                              type="date"
+                              className="w-[160px]"
+                              value={formData.frequency?.dueDate || ""}
+                              onChange={(e) =>
+                                update({
+                                  frequency: {
+                                    ...formData.frequency,
+                                    dueDate: e.target.value,
+                                  },
+                                })
+                              }
+                            />
                             <span className="text-sm">of every year</span>
                           </div>
                         </div>
@@ -553,17 +849,19 @@ export default function ServiceDetailPage() {
                     />
                   </div>
                 </div>
-                  <ToggleField
-                    label="Mark its tasks billable by default"
-                    checked={formData.isBillable ?? true}
-                    onChange={(v) => update({ isBillable: v })}
-                  />
+                <ToggleField
+                  label="Mark its tasks billable by default"
+                  checked={formData.isBillable ?? true}
+                  onChange={(v) => update({ isBillable: v })}
+                />
               </CardContent>
             </Card>
 
             <Card className="">
               <CardHeader>
-                <CardTitle className="text-lg">Document Collection Request</CardTitle>
+                <CardTitle className="text-lg">
+                  Document Collection Request
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-5">
                 <ToggleField
@@ -581,7 +879,8 @@ export default function ServiceDetailPage() {
                 {formData.autoDocCollection?.isEnabled && (
                   <div className="space-y-1.5 pt-2">
                     <Label>
-                      Doc. Collection Request Default Message <span className="text-destructive">*</span>
+                      Doc. Collection Request Default Message{" "}
+                      <span className="text-destructive">*</span>
                     </Label>
                     <Textarea
                       rows={4}
@@ -603,75 +902,97 @@ export default function ServiceDetailPage() {
 
             <Card className="">
               <CardHeader>
-                <CardTitle className="text-lg">Assign Auto Tasks to (Users)</CardTitle>
+                <CardTitle className="text-lg">
+                  Assign Auto Tasks to (Users)
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-5">
-                  <div className="space-y-1.5 lg:w-1/2">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          className="w-full justify-between font-normal"
-                        >
-                          {formData.assignedUsers && formData.assignedUsers.length > 0
-                            ? `${formData.assignedUsers.length} user(s) selected`
-                            : "Select..."}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[300px] p-0" align="start">
-                        <Command>
-                          <CommandInput placeholder="Search users..." />
-                          <CommandList>
-                            <CommandEmpty>No user found.</CommandEmpty>
-                            <CommandGroup>
-                              {users.map((u: any) => {
-                                const currentIds = (formData.assignedUsers || []).map((x: any) => x._id || x);
-                                const isSelected = currentIds.includes(u._id);
-                                return (
-                                  <CommandItem
-                                    key={u._id}
-                                    value={u.name}
-                                    onSelect={() => {
-                                      if (isSelected) {
-                                        update({ assignedUsers: currentIds.filter((id: string) => id !== u._id) });
-                                      } else {
-                                        update({ assignedUsers: [...currentIds, u._id] });
-                                      }
-                                    }}
-                                  >
-                                    <Check
-                                      className={cn(
-                                        "mr-2 h-4 w-4",
-                                        isSelected ? "opacity-100" : "opacity-0"
-                                      )}
-                                    />
-                                    {u.name}
-                                  </CommandItem>
-                                );
-                              })}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                    
-                    {/* Display selected badges */}
-                    {formData.assignedUsers && formData.assignedUsers.length > 0 && (
+                <div className="space-y-1.5 lg:w-1/2">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className="w-full justify-between font-normal"
+                      >
+                        {formData.assignedUsers &&
+                        formData.assignedUsers.length > 0
+                          ? `${formData.assignedUsers.length} user(s) selected`
+                          : "Select..."}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[300px] p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Search users..." />
+                        <CommandList>
+                          <CommandEmpty>No user found.</CommandEmpty>
+                          <CommandGroup>
+                            {users.map((u: any) => {
+                              const currentIds = (
+                                formData.assignedUsers || []
+                              ).map((x: any) => x._id || x);
+                              const isSelected = currentIds.includes(u._id);
+                              return (
+                                <CommandItem
+                                  key={u._id}
+                                  value={u.name}
+                                  onSelect={() => {
+                                    if (isSelected) {
+                                      update({
+                                        assignedUsers: currentIds.filter(
+                                          (id: string) => id !== u._id,
+                                        ),
+                                      });
+                                    } else {
+                                      update({
+                                        assignedUsers: [...currentIds, u._id],
+                                      });
+                                    }
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      isSelected ? "opacity-100" : "opacity-0",
+                                    )}
+                                  />
+                                  {u.name}
+                                </CommandItem>
+                              );
+                            })}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+
+                  {/* Display selected badges */}
+                  {formData.assignedUsers &&
+                    formData.assignedUsers.length > 0 && (
                       <div className="flex flex-wrap gap-2 pt-2">
                         {formData.assignedUsers.map((id: any) => {
                           const uid = id._id || id;
                           const userObj = users.find((u: any) => u._id === uid);
                           if (!userObj) return null;
                           return (
-                            <Badge key={uid} variant="secondary" className="flex items-center gap-1">
+                            <Badge
+                              key={uid}
+                              variant="secondary"
+                              className="flex items-center gap-1"
+                            >
                               {userObj.name}
                               <X
                                 className="h-3 w-3 cursor-pointer hover:text-destructive"
                                 onClick={() => {
-                                  const currentIds = (formData.assignedUsers || []).map((x: any) => x._id || x);
-                                  update({ assignedUsers: currentIds.filter((x: string) => x !== uid) });
+                                  const currentIds = (
+                                    formData.assignedUsers || []
+                                  ).map((x: any) => x._id || x);
+                                  update({
+                                    assignedUsers: currentIds.filter(
+                                      (x: string) => x !== uid,
+                                    ),
+                                  });
                                 }}
                               />
                             </Badge>
@@ -679,7 +1000,7 @@ export default function ServiceDetailPage() {
                         })}
                       </div>
                     )}
-                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -764,14 +1085,19 @@ export default function ServiceDetailPage() {
           <Card className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
             <CardHeader className="flex px-16 flex-row items-center justify-between pb-6">
               <div className="flex items-center gap-4">
-                <CardTitle className="text-xl font-semibold">Update Subtasks</CardTitle>
+                <CardTitle className="text-xl font-semibold">
+                  Update Subtasks
+                </CardTitle>
                 <div className="flex items-center gap-2 border rounded-full px-3 py-1.5 bg-background shadow-sm">
                   <Switch
                     id="workflow-toggle"
                     checked={formData.isWorkflowEnabled ?? false}
                     onCheckedChange={(v) => update({ isWorkflowEnabled: v })}
                   />
-                  <Label htmlFor="workflow-toggle" className="text-sm font-medium cursor-pointer">
+                  <Label
+                    htmlFor="workflow-toggle"
+                    className="text-sm font-medium cursor-pointer"
+                  >
                     Enable Workflow
                   </Label>
                   <TooltipProvider>
@@ -780,13 +1106,13 @@ export default function ServiceDetailPage() {
                         <Info className="h-4 w-4 text-muted-foreground" />
                       </TooltipTrigger>
                       <TooltipContent className="bg-zinc-900 text-white p-3 text-sm max-w-[250px] leading-relaxed">
-                        Once a subtask is completed, the next one will be automatically generated.
+                        Once a subtask is completed, the next one will be
+                        automatically generated.
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 </div>
               </div>
-             
             </CardHeader>
             <CardContent>
               {!formData.subtasks || formData.subtasks.length === 0 ? (
@@ -802,7 +1128,6 @@ export default function ServiceDetailPage() {
                         <Equal className="h-5 w-5" />
                       </div>
                       <div className="flex-1 flex bg-slate-50/30 items-stretch rounded-xl border shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] overflow-hidden">
-                        
                         {/* Left Side: Inputs */}
                         <div className="flex-1 p-5 space-y-4">
                           <Input
@@ -811,7 +1136,9 @@ export default function ServiceDetailPage() {
                             onChange={(e) =>
                               update({
                                 subtasks: formData.subtasks.map((x: any) =>
-                                  x._id === st._id ? { ...x, title: e.target.value } : x
+                                  x._id === st._id
+                                    ? { ...x, title: e.target.value }
+                                    : x,
                                 ),
                               })
                             }
@@ -823,7 +1150,9 @@ export default function ServiceDetailPage() {
                             onChange={(e) =>
                               update({
                                 subtasks: formData.subtasks.map((x: any) =>
-                                  x._id === st._id ? { ...x, description: e.target.value } : x
+                                  x._id === st._id
+                                    ? { ...x, description: e.target.value }
+                                    : x,
                                 ),
                               })
                             }
@@ -833,128 +1162,201 @@ export default function ServiceDetailPage() {
 
                         {/* Middle Side: Configs */}
                         <div className="w-[280px] p-5 flex flex-col justify-center space-y-6 text-sm text-slate-600">
-                           {/* Due Date Popover */}
-                           <Popover>
-                             <PopoverTrigger className="flex items-center gap-3 hover:text-blue-600 group text-left">
-                               <div className="border border-slate-200 rounded-full p-2 group-hover:border-blue-300 transition-colors shadow-sm shrink-0">
-                                 <Calendar className="h-4 w-4 text-slate-500 group-hover:text-blue-600" />
-                               </div>
-                               <div className="flex-1 text-xs leading-tight">
-                                 {st.relativeDueDays !== undefined && st.relativeDueDays !== null ? (
-                                   <>
-                                     <span className="block">Due Date: Creation</span>
-                                     <span className="block">Date + {st.relativeDueDays} Days</span>
-                                   </>
-                                 ) : (
-                                   <span>No Due Date</span>
-                                 )}
-                               </div>
-                             </PopoverTrigger>
-                             <PopoverContent className="w-80">
-                               <div className="space-y-4">
-                                 <h4 className="font-medium text-sm">Set Due Date</h4>
-                                 <div className="flex items-center gap-2 text-sm">
-                                   <span>Creation Date +</span>
-                                   <Input 
-                                     type="number" 
-                                     className="w-20" 
-                                     value={st.relativeDueDays ?? ""}
-                                     onChange={(e) => update({
-                                       subtasks: formData.subtasks.map((x: any) => x._id === st._id ? { ...x, relativeDueDays: e.target.value ? Number(e.target.value) : undefined } : x)
-                                     })}
-                                   />
-                                   <span>Days</span>
-                                 </div>
-                               </div>
-                             </PopoverContent>
-                           </Popover>
+                          {/* Due Date Popover */}
+                          <Popover>
+                            <PopoverTrigger className="flex items-center gap-3 hover:text-blue-600 group text-left">
+                              <div className="border border-slate-200 rounded-full p-2 group-hover:border-blue-300 transition-colors shadow-sm shrink-0">
+                                <Calendar className="h-4 w-4 text-slate-500 group-hover:text-blue-600" />
+                              </div>
+                              <div className="flex-1 text-xs leading-tight">
+                                {st.relativeDueDays !== undefined &&
+                                st.relativeDueDays !== null ? (
+                                  <>
+                                    <span className="block">
+                                      Due Date: Creation
+                                    </span>
+                                    <span className="block">
+                                      Date + {st.relativeDueDays} Days
+                                    </span>
+                                  </>
+                                ) : (
+                                  <span>No Due Date</span>
+                                )}
+                              </div>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-80">
+                              <div className="space-y-4">
+                                <h4 className="font-medium text-sm">
+                                  Set Due Date
+                                </h4>
+                                <div className="flex items-center gap-2 text-sm">
+                                  <span>Creation Date +</span>
+                                  <Input
+                                    type="number"
+                                    className="w-20"
+                                    value={st.relativeDueDays ?? ""}
+                                    onChange={(e) =>
+                                      update({
+                                        subtasks: formData.subtasks.map(
+                                          (x: any) =>
+                                            x._id === st._id
+                                              ? {
+                                                  ...x,
+                                                  relativeDueDays: e.target
+                                                    .value
+                                                    ? Number(e.target.value)
+                                                    : undefined,
+                                                }
+                                              : x,
+                                        ),
+                                      })
+                                    }
+                                  />
+                                  <span>Days</span>
+                                </div>
+                              </div>
+                            </PopoverContent>
+                          </Popover>
 
-                           {/* Target Date Popover */}
-                           <Popover>
-                             <PopoverTrigger className="flex items-center gap-3 hover:text-blue-600 group text-left">
-                               <div className="border border-slate-200 rounded-full p-2 group-hover:border-blue-300 transition-colors shadow-sm shrink-0">
-                                 <Calendar className="h-4 w-4 text-slate-500 group-hover:text-blue-600" />
-                               </div>
-                               <div className="flex-1 text-xs leading-tight">
-                                 {st.relativeTargetDays !== undefined && st.relativeTargetDays !== null ? (
-                                   <>
-                                     <span className="block">Target Date: Creation</span>
-                                     <span className="block">Date + {st.relativeTargetDays} Days</span>
-                                   </>
-                                 ) : (
-                                   <span>No Target Date</span>
-                                 )}
-                               </div>
-                             </PopoverTrigger>
-                             <PopoverContent className="w-80">
-                               <div className="space-y-4">
-                                 <h4 className="font-medium text-sm">Set Target Date</h4>
-                                 <div className="flex items-center gap-2 text-sm">
-                                   <span>Creation Date +</span>
-                                   <Input 
-                                     type="number" 
-                                     className="w-20" 
-                                     value={st.relativeTargetDays ?? ""}
-                                     onChange={(e) => update({
-                                       subtasks: formData.subtasks.map((x: any) => x._id === st._id ? { ...x, relativeTargetDays: e.target.value ? Number(e.target.value) : undefined } : x)
-                                     })}
-                                   />
-                                   <span>Days</span>
-                                 </div>
-                               </div>
-                             </PopoverContent>
-                           </Popover>
+                          {/* Target Date Popover */}
+                          <Popover>
+                            <PopoverTrigger className="flex items-center gap-3 hover:text-blue-600 group text-left">
+                              <div className="border border-slate-200 rounded-full p-2 group-hover:border-blue-300 transition-colors shadow-sm shrink-0">
+                                <Calendar className="h-4 w-4 text-slate-500 group-hover:text-blue-600" />
+                              </div>
+                              <div className="flex-1 text-xs leading-tight">
+                                {st.relativeTargetDays !== undefined &&
+                                st.relativeTargetDays !== null ? (
+                                  <>
+                                    <span className="block">
+                                      Target Date: Creation
+                                    </span>
+                                    <span className="block">
+                                      Date + {st.relativeTargetDays} Days
+                                    </span>
+                                  </>
+                                ) : (
+                                  <span>No Target Date</span>
+                                )}
+                              </div>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-80">
+                              <div className="space-y-4">
+                                <h4 className="font-medium text-sm">
+                                  Set Target Date
+                                </h4>
+                                <div className="flex items-center gap-2 text-sm">
+                                  <span>Creation Date +</span>
+                                  <Input
+                                    type="number"
+                                    className="w-20"
+                                    value={st.relativeTargetDays ?? ""}
+                                    onChange={(e) =>
+                                      update({
+                                        subtasks: formData.subtasks.map(
+                                          (x: any) =>
+                                            x._id === st._id
+                                              ? {
+                                                  ...x,
+                                                  relativeTargetDays: e.target
+                                                    .value
+                                                    ? Number(e.target.value)
+                                                    : undefined,
+                                                }
+                                              : x,
+                                        ),
+                                      })
+                                    }
+                                  />
+                                  <span>Days</span>
+                                </div>
+                              </div>
+                            </PopoverContent>
+                          </Popover>
 
-                           {/* Assign Users Popover */}
-                           <Popover>
-                             <PopoverTrigger className="flex items-center gap-3 hover:text-blue-600 group text-left">
-                               {st.assignedUserIds && st.assignedUserIds.length > 0 ? (
-                                 <div className="flex -space-x-1.5 shrink-0">
-                                   {st.assignedUserIds.map((uid: string) => {
-                                     const user = users.find((u:any) => u._id === uid);
-                                     return (
-                                       <Avatar key={uid} className="h-8 w-8 border-2 border-white text-xs shadow-sm">
-                                         <AvatarFallback className="bg-slate-600 text-white font-medium uppercase">{user?.name?.slice(0, 2) || "U"}</AvatarFallback>
-                                       </Avatar>
-                                     );
-                                   })}
-                                 </div>
-                               ) : (
-                                 <div className="border border-slate-200 rounded-full p-2 group-hover:border-blue-300 transition-colors shadow-sm shrink-0">
-                                   <User className="h-4 w-4 text-slate-500 group-hover:text-blue-600" />
-                                 </div>
-                               )}
-                             </PopoverTrigger>
-                             <PopoverContent className="w-[300px] p-0" align="start">
-                               <Command>
-                                 <CommandInput placeholder="Search users..." />
-                                 <CommandList>
-                                   <CommandEmpty>No user found.</CommandEmpty>
-                                   <CommandGroup>
-                                     {users.map((u: any) => {
-                                       const currentIds = st.assignedUserIds || [];
-                                       const isSelected = currentIds.includes(u._id);
-                                       return (
-                                         <CommandItem
-                                           key={u._id}
-                                           value={u.name}
-                                           onSelect={() => {
-                                              const newIds = isSelected ? currentIds.filter((id: string) => id !== u._id) : [...currentIds, u._id];
-                                              update({
-                                                subtasks: formData.subtasks.map((x: any) => x._id === st._id ? { ...x, assignedUserIds: newIds } : x)
-                                              });
-                                           }}
-                                         >
-                                           <Check className={cn("mr-2 h-4 w-4", isSelected ? "opacity-100" : "opacity-0")} />
-                                           {u.name}
-                                         </CommandItem>
-                                       );
-                                     })}
-                                   </CommandGroup>
-                                 </CommandList>
-                               </Command>
-                             </PopoverContent>
-                           </Popover>
+                          {/* Assign Users Popover */}
+                          <Popover>
+                            <PopoverTrigger className="flex items-center gap-3 hover:text-blue-600 group text-left">
+                              {st.assignedUserIds &&
+                              st.assignedUserIds.length > 0 ? (
+                                <div className="flex -space-x-1.5 shrink-0">
+                                  {st.assignedUserIds.map((uid: string) => {
+                                    const user = users.find(
+                                      (u: any) => u._id === uid,
+                                    );
+                                    return (
+                                      <Avatar
+                                        key={uid}
+                                        className="h-8 w-8 border-2 border-white text-xs shadow-sm"
+                                      >
+                                        <AvatarFallback className="bg-slate-600 text-white font-medium uppercase">
+                                          {user?.name?.slice(0, 2) || "U"}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                    );
+                                  })}
+                                </div>
+                              ) : (
+                                <div className="border border-slate-200 rounded-full p-2 group-hover:border-blue-300 transition-colors shadow-sm shrink-0">
+                                  <User className="h-4 w-4 text-slate-500 group-hover:text-blue-600" />
+                                </div>
+                              )}
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-[300px] p-0"
+                              align="start"
+                            >
+                              <Command>
+                                <CommandInput placeholder="Search users..." />
+                                <CommandList>
+                                  <CommandEmpty>No user found.</CommandEmpty>
+                                  <CommandGroup>
+                                    {users.map((u: any) => {
+                                      const currentIds =
+                                        st.assignedUserIds || [];
+                                      const isSelected = currentIds.includes(
+                                        u._id,
+                                      );
+                                      return (
+                                        <CommandItem
+                                          key={u._id}
+                                          value={u.name}
+                                          onSelect={() => {
+                                            const newIds = isSelected
+                                              ? currentIds.filter(
+                                                  (id: string) => id !== u._id,
+                                                )
+                                              : [...currentIds, u._id];
+                                            update({
+                                              subtasks: formData.subtasks.map(
+                                                (x: any) =>
+                                                  x._id === st._id
+                                                    ? {
+                                                        ...x,
+                                                        assignedUserIds: newIds,
+                                                      }
+                                                    : x,
+                                              ),
+                                            });
+                                          }}
+                                        >
+                                          <Check
+                                            className={cn(
+                                              "mr-2 h-4 w-4",
+                                              isSelected
+                                                ? "opacity-100"
+                                                : "opacity-0",
+                                            )}
+                                          />
+                                          {u.name}
+                                        </CommandItem>
+                                      );
+                                    })}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
                         </div>
 
                         {/* Right Side: Delete Action */}
@@ -963,7 +1365,13 @@ export default function ServiceDetailPage() {
                             variant="ghost"
                             size="icon"
                             className="bg-red-50 hover:bg-red-100 text-red-500 h-11 w-11 rounded-lg"
-                            onClick={() => update({ subtasks: formData.subtasks.filter((x: any) => x._id !== st._id) })}
+                            onClick={() =>
+                              update({
+                                subtasks: formData.subtasks.filter(
+                                  (x: any) => x._id !== st._id,
+                                ),
+                              })
+                            }
                           >
                             <Trash2 className="h-5 w-5" />
                           </Button>
@@ -980,7 +1388,11 @@ export default function ServiceDetailPage() {
                     update({
                       subtasks: [
                         ...(formData.subtasks || []),
-                        { _id: `temp_${Date.now()}`, title: "", description: "" },
+                        {
+                          _id: `temp_${Date.now()}`,
+                          title: "",
+                          description: "",
+                        },
                       ],
                     })
                   }
@@ -1028,62 +1440,104 @@ export default function ServiceDetailPage() {
                   {formData.customFieldsDef.map((f: any) => (
                     <li
                       key={f._id}
-                      className="grid grid-cols-12 items-center gap-2 rounded-md border bg-card p-2"
+                      className="flex flex-col gap-3 rounded-md border bg-card p-3 shadow-sm"
                     >
-                      <Input
-                        className="col-span-7"
-                        value={f.label || ""}
-                        onChange={(e) =>
-                          update({
-                            customFieldsDef: formData.customFieldsDef.map(
-                              (x: any) =>
-                                x._id === f._id
-                                  ? { ...x, label: e.target.value }
-                                  : x,
-                            ),
-                          })
-                        }
-                      />
-                      <Select
-                        value={f.fieldType || "text"}
-                        onValueChange={(v) =>
-                          update({
-                            customFieldsDef: formData.customFieldsDef.map(
-                              (x: any) =>
-                                x._id === f._id ? { ...x, fieldType: v } : x,
-                            ),
-                          })
-                        }
-                      >
-                        <SelectTrigger className="col-span-4 capitalize">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {FIELD_TYPES.map((t) => (
-                            <SelectItem
-                              key={t}
-                              value={t}
-                              className="capitalize"
-                            >
-                              {t}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="col-span-1"
-                        onClick={() =>
-                          update({
-                            customFieldsDef: formData.customFieldsDef.filter(
-                              (x: any) => x._id !== f._id,
-                            ),
-                          })
-                        }
-                      >
-                        <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          className="flex-1"
+                          placeholder="Field Label (e.g. Assessment Year)"
+                          value={f.label || ""}
+                          onChange={(e) =>
+                            update({
+                              customFieldsDef: formData.customFieldsDef.map(
+                                (x: any) =>
+                                  x._id === f._id
+                                    ? { ...x, label: e.target.value }
+                                    : x,
+                              ),
+                            })
+                          }
+                        />
+                        <Select
+                          value={f.fieldType || "text"}
+                          onValueChange={(v) =>
+                            update({
+                              customFieldsDef: formData.customFieldsDef.map(
+                                (x: any) =>
+                                  x._id === f._id ? { ...x, fieldType: v } : x,
+                              ),
+                            })
+                          }
+                        >
+                          <SelectTrigger className="w-[140px] capitalize">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {FIELD_TYPES.map((t) => (
+                              <SelectItem
+                                key={t}
+                                value={t}
+                                className="capitalize"
+                              >
+                                {t}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        
+                        <div className="flex items-center gap-2 border rounded-md px-3 h-10 bg-background">
+                          <Switch
+                            id={`required-${f._id}`}
+                            checked={f.isRequired ?? false}
+                            onCheckedChange={(v) =>
+                              update({
+                                customFieldsDef: formData.customFieldsDef.map(
+                                  (x: any) =>
+                                    x._id === f._id ? { ...x, isRequired: v } : x,
+                                ),
+                              })
+                            }
+                          />
+                          <Label htmlFor={`required-${f._id}`} className="text-sm cursor-pointer whitespace-nowrap">
+                            Required
+                          </Label>
+                        </div>
+
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() =>
+                            update({
+                              customFieldsDef: formData.customFieldsDef.filter(
+                                (x: any) => x._id !== f._id,
+                              ),
+                            })
+                          }
+                        >
+                          <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                        </Button>
+                      </div>
+
+                      {f.fieldType === "select" && (
+                        <div className="pl-2 border-l-2 border-muted ml-1">
+                          <Label className="text-xs text-muted-foreground mb-1.5 block">Dropdown Options (comma separated)</Label>
+                          <Input
+                            placeholder="Option 1, Option 2, Option 3"
+                            value={(f.options || []).join(", ")}
+                            onChange={(e) => {
+                              const opts = e.target.value.split(",").map((s) => s.trim()).filter(Boolean);
+                              update({
+                                customFieldsDef: formData.customFieldsDef.map(
+                                  (x: any) =>
+                                    x._id === f._id
+                                      ? { ...x, options: opts.length > 0 ? opts : [] }
+                                      : x,
+                                ),
+                              });
+                            }}
+                          />
+                        </div>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -1095,7 +1549,6 @@ export default function ServiceDetailPage() {
     </div>
   );
 }
-
 
 function Empty({ title, description }: { title: string; description: string }) {
   return (

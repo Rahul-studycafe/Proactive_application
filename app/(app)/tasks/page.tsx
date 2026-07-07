@@ -5,6 +5,7 @@ import { Clock, Circle, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   Pagination,
   PaginationContent,
@@ -116,8 +117,6 @@ export default function TasksPage() {
 
   const tasks: Task[] = tasksRes?.tasks || [];
 
-  console.log("tasks: ",tasks)
-
   const grouped = useMemo(() => {
     return COLUMNS.reduce(
       (acc, col) => {
@@ -147,8 +146,9 @@ export default function TasksPage() {
 
     try {
       await updateStatus({ id: taskId, status: newStatus }).unwrap();
-    } catch (err) {
-      console.error("Failed to update status", err);
+      toast.success("Task status updated");
+    } catch (err: any) {
+      toast.error(err.data?.message || "Failed to update status");
     }
   };
 
@@ -241,7 +241,9 @@ export default function TasksPage() {
 
                       <div className="mb-2.5 pl-1.5 flex items-start justify-between gap-2">
                         <span className="font-medium text-sm text-slate-900 leading-snug line-clamp-2">
-                          {(t as any).title || t.serviceId?.name || "Unnamed Task"}
+                          {(t as any).title ||
+                            t.serviceId?.name ||
+                            "Unnamed Task"}
                         </span>
                       </div>
 

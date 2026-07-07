@@ -50,12 +50,27 @@ import {
   useGetUsersQuery,
   useGetTagsQuery,
   useCreateTaskMutation,
+  useGetClientByIdQuery,
 } from "@/lib/services/api";
 import { type TaskPriority } from "@/lib/types";
+import { useMemo } from "react";
+import { useParams } from "next/navigation";
 
-export function CreateTaskDialog() {
+export function CreateTaskDialog({
+  defaultClientId = "",
+  triggerNode,
+}: {
+  defaultClientId?: string;
+  triggerNode?: React.ReactNode;
+}) {
+  const params = useParams();
+  const routeClientId = params?.clientId as string;
+  const lockedClientId = defaultClientId || routeClientId;
+
   const [open, setOpen] = useState(false);
-  const [clientId, setClientId] = useState("");
+  const [selectedClientId, setSelectedClientId] = useState("");
+
+  const clientId = lockedClientId || selectedClientId;
   const [serviceId, setServiceId] = useState("");
   const [assigneeIds, setAssigneeIds] = useState<string[]>([]);
   const [description, setDescription] = useState("");
@@ -77,12 +92,38 @@ export function CreateTaskDialog() {
   const { data: usersRes, isLoading: usersLoading } =
     useGetUsersQuery(undefined);
   const { data: existingTags = [] } = useGetTagsQuery(undefined);
+  
+  const { data: clientData } = useGetClientByIdQuery(clientId, { skip: !clientId });
 
   const [createTask, { isLoading: isCreating }] = useCreateTaskMutation();
 
   const clients = clientsRes?.clients || [];
-  const services = servicesRes?.services || [];
-  const users = usersRes?.users || [];
+  const services = Array.isArray(servicesRes) ? servicesRes : [];
+  const users = Array.isArray(usersRes) ? usersRes : (usersRes?.users || []);
+
+  const availableServices = useMemo(() => {
+    if (!clientId || !clientData) return services;
+    
+    const allowedServiceIds = new Set<string>();
+    
+    clientData.subscribedServices?.forEach((sub: any) => {
+      const id = typeof sub.serviceId === 'object' ? sub.serviceId?._id : sub.serviceId;
+      if (id) allowedServiceIds.add(String(id));
+    });
+
+    clientData.subscribedPackages?.forEach((sub: any) => {
+      if (sub.packageId?.services) {
+        sub.packageId.services.forEach((s: any) => {
+           const id = typeof s === 'object' ? s._id : s;
+           if (id) allowedServiceIds.add(String(id));
+        });
+      }
+    });
+
+    // If a client has NO services, we might still want to let them select one if they are admin, 
+    // but the user requested to only show available services.
+    return services.filter((s: any) => allowedServiceIds.has(String(s._id)));
+  }, [clientId, clientData, services]);
 
   const handleCreate = async () => {
     if (!clientId || !serviceId || assigneeIds.length === 0) return;
@@ -114,7 +155,7 @@ export function CreateTaskDialog() {
   };
 
   const resetForm = () => {
-    setClientId("");
+    setSelectedClientId("");
     setServiceId("");
     setAssigneeIds([]);
     setDescription("");
@@ -142,12 +183,19 @@ export function CreateTaskDialog() {
       }}
     >
       <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          Add Task
-        </Button>
+        {triggerNode ? (
+          triggerNode
+        ) : (
+          <Button className="gap-2">
+            <Plus className="h-4 w-4" />
+            Add Task
+          </Button>
+        )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
+      <DialogContent 
+        className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto"
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>Create New Task</DialogTitle>
         </DialogHeader>
@@ -157,7 +205,7 @@ export function CreateTaskDialog() {
               <Label>
                 Client <span className="text-red-500">*</span>
               </Label>
-              <Select value={clientId} onValueChange={setClientId}>
+              <Select value={clientId} onValueChange={setSelectedClientId} disabled={!!lockedClientId}>
                 <SelectTrigger>
                   <SelectValue
                     placeholder={
@@ -188,11 +236,16 @@ export function CreateTaskDialog() {
                   />
                 </SelectTrigger>
                 <SelectContent>
-                  {services.map((service: any) => (
+                  {availableServices.map((service: any) => (
                     <SelectItem key={service._id} value={service._id}>
                       {service.name}
                     </SelectItem>
                   ))}
+                  {availableServices.length === 0 && (
+                    <div className="p-2 text-sm text-muted-foreground text-center">
+                      No services subscribed by this client
+                    </div>
+                  )}
                 </SelectContent>
               </Select>
             </div>

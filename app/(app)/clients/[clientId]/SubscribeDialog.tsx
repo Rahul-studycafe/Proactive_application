@@ -103,7 +103,10 @@ export function SubscribeDialog({ clientId }: { clientId: string }) {
       <DialogTrigger asChild>
         <Button size="sm">+ Add Subscription</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent 
+        className="sm:max-w-[425px]"
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>Add Subscription</DialogTitle>
           <DialogDescription>

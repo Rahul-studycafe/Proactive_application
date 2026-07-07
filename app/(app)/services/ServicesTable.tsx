@@ -92,8 +92,7 @@ export function ServicesTable() {
                   variant="outline"
                   className="font-normal bg-indigo-50 text-indigo-700 border-indigo-200"
                 >
-                  {Math.floor(Math.random() * 5)}{" "}
-                  {/* Temporary mock for clients count */}
+                  {service.clientsCount || 0}
                 </Badge>
               </TableCell>
               <TableCell>

@@ -79,7 +79,10 @@ export function CreateServiceDialog({
       <DialogTrigger asChild>
         {children || <Button>+ New Service</Button>}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent 
+        className="sm:max-w-[500px]"
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>Create New Service</DialogTitle>
           <DialogDescription>
@@ -145,7 +148,6 @@ export function CreateServiceDialog({
               )}
             />
 
-
             <div className="flex flex-wrap items-center gap-x-8 gap-y-4 pt-2">
               <FormField
                 control={form.control}
@@ -159,7 +161,10 @@ export function CreateServiceDialog({
                         id="recurring-dialog"
                       />
                     </FormControl>
-                    <FormLabel htmlFor="recurring-dialog" className="text-sm font-medium cursor-pointer">
+                    <FormLabel
+                      htmlFor="recurring-dialog"
+                      className="text-sm font-medium cursor-pointer"
+                    >
                       Recurring
                     </FormLabel>
                   </FormItem>
@@ -177,7 +182,10 @@ export function CreateServiceDialog({
                         id="billable-dialog"
                       />
                     </FormControl>
-                    <FormLabel htmlFor="billable-dialog" className="text-sm font-medium cursor-pointer">
+                    <FormLabel
+                      htmlFor="billable-dialog"
+                      className="text-sm font-medium cursor-pointer"
+                    >
                       Billable
                     </FormLabel>
                   </FormItem>

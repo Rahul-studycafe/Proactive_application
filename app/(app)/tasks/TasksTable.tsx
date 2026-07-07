@@ -13,13 +13,7 @@ import {
 import { type Task, type TaskPriority, type TaskStatus } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import {
-  Clock,
-  Circle,
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
-} from "lucide-react";
+import { Clock, Circle, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 
 export interface TasksTableProps {
   tasks: Task[];
@@ -212,7 +206,9 @@ export function TasksTable({
                 )}
                 {visibleColumns.includes("title") && (
                   <TableCell className="font-medium max-w-[300px] truncate">
-                    {(task as any).title || task.serviceId?.name || "Unnamed Task"}
+                    {(task as any).title ||
+                      task.serviceId?.name ||
+                      "Unnamed Task"}
                   </TableCell>
                 )}
                 {visibleColumns.includes("client") && (
