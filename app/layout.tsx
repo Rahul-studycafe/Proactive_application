@@ -33,15 +33,15 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <Providers>{children}</Providers>
-        <Toaster 
-          position="top-center" 
+        <Toaster
+          position="top-center"
           toastOptions={{
             classNames: {
-              success: 'bg-green-100 text-green-900 border-green-200',
-              error: 'bg-red-100 text-red-900 border-red-200',
-              toast: 'rounded-xl shadow-lg font-medium border px-4 py-3',
+              success: "bg-green-100 text-green-900 border-green-200",
+              error: "bg-red-100 text-red-900 border-red-200",
+              toast: "rounded-xl shadow-lg font-medium border px-4 py-3",
             },
-          }} 
+          }}
         />
       </body>
     </html>
