@@ -1,15 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useState, useRef } from "react";
+import { toast } from "sonner";
 import {
   useGetTaskByIdQuery,
   useGetTaskHistoryQuery,
   useGetTaskDocumentsQuery,
   useAddTaskHistoryNoteMutation,
   useUploadTaskDocumentMutation,
-  useDeleteTaskDocumentMutation
+  useDeleteTaskDocumentMutation,
+  useUpdateTaskStatusMutation,
 } from "@/lib/services/api";
 import {
   Loader2,
@@ -23,30 +25,134 @@ import {
   Trash2,
   ChevronDown,
   FileText,
+  FileImage,
+  FileSpreadsheet,
+  FileArchive,
+  File,
   User,
   CheckSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { formatDate } from "@/lib/utils";
+import { formatDate, cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { TaskCustomFieldsCard } from "./TaskCustomFieldsCard";
+import { TaskChecklist } from "./TaskChecklist";
+import { TaskSubtasks } from "./TaskSubtasks";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const getFileIcon = (fileName: string) => {
+  if (!fileName) return <File className="h-5 w-5 text-muted-foreground" />;
+  const ext = fileName.split('.').pop()?.toLowerCase();
+  switch (ext) {
+    case 'pdf':
+    case 'doc':
+    case 'docx':
+    case 'txt':
+      return <FileText className="h-5 w-5 text-blue-500" />;
+    case 'png':
+    case 'jpg':
+    case 'jpeg':
+    case 'svg':
+    case 'webp':
+      return <FileImage className="h-5 w-5 text-purple-500" />;
+    case 'xls':
+    case 'xlsx':
+    case 'csv':
+      return <FileSpreadsheet className="h-5 w-5 text-emerald-500" />;
+    case 'zip':
+    case 'rar':
+    case 'tar':
+    case 'gz':
+      return <FileArchive className="h-5 w-5 text-amber-500" />;
+    default:
+      return <File className="h-5 w-5 text-muted-foreground" />;
+  }
+};
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case "Completed": return "bg-emerald-100 text-emerald-700 hover:bg-emerald-200";
+    case "In Progress": return "bg-blue-100 text-blue-700 hover:bg-blue-200";
+    case "Under Review": return "bg-amber-100 text-amber-700 hover:bg-amber-200";
+    case "On Hold": return "bg-rose-100 text-rose-700 hover:bg-rose-200";
+    case "Cancelled": return "bg-slate-100 text-slate-700 hover:bg-slate-200";
+    default: return "bg-secondary text-secondary-foreground hover:bg-secondary/80"; // Pending
+  }
+};
 
 export default function TaskDashboard() {
   const { taskId } = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const currentTab = searchParams.get("tab") || "details";
 
-  const { data: task, isLoading: isTaskLoading } = useGetTaskByIdQuery(taskId as string);
-  const { data: history = [], isLoading: isHistoryLoading } = useGetTaskHistoryQuery(taskId as string);
-  const { data: allDocs = [], isLoading: isDocsLoading } = useGetTaskDocumentsQuery({ taskId: taskId as string });
-  
+  const { data: task, isLoading: isTaskLoading } = useGetTaskByIdQuery(
+    taskId as string,
+  );
+  const { data: history = [], isLoading: isHistoryLoading } =
+    useGetTaskHistoryQuery(taskId as string);
+  const { data: allDocs = [], isLoading: isDocsLoading } =
+    useGetTaskDocumentsQuery({ taskId: taskId as string });
+
   const [addNote] = useAddTaskHistoryNoteMutation();
+  const [updateTaskStatus, { isLoading: isUpdatingStatus }] = useUpdateTaskStatusMutation();
   const [noteContent, setNoteContent] = useState("");
+  
+  const [uploadDoc, { isLoading: isUploading }] = useUploadTaskDocumentMutation();
+  const [deleteDoc] = useDeleteTaskDocumentMutation();
+  
+  const documentInputRef = useRef<HTMLInputElement>(null);
+  const supportingFileInputRef = useRef<HTMLInputElement>(null);
 
-  const documents = allDocs.filter((d: any) => d.category === 'document');
-  const supportingFiles = allDocs.filter((d: any) => d.category === 'supporting_file');
-  const notesOnly = history.filter((h: any) => h.action === 'Note Added');
+  const handleDeleteDocument = async (docId: string) => {
+    if (!confirm("Are you sure you want to delete this file?")) return;
+    try {
+      await deleteDoc({ taskId: taskId as string, id: docId }).unwrap();
+      toast.success("File deleted successfully");
+    } catch (err) {
+      toast.error("Failed to delete file");
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, category: "document" | "supporting_file") => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const formData = new FormData();
+      formData.append("category", category);
+      formData.append("clientId", task?.clientId?._id || "unknown");
+      formData.append("file", file);
+      
+      try {
+        await uploadDoc({ 
+          taskId: taskId as string, 
+          data: formData
+        }).unwrap();
+        toast.success("File uploaded successfully");
+      } catch (err) {
+        toast.error("Failed to upload file");
+      }
+      
+      // Reset input
+      if (e.target) {
+        e.target.value = "";
+      }
+    }
+  };
+
+  const documents = allDocs.filter((d: any) => d.category === "document");
+  const supportingFiles = allDocs.filter(
+    (d: any) => d.category === "supporting_file",
+  );
+  const notesOnly = history.filter((h: any) => h.action === "Note Added");
 
   if (isTaskLoading) {
     return (
@@ -67,7 +173,10 @@ export default function TaskDashboard() {
   const handleAddNote = async () => {
     if (!noteContent.trim()) return;
     try {
-      await addNote({ taskId: taskId as string, content: noteContent }).unwrap();
+      await addNote({
+        taskId: taskId as string,
+        content: noteContent,
+      }).unwrap();
       setNoteContent("");
     } catch (error) {
       console.error("Failed to add note:", error);
@@ -103,11 +212,32 @@ export default function TaskDashboard() {
               <span>{task.clientId?.name || "Unknown Client"}</span>
               <span>•</span>
               <span className="font-mono">
-                {task.clientId?.customFields?.pan || "N/A PAN"}
+                {task.clientId?.pan || "N/A PAN"}
               </span>
-              <Badge variant="secondary" className="font-medium">
-                {task.status}
-              </Badge>
+              <Select
+                value={task.status}
+                onValueChange={async (value) => {
+                  try {
+                    await updateTaskStatus({ id: taskId as string, status: value }).unwrap();
+                    toast.success("Task status updated");
+                  } catch (err) {
+                    toast.error("Failed to update status");
+                  }
+                }}
+                disabled={isUpdatingStatus}
+              >
+                <SelectTrigger className={cn("h-6 text-xs px-2 py-0 border-none w-auto focus:ring-0 focus:ring-offset-0 inline-flex items-center gap-1 font-medium rounded-full shadow-none transition-colors", getStatusColor(task.status))}>
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Pending">Pending</SelectItem>
+                  <SelectItem value="In Progress">In Progress</SelectItem>
+                  <SelectItem value="Under Review">Under Review</SelectItem>
+                  <SelectItem value="On Hold">On Hold</SelectItem>
+                  <SelectItem value="Completed">Completed</SelectItem>
+                  <SelectItem value="Cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>
@@ -119,10 +249,11 @@ export default function TaskDashboard() {
       </div>
 
       {/* Standard Tabs */}
-      <Tabs defaultValue="details" className="space-y-6">
-        <TabsList className="bg-muted">
+      <Tabs value={currentTab} onValueChange={(v) => router.replace(`?tab=${v}`, { scroll: false })} className="space-y-6">
+        <TabsList className="bg-muted/50 rounded-lg p-1 h-auto flex flex-wrap max-w-full justify-start overflow-x-auto">
           <TabsTrigger value="details">Details</TabsTrigger>
           <TabsTrigger value="todo">To-Do</TabsTrigger>
+          <TabsTrigger value="subtasks">Subtasks</TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
           <TabsTrigger value="supporting_files">Supporting Files</TabsTrigger>
           <TabsTrigger value="task_history">Task History</TabsTrigger>
@@ -283,6 +414,12 @@ export default function TaskDashboard() {
                 </div>
               </CardContent>
             </Card>
+
+            <TaskCustomFieldsCard 
+              taskId={taskId as string} 
+              customFieldsDef={task.serviceId?.customFieldsDef || []} 
+              customFieldValues={task.customFieldValues || {}} 
+            />
           </div>
 
           {/* Right Column */}
@@ -293,44 +430,84 @@ export default function TaskDashboard() {
                 <CardTitle className="text-sm font-semibold">
                   Checklist
                 </CardTitle>
-                <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
-                  + Add
-                </Button>
+                <div className="text-xs text-muted-foreground">
+                  {task.checklist?.filter((c: any) => c.isCompleted).length || 0} / {task.checklist?.length || 0}
+                </div>
               </CardHeader>
-              <CardContent className="flex-1 flex flex-col items-center justify-center p-6 text-muted-foreground gap-3">
-                <CheckCircle className="h-10 w-10 opacity-20" />
-                <span className="text-sm">There is no Checklist</span>
-              </CardContent>
-            </Card>
-
-            {/* Subtasks Card */}
-            <Card className="shadow-sm border-border flex flex-col">
-              <CardHeader className="pb-3 flex flex-row items-center justify-between border-b space-y-0">
-                <CardTitle className="text-sm font-semibold">
-                  Subtasks
-                </CardTitle>
-                <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
-                  + Add
-                </Button>
-              </CardHeader>
-              <CardContent className="p-6 text-muted-foreground">
-                {task.subtasks && task.subtasks.length > 0 ? (
+              <CardContent className="flex-1 overflow-y-auto p-4">
+                {task.checklist && task.checklist.length > 0 ? (
                   <div className="space-y-3">
-                    {task.subtasks.map((st: any, i: number) => (
-                      <div
-                        key={i}
-                        className="flex items-center gap-3 p-3 bg-accent/50 rounded-lg border border-border"
-                      >
-                        <div className="h-4 w-4 rounded-sm border bg-background" />
-                        <span className="text-sm font-medium text-foreground">
-                          {st.title}
+                    {task.checklist.map((step: any, i: number) => (
+                      <div key={step._id || i} className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-muted/50 transition-colors border border-transparent hover:border-border/50">
+                        {step.isCompleted ? (
+                          <div className="mt-0.5 shrink-0 h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center">
+                            <CheckCircle className="h-3.5 w-3.5 text-primary" />
+                          </div>
+                        ) : (
+                          <div className="mt-0.5 shrink-0 h-5 w-5 rounded-full bg-muted flex items-center justify-center">
+                            <Circle className="h-3.5 w-3.5 text-muted-foreground" />
+                          </div>
+                        )}
+                        <span className={cn("text-sm pt-0.5 font-medium", step.isCompleted ? "line-through text-muted-foreground" : "text-foreground")}>
+                          {step.stepName}
                         </span>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-6 gap-3">
-                    <span className="text-sm">No subtasks available</span>
+                  <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-3">
+                    <CheckCircle className="h-10 w-10 opacity-20" />
+                    <span className="text-sm">There is no Checklist</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Subtasks Card */}
+            <Card className="shadow-sm border-border flex flex-col min-h-[260px] max-h-[400px]">
+              <CardHeader className="pb-3 flex flex-row items-center justify-between border-b space-y-0">
+                <CardTitle className="text-sm font-semibold">
+                  Subtasks
+                </CardTitle>
+                <div className="text-xs text-muted-foreground">
+                  {task.subtasks?.filter((s: any) => s.status === 'Completed').length || 0} / {task.subtasks?.length || 0}
+                </div>
+              </CardHeader>
+              <CardContent className="p-4 overflow-y-auto text-muted-foreground flex-1">
+                {task.subtasks && task.subtasks.length > 0 ? (
+                  <div className="space-y-3">
+                    {task.subtasks.map((st: any, i: number) => (
+                      <div
+                        key={st._id || i}
+                        className="flex items-center justify-between p-3.5 bg-card rounded-xl border border-border/60 shadow-sm hover:shadow hover:border-primary/20 transition-all group"
+                      >
+                        <div className="flex items-center gap-3.5">
+                          {st.status === 'Completed' ? (
+                            <div className="shrink-0 h-7 w-7 rounded-md bg-primary/10 flex items-center justify-center">
+                              <CheckSquare className="h-4 w-4 text-primary" />
+                            </div>
+                          ) : (
+                            <div className="shrink-0 h-7 w-7 rounded-md bg-muted flex items-center justify-center group-hover:bg-primary/5 transition-colors">
+                              <div className="h-3.5 w-3.5 rounded-sm border-2 border-muted-foreground/40 bg-background" />
+                            </div>
+                          )}
+                          <span className={cn("text-sm font-medium", st.status === 'Completed' ? "line-through text-muted-foreground" : "text-foreground")}>
+                            {st.title}
+                          </span>
+                        </div>
+                        <Badge variant={st.status === 'Completed' ? "outline" : "secondary"} className={cn(
+                          "text-[10px] font-medium px-2 py-0.5 ml-2 shrink-0",
+                          st.status === 'Completed' && "opacity-60"
+                        )}>
+                          {st.status}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full py-8 text-muted-foreground gap-3">
+                    <CheckSquare className="h-10 w-10 opacity-20" />
+                    <span className="text-sm">No subtasks created yet</span>
                   </div>
                 )}
               </CardContent>
@@ -348,13 +525,15 @@ export default function TaskDashboard() {
               </CardHeader>
               <CardContent className="p-6 space-y-4">
                 <div className="flex gap-2">
-                  <input 
-                    type="text" 
-                    placeholder="Type a note..." 
+                  <input
+                    type="text"
+                    placeholder="Type a note..."
                     className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                     value={noteContent}
                     onChange={(e) => setNoteContent(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter') handleAddNote(); }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleAddNote();
+                    }}
                   />
                   <Button size="sm" onClick={handleAddNote}>
                     Add Note
@@ -373,10 +552,10 @@ export default function TaskDashboard() {
                           <Avatar className="h-4 w-4">
                             <AvatarImage src={note.createdBy?.photoUrl} />
                             <AvatarFallback className="text-[8px] bg-primary text-primary-foreground">
-                              {note.createdBy?.name?.charAt(0) || '?'}
+                              {note.createdBy?.name?.charAt(0) || "?"}
                             </AvatarFallback>
                           </Avatar>
-                          <span>{note.createdBy?.name || 'Unknown'}</span>
+                          <span>{note.createdBy?.name || "Unknown"}</span>
                           <span>•</span>
                           <span>{formatDate(note.createdAt)}</span>
                         </div>
@@ -394,31 +573,71 @@ export default function TaskDashboard() {
         </TabsContent>
 
         <TabsContent value="todo">
-          <Card className="shadow-sm border-border">
-            <CardContent className="p-12 text-center text-muted-foreground">
-              To-Do content
+          <Card className="shadow-sm border-border h-full">
+            <CardContent className="p-6 h-full">
+              <TaskChecklist taskId={taskId as string} checklist={task.checklist || []} />
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="subtasks">
+          <Card className="shadow-sm border-border h-full">
+            <CardContent className="p-6 h-full">
+              <TaskSubtasks taskId={taskId as string} subtasks={task.subtasks || []} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="documents">
           <Card className="shadow-sm border-border">
             <CardHeader className="pb-3 border-b flex flex-row items-center justify-between">
               <CardTitle className="text-sm font-semibold">Documents</CardTitle>
-              <Button size="sm">Upload Document</Button>
+              <input
+                type="file"
+                className="hidden"
+                ref={documentInputRef}
+                onChange={(e) => handleFileUpload(e, "document")}
+              />
+              <Button size="sm" onClick={() => documentInputRef.current?.click()} disabled={isUploading}>
+                {isUploading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Upload Document
+              </Button>
             </CardHeader>
             <CardContent className="p-6">
               {documents && documents.length > 0 ? (
                 <div className="space-y-3">
                   {documents.map((doc: any) => (
-                    <div key={doc._id} className="flex items-center justify-between p-3 border rounded-lg bg-background">
+                    <div
+                      key={doc._id}
+                      className="flex items-center justify-between p-3 border rounded-lg bg-background"
+                    >
                       <div className="flex items-center gap-3">
-                        <FileText className="h-5 w-5 text-muted-foreground" />
+                        {getFileIcon(doc.fileName)}
                         <div>
                           <p className="text-sm font-medium">{doc.fileName}</p>
-                          <p className="text-xs text-muted-foreground">Uploaded by {doc.uploadedBy?.name} on {formatDate(doc.createdAt)}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Uploaded by {doc.uploadedBy?.name} on{" "}
+                            {formatDate(doc.createdAt)}
+                          </p>
                         </div>
                       </div>
-                      <Button variant="ghost" size="sm" onClick={() => window.open(doc.fileUrl, '_blank')}>View</Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => window.open(doc.fileUrl, "_blank")}
+                        >
+                          View
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => handleDeleteDocument(doc._id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -434,22 +653,55 @@ export default function TaskDashboard() {
         <TabsContent value="supporting_files">
           <Card className="shadow-sm border-border">
             <CardHeader className="pb-3 border-b flex flex-row items-center justify-between">
-              <CardTitle className="text-sm font-semibold">Supporting Files</CardTitle>
-              <Button size="sm">Upload File</Button>
+              <CardTitle className="text-sm font-semibold">
+                Supporting Files
+              </CardTitle>
+              <input
+                type="file"
+                className="hidden"
+                ref={supportingFileInputRef}
+                onChange={(e) => handleFileUpload(e, "supporting_file")}
+              />
+              <Button size="sm" onClick={() => supportingFileInputRef.current?.click()} disabled={isUploading}>
+                {isUploading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Upload File
+              </Button>
             </CardHeader>
             <CardContent className="p-6">
               {supportingFiles && supportingFiles.length > 0 ? (
                 <div className="space-y-3">
                   {supportingFiles.map((doc: any) => (
-                    <div key={doc._id} className="flex items-center justify-between p-3 border rounded-lg bg-background">
+                    <div
+                      key={doc._id}
+                      className="flex items-center justify-between p-3 border rounded-lg bg-background"
+                    >
                       <div className="flex items-center gap-3">
-                        <FileText className="h-5 w-5 text-muted-foreground" />
+                        {getFileIcon(doc.fileName)}
                         <div>
                           <p className="text-sm font-medium">{doc.fileName}</p>
-                          <p className="text-xs text-muted-foreground">Uploaded by {doc.uploadedBy?.name} on {formatDate(doc.createdAt)}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Uploaded by {doc.uploadedBy?.name} on{" "}
+                            {formatDate(doc.createdAt)}
+                          </p>
                         </div>
                       </div>
-                      <Button variant="ghost" size="sm" onClick={() => window.open(doc.fileUrl, '_blank')}>View</Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => window.open(doc.fileUrl, "_blank")}
+                        >
+                          View
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => handleDeleteDocument(doc._id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -465,7 +717,9 @@ export default function TaskDashboard() {
         <TabsContent value="task_history">
           <Card className="shadow-sm border-border">
             <CardHeader className="pb-3 border-b">
-              <CardTitle className="text-sm font-semibold">Task History & Audit Log</CardTitle>
+              <CardTitle className="text-sm font-semibold">
+                Task History & Audit Log
+              </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
               {history && history.length > 0 ? (
@@ -479,14 +733,18 @@ export default function TaskDashboard() {
                       <div className="pb-4">
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-medium">{log.action}</p>
-                          <span className="text-xs text-muted-foreground">• {formatDate(log.createdAt)}</span>
+                          <span className="text-xs text-muted-foreground">
+                            • {formatDate(log.createdAt)}
+                          </span>
                         </div>
                         {log.details && (
                           <p className="text-sm text-muted-foreground mt-1 bg-muted p-2 rounded-md">
                             {log.details}
                           </p>
                         )}
-                        <p className="text-xs text-muted-foreground mt-1">by {log.createdBy?.name}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          by {log.createdBy?.name}
+                        </p>
                       </div>
                     </div>
                   ))}
