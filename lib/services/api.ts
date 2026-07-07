@@ -150,6 +150,18 @@ export const applicationApi = createApi({
       invalidatesTags: ["Task"],
       transformResponse: (response: { data: any }) => response.data,
     }),
+    updateTask: builder.mutation({
+      query: ({ id, ...patch }) => ({
+        url: `/tasks/${id}`,
+        method: "PUT",
+        body: patch,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Task", id },
+        "Task",
+      ],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
     updateTaskStatus: builder.mutation({
       query: ({ id, status }) => ({
         url: `/tasks/${id}/status`,
@@ -159,9 +171,57 @@ export const applicationApi = createApi({
       invalidatesTags: ["Task"],
       transformResponse: (response: { data: any }) => response.data,
     }),
+    toggleTaskChecklistStep: builder.mutation({
+      query: ({ taskId, stepIndex, isCompleted }) => ({
+        url: `/tasks/${taskId}/checklist/${stepIndex}`,
+        method: "PATCH",
+        body: { isCompleted },
+      }),
+      invalidatesTags: (result, error, { taskId }) => [{ type: "Task", id: taskId }],
+    }),
+    addTaskChecklistStep: builder.mutation({
+      query: ({ taskId, stepName }) => ({
+        url: `/tasks/${taskId}/checklist`,
+        method: "POST",
+        body: { stepName },
+      }),
+      invalidatesTags: (result, error, { taskId }) => [{ type: "Task", id: taskId }],
+    }),
+    deleteTaskChecklistStep: builder.mutation({
+      query: ({ taskId, stepIndex }) => ({
+        url: `/tasks/${taskId}/checklist/${stepIndex}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, { taskId }) => [{ type: "Task", id: taskId }],
+    }),
+    addSubtask: builder.mutation({
+      query: ({ taskId, ...subtask }) => ({
+        url: `/tasks/${taskId}/subtasks`,
+        method: "POST",
+        body: subtask,
+      }),
+      invalidatesTags: (result, error, { taskId }) => [{ type: "Task", id: taskId }],
+    }),
+    updateSubtask: builder.mutation({
+      query: ({ taskId, subtaskId, ...patch }) => ({
+        url: `/tasks/${taskId}/subtasks/${subtaskId}`,
+        method: "PUT",
+        body: patch,
+      }),
+      invalidatesTags: (result, error, { taskId }) => [{ type: "Task", id: taskId }],
+    }),
+    deleteSubtask: builder.mutation({
+      query: ({ taskId, subtaskId }) => ({
+        url: `/tasks/${taskId}/subtasks/${subtaskId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, { taskId }) => [{ type: "Task", id: taskId }],
+    }),
     getTaskHistory: builder.query({
       query: (taskId) => `/tasks/${taskId}/history`,
-      providesTags: (result, error, taskId) => [{ type: "Task", id: `${taskId}-history` }],
+      providesTags: (result, error, taskId) => [
+        { type: "Task", id: `${taskId}-history` },
+      ],
       transformResponse: (response: { data: any }) => response.data,
     }),
     addTaskHistoryNote: builder.mutation({
@@ -170,21 +230,30 @@ export const applicationApi = createApi({
         method: "POST",
         body: { content },
       }),
-      invalidatesTags: (result, error, { taskId }) => [{ type: "Task", id: `${taskId}-history` }],
+      invalidatesTags: (result, error, { taskId }) => [
+        { type: "Task", id: `${taskId}-history` },
+      ],
       transformResponse: (response: { data: any }) => response.data,
     }),
     getTaskDocuments: builder.query({
-      query: ({ taskId, category }) => ({ url: `/documents/task/${taskId}`, params: { category } }),
-      providesTags: (result, error, { taskId }) => [{ type: "Task", id: `${taskId}-documents` }],
+      query: ({ taskId, category }) => ({
+        url: `/documents/task/${taskId}`,
+        params: { category },
+      }),
+      providesTags: (result, error, { taskId }) => [
+        { type: "Task", id: `${taskId}-documents` },
+      ],
       transformResponse: (response: { data: any }) => response.data,
     }),
     uploadTaskDocument: builder.mutation({
-      query: ({ taskId, ...body }) => ({
+      query: ({ taskId, data }) => ({
         url: `/documents/task/${taskId}`,
         method: "POST",
-        body,
+        body: data,
       }),
-      invalidatesTags: (result, error, { taskId }) => [{ type: "Task", id: `${taskId}-documents` }],
+      invalidatesTags: (result, error, { taskId }) => [
+        { type: "Task", id: `${taskId}-documents` },
+      ],
       transformResponse: (response: { data: any }) => response.data,
     }),
     deleteTaskDocument: builder.mutation({
@@ -192,7 +261,40 @@ export const applicationApi = createApi({
         url: `/documents/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: (result, error, { taskId }) => [{ type: "Task", id: `${taskId}-documents` }],
+      invalidatesTags: (result, error, { taskId }) => [
+        { type: "Task", id: `${taskId}-documents` },
+      ],
+    }),
+
+    getClientDocuments: builder.query({
+      query: ({ clientId, category }) => ({
+        url: `/documents/client/${clientId}`,
+        params: category ? { category } : undefined,
+      }),
+      providesTags: (result, error, { clientId }) => [
+        { type: "Client", id: `${clientId}-documents` },
+      ],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    uploadClientDocument: builder.mutation({
+      query: ({ clientId, data }) => ({
+        url: `/documents/client/${clientId}`,
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: (result, error, { clientId }) => [
+        { type: "Client", id: `${clientId}-documents` },
+      ],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    deleteClientDocument: builder.mutation({
+      query: ({ id, clientId }) => ({
+        url: `/documents/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, { clientId }) => [
+        { type: "Client", id: `${clientId}-documents` },
+      ],
     }),
 
     // Clients
@@ -213,6 +315,18 @@ export const applicationApi = createApi({
         body: clientData,
       }),
       invalidatesTags: ["Client"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    updateClient: builder.mutation({
+      query: ({ id, ...patch }) => ({
+        url: `/clients/${id}`,
+        method: "PUT",
+        body: patch,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Client", id },
+        "Client",
+      ],
       transformResponse: (response: { data: any }) => response.data,
     }),
     uploadClientPhoto: builder.mutation({
@@ -339,15 +453,26 @@ export const {
   useGetTaskByIdQuery,
   useGetTagsQuery,
   useCreateTaskMutation,
+  useUpdateTaskMutation,
   useUpdateTaskStatusMutation,
+  useToggleTaskChecklistStepMutation,
+  useAddTaskChecklistStepMutation,
+  useDeleteTaskChecklistStepMutation,
+  useAddSubtaskMutation,
+  useUpdateSubtaskMutation,
+  useDeleteSubtaskMutation,
   useGetTaskHistoryQuery,
   useAddTaskHistoryNoteMutation,
   useGetTaskDocumentsQuery,
   useUploadTaskDocumentMutation,
   useDeleteTaskDocumentMutation,
+  useGetClientDocumentsQuery,
+  useUploadClientDocumentMutation,
+  useDeleteClientDocumentMutation,
   useGetClientsQuery,
   useGetClientByIdQuery,
   useCreateClientMutation,
+  useUpdateClientMutation,
   useUploadClientPhotoMutation,
   useGetServicesQuery,
   useGetServiceByIdQuery,
