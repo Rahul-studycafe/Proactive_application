@@ -47,6 +47,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsInitialized(true);
   }, []);
 
+  // Silent proactive refresh timer: keeps user seamlessly logged in before access token expires
+  useEffect(() => {
+    const checkAndRefreshToken = async () => {
+      if (typeof window === "undefined") return;
+      const accessToken = localStorage.getItem("accessToken");
+      const refreshToken = localStorage.getItem("refreshToken");
+      if (!accessToken || !refreshToken) return;
+
+      try {
+        const payloadBase64 = accessToken.split(".")[1];
+        if (!payloadBase64) return;
+        const decoded = JSON.parse(atob(payloadBase64));
+        const expMs = decoded.exp * 1000;
+        const now = Date.now();
+        // If access token expires in less than 3 minutes (or already expired)
+        if (expMs - now < 3 * 60 * 1000) {
+          const baseUrl =
+            process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+          const res = await fetch(`${baseUrl}/auth/refresh`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ refreshToken }),
+          });
+          if (res.ok) {
+            const json = await res.json();
+            const payload = json.data || json;
+            if (payload?.accessToken) {
+              localStorage.setItem("accessToken", payload.accessToken);
+              if (payload?.refreshToken) {
+                localStorage.setItem("refreshToken", payload.refreshToken);
+              }
+              setToken(payload.accessToken);
+            }
+          }
+        }
+      } catch {
+        // Silent catch: baseQueryWithReauth will handle reactive 401 refresh on demand
+      }
+    };
+
+    const interval = setInterval(checkAndRefreshToken, 60 * 1000);
+    checkAndRefreshToken();
+
+    return () => clearInterval(interval);
+  }, []);
+
   const {
     data,
     isLoading: isQueryLoading,

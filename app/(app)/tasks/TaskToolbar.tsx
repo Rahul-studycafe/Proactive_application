@@ -135,9 +135,9 @@ export function TaskToolbar({
             >
               <Checkbox
                 checked={!filterClient || filterClient.length === 0}
-                className="h-4 w-4 rounded-[4px] border-slate-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                className="h-4 w-4"
               />
-              <span className="text-sm font-medium text-slate-700">
+              <span className="text-sm font-medium text-foreground">
                 All Clients
               </span>
             </DropdownMenuItem>
@@ -160,9 +160,9 @@ export function TaskToolbar({
               >
                 <Checkbox
                   checked={filterClient?.includes(client._id) || false}
-                  className="h-4 w-4 rounded-[4px] border-slate-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                  className="h-4 w-4"
                 />
-                <span className="text-sm font-medium text-slate-700">
+                <span className="text-sm font-medium text-foreground">
                   {client.name}
                 </span>
               </DropdownMenuItem>
@@ -211,9 +211,9 @@ export function TaskToolbar({
                   >
                     <Checkbox
                       checked={tableVisibleColumns.includes(col)}
-                      className="h-4 w-4 rounded-[4px] border-slate-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                      className="h-4 w-4"
                     />
-                    <span className="text-sm font-medium text-slate-700 capitalize">
+                    <span className="text-sm font-medium text-foreground capitalize">
                       {col.replace(/([A-Z])/g, " $1").trim()}
                     </span>
                   </DropdownMenuItem>
@@ -250,9 +250,9 @@ export function TaskToolbar({
                 >
                   <Checkbox
                     checked={visibleColumns.length === allColumns.length}
-                    className="h-4 w-4 rounded-[4px] border-slate-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                    className="h-4 w-4"
                   />
-                  <span className="text-sm font-medium text-slate-700">
+                  <span className="text-sm font-medium text-foreground">
                     All Columns
                   </span>
                 </DropdownMenuItem>
@@ -276,9 +276,9 @@ export function TaskToolbar({
                   >
                     <Checkbox
                       checked={visibleColumns.includes(col)}
-                      className="h-4 w-4 rounded-[4px] border-slate-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                      className="h-4 w-4"
                     />
-                    <span className="text-sm font-medium text-slate-700">
+                    <span className="text-sm font-medium text-foreground">
                       {col}
                     </span>
                   </DropdownMenuItem>

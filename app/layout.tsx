@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Poppins } from "next/font/google";
 import "../styles.css";
 import { Providers } from "./providers";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -16,9 +16,9 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Welcome back — Sign in",
+  title: "Proactive — Office OS for CAs & Accountants",
   description:
-    "A delightful, character-driven login experience with playful animated characters.",
+    "Smart practice management, task tracking, and billing for modern accounting firms.",
 };
 
 export default function RootLayout({
@@ -28,21 +28,34 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){
+              try {
+                var saved = localStorage.getItem('proactive-theme');
+                var theme = saved || 'system';
+                var isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (isDark) {
+                  document.documentElement.classList.add('dark');
+                  document.documentElement.setAttribute('data-theme', 'dark');
+                  document.documentElement.style.colorScheme = 'dark';
+                } else {
+                  document.documentElement.classList.remove('dark');
+                  document.documentElement.setAttribute('data-theme', 'light');
+                  document.documentElement.style.colorScheme = 'light';
+                }
+              } catch (e) {}
+            })();`,
+          }}
+        />
+      </head>
       <body
-        className={`${inter.variable} ${poppins.variable} font-sans antialiased`}
+        className={`${inter.variable} ${poppins.variable} font-sans antialiased bg-background text-foreground min-h-screen`}
         suppressHydrationWarning
       >
         <Providers>{children}</Providers>
-        <Toaster
-          position="top-center"
-          toastOptions={{
-            classNames: {
-              success: "bg-green-100 text-green-900 border-green-200",
-              error: "bg-red-100 text-red-900 border-red-200",
-              toast: "rounded-xl shadow-lg font-medium border px-4 py-3",
-            },
-          }}
-        />
+        <Toaster position="top-center" />
       </body>
     </html>
   );

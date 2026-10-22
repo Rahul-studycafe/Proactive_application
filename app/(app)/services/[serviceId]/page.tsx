@@ -337,7 +337,11 @@ export default function ServiceDetailPage() {
         </div>
       </div>
 
-      <Tabs value={currentTab} onValueChange={(v) => router.replace(`?tab=${v}`, { scroll: false })} className="space-y-4">
+      <Tabs
+        value={currentTab}
+        onValueChange={(v) => router.replace(`?tab=${v}`, { scroll: false })}
+        className="space-y-4"
+      >
         <TabsList className="h-auto w-full justify-start gap-1 rounded-none border-b bg-transparent p-0">
           {[
             { v: "settings", l: "Settings" },
@@ -1105,7 +1109,7 @@ export default function ServiceDetailPage() {
                       <TooltipTrigger asChild>
                         <Info className="h-4 w-4 text-muted-foreground" />
                       </TooltipTrigger>
-                      <TooltipContent className="bg-zinc-900 text-white p-3 text-sm max-w-[250px] leading-relaxed">
+                      <TooltipContent className="bg-popover text-popover-foreground border border-border p-3 text-sm max-w-[250px] leading-relaxed shadow-md">
                         Once a subtask is completed, the next one will be
                         automatically generated.
                       </TooltipContent>
@@ -1124,10 +1128,10 @@ export default function ServiceDetailPage() {
                 <ul className="space-y-4">
                   {formData.subtasks.map((st: any) => (
                     <li key={st._id} className="flex items-center gap-4 ">
-                      <div className="text-slate-400  cursor-grab active:cursor-grabbing hover:text-slate-600 transition-colors">
+                      <div className="text-muted-foreground cursor-grab active:cursor-grabbing hover:text-foreground transition-colors">
                         <Equal className="h-5 w-5" />
                       </div>
-                      <div className="flex-1 flex bg-slate-50/30 items-stretch rounded-xl border shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] overflow-hidden">
+                      <div className="flex-1 flex bg-card items-stretch rounded-xl border border-border shadow-xs overflow-hidden">
                         {/* Left Side: Inputs */}
                         <div className="flex-1 p-5 space-y-4">
                           <Input
@@ -1142,7 +1146,7 @@ export default function ServiceDetailPage() {
                                 ),
                               })
                             }
-                            className="border-slate-200 focus-visible:ring-1"
+                            className="border-border focus-visible:ring-1"
                           />
                           <Textarea
                             placeholder="Description"
@@ -1156,17 +1160,17 @@ export default function ServiceDetailPage() {
                                 ),
                               })
                             }
-                            className="border-slate-200 min-h-[80px] resize-none focus-visible:ring-1"
+                            className="border-border min-h-[80px] resize-none focus-visible:ring-1"
                           />
                         </div>
 
                         {/* Middle Side: Configs */}
-                        <div className="w-[280px] p-5 flex flex-col justify-center space-y-6 text-sm text-slate-600">
+                        <div className="w-[280px] p-5 flex flex-col justify-center space-y-6 text-sm text-muted-foreground">
                           {/* Due Date Popover */}
                           <Popover>
-                            <PopoverTrigger className="flex items-center gap-3 hover:text-blue-600 group text-left">
-                              <div className="border border-slate-200 rounded-full p-2 group-hover:border-blue-300 transition-colors shadow-sm shrink-0">
-                                <Calendar className="h-4 w-4 text-slate-500 group-hover:text-blue-600" />
+                            <PopoverTrigger className="flex items-center gap-3 hover:text-primary group text-left">
+                              <div className="border border-border rounded-full p-2 group-hover:border-primary/50 transition-colors shadow-xs shrink-0">
+                                <Calendar className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
                               </div>
                               <div className="flex-1 text-xs leading-tight">
                                 {st.relativeDueDays !== undefined &&
@@ -1220,9 +1224,9 @@ export default function ServiceDetailPage() {
 
                           {/* Target Date Popover */}
                           <Popover>
-                            <PopoverTrigger className="flex items-center gap-3 hover:text-blue-600 group text-left">
-                              <div className="border border-slate-200 rounded-full p-2 group-hover:border-blue-300 transition-colors shadow-sm shrink-0">
-                                <Calendar className="h-4 w-4 text-slate-500 group-hover:text-blue-600" />
+                            <PopoverTrigger className="flex items-center gap-3 hover:text-primary group text-left">
+                              <div className="border border-border rounded-full p-2 group-hover:border-primary/50 transition-colors shadow-xs shrink-0">
+                                <Calendar className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
                               </div>
                               <div className="flex-1 text-xs leading-tight">
                                 {st.relativeTargetDays !== undefined &&
@@ -1287,9 +1291,9 @@ export default function ServiceDetailPage() {
                                     return (
                                       <Avatar
                                         key={uid}
-                                        className="h-8 w-8 border-2 border-white text-xs shadow-sm"
+                                        className="h-8 w-8 border-2 border-background text-xs shadow-xs"
                                       >
-                                        <AvatarFallback className="bg-slate-600 text-white font-medium uppercase">
+                                        <AvatarFallback className="bg-primary/20 text-primary font-medium uppercase">
                                           {user?.name?.slice(0, 2) || "U"}
                                         </AvatarFallback>
                                       </Avatar>
@@ -1297,8 +1301,8 @@ export default function ServiceDetailPage() {
                                   })}
                                 </div>
                               ) : (
-                                <div className="border border-slate-200 rounded-full p-2 group-hover:border-blue-300 transition-colors shadow-sm shrink-0">
-                                  <User className="h-4 w-4 text-slate-500 group-hover:text-blue-600" />
+                                <div className="border border-border rounded-full p-2 group-hover:border-primary/50 transition-colors shadow-xs shrink-0">
+                                  <User className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
                                 </div>
                               )}
                             </PopoverTrigger>
@@ -1360,11 +1364,11 @@ export default function ServiceDetailPage() {
                         </div>
 
                         {/* Right Side: Delete Action */}
-                        <div className="w-[80px] flex flex-col items-center justify-center border-l border-slate-100/80 bg-slate-50/30">
+                        <div className="w-[80px] flex flex-col items-center justify-center border-l border-border bg-muted/20">
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="bg-red-50 hover:bg-red-100 text-red-500 h-11 w-11 rounded-lg"
+                            className="bg-destructive/10 hover:bg-destructive/20 text-destructive h-11 w-11 rounded-lg"
                             onClick={() =>
                               update({
                                 subtasks: formData.subtasks.filter(
@@ -1484,7 +1488,7 @@ export default function ServiceDetailPage() {
                             ))}
                           </SelectContent>
                         </Select>
-                        
+
                         <div className="flex items-center gap-2 border rounded-md px-3 h-10 bg-background">
                           <Switch
                             id={`required-${f._id}`}
@@ -1493,12 +1497,17 @@ export default function ServiceDetailPage() {
                               update({
                                 customFieldsDef: formData.customFieldsDef.map(
                                   (x: any) =>
-                                    x._id === f._id ? { ...x, isRequired: v } : x,
+                                    x._id === f._id
+                                      ? { ...x, isRequired: v }
+                                      : x,
                                 ),
                               })
                             }
                           />
-                          <Label htmlFor={`required-${f._id}`} className="text-sm cursor-pointer whitespace-nowrap">
+                          <Label
+                            htmlFor={`required-${f._id}`}
+                            className="text-sm cursor-pointer whitespace-nowrap"
+                          >
                             Required
                           </Label>
                         </div>
@@ -1520,17 +1529,25 @@ export default function ServiceDetailPage() {
 
                       {f.fieldType === "select" && (
                         <div className="pl-2 border-l-2 border-muted ml-1">
-                          <Label className="text-xs text-muted-foreground mb-1.5 block">Dropdown Options (comma separated)</Label>
+                          <Label className="text-xs text-muted-foreground mb-1.5 block">
+                            Dropdown Options (comma separated)
+                          </Label>
                           <Input
                             placeholder="Option 1, Option 2, Option 3"
                             value={(f.options || []).join(", ")}
                             onChange={(e) => {
-                              const opts = e.target.value.split(",").map((s) => s.trim()).filter(Boolean);
+                              const opts = e.target.value
+                                .split(",")
+                                .map((s) => s.trim())
+                                .filter(Boolean);
                               update({
                                 customFieldsDef: formData.customFieldsDef.map(
                                   (x: any) =>
                                     x._id === f._id
-                                      ? { ...x, options: opts.length > 0 ? opts : [] }
+                                      ? {
+                                          ...x,
+                                          options: opts.length > 0 ? opts : [],
+                                        }
                                       : x,
                                 ),
                               });

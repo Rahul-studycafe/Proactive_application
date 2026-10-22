@@ -61,7 +61,7 @@ export function EditClientDialog({ client }: { client: Client }) {
     e.preventDefault();
     try {
       await updateClient({
-        id: client.id,
+        id: client._id || (client as any).id,
         ...formData,
       }).unwrap();
       toast.success("Client updated successfully");
@@ -78,7 +78,7 @@ export function EditClientDialog({ client }: { client: Client }) {
           <Pencil className="mr-2 h-4 w-4" /> Edit Client
         </Button>
       </DialogTrigger>
-      <DialogContent 
+      <DialogContent
         className="max-w-md"
         onInteractOutside={(e) => e.preventDefault()}
       >

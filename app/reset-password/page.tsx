@@ -8,6 +8,7 @@ import { Logo } from "@/components/ui/logo";
 import { useResetPasswordMutation } from "@/lib/services/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
@@ -84,19 +85,19 @@ function ResetPasswordForm() {
   if (isSuccess) {
     return (
       <div className="text-center">
-        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-green-600">
+        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-success/15 text-success border border-success/30">
           <Lock size={32} />
         </div>
-        <h2 className="mb-2 text-2xl font-bold tracking-tight">
+        <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground">
           Password Reset Successfully
         </h2>
-        <p className="mb-8 text-sm text-gray-500 leading-relaxed">
+        <p className="mb-8 text-sm text-muted-foreground leading-relaxed">
           Your password has been successfully updated. Redirecting you to
           login...
         </p>
         <Link
           href="/login"
-          className="inline-block w-full rounded-full bg-[#111] py-3 text-sm font-medium text-white hover:bg-black transition-colors"
+          className="inline-block w-full rounded-full bg-primary py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
         >
           Go to login now
         </Link>
@@ -107,17 +108,17 @@ function ResetPasswordForm() {
   return (
     <>
       <div className="mb-8 text-center">
-        <h1 className="text-2xl font-bold tracking-tight mb-2">
+        <h1 className="text-2xl font-bold tracking-tight mb-2 text-foreground">
           Create new password
         </h1>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-muted-foreground">
           Please enter your new password below. Make sure it's at least 6
           characters.
         </p>
       </div>
 
       {apiError && (
-        <div className="mb-6 rounded-xl bg-red-50 p-4 text-sm text-red-600 border border-red-100">
+        <div className="mb-6 rounded-xl bg-destructive/15 p-4 text-sm text-destructive border border-destructive/30">
           {apiError}
         </div>
       )}
@@ -125,7 +126,7 @@ function ResetPasswordForm() {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* New Password */}
         <div className="relative">
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
             <Lock size={18} />
           </div>
           <input
@@ -133,12 +134,12 @@ function ResetPasswordForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="New password"
-            className="w-full bg-white border border-gray-300 focus:border-[#111] rounded-full outline-none py-3 pl-11 pr-12 text-sm text-[#111] placeholder-gray-400 transition-colors"
+            className="w-full bg-background border border-input focus:border-ring rounded-full outline-none py-3 pl-11 pr-12 text-sm text-foreground placeholder:text-muted-foreground transition-colors"
           />
           <button
             type="button"
             onClick={() => setShowPw((v) => !v)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#111] z-10 transition-colors"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground z-10 transition-colors"
           >
             {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
@@ -146,7 +147,7 @@ function ResetPasswordForm() {
 
         {/* Confirm Password */}
         <div className="relative">
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
             <Lock size={18} />
           </div>
           <input
@@ -154,12 +155,12 @@ function ResetPasswordForm() {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="Confirm new password"
-            className="w-full bg-white border border-gray-300 focus:border-[#111] rounded-full outline-none py-3 pl-11 pr-12 text-sm text-[#111] placeholder-gray-400 transition-colors"
+            className="w-full bg-background border border-input focus:border-ring rounded-full outline-none py-3 pl-11 pr-12 text-sm text-foreground placeholder:text-muted-foreground transition-colors"
           />
           <button
             type="button"
             onClick={() => setShowConfirmPw((v) => !v)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#111] z-10 transition-colors"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground z-10 transition-colors"
           >
             {showConfirmPw ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
@@ -169,8 +170,10 @@ function ResetPasswordForm() {
           <button
             type="submit"
             disabled={isLoading}
-            className={`w-full cursor-pointer bg-primary text-white rounded-full py-3 font-medium transition-colors \${
-              isLoading ? "bg-gray-400 cursor-not-allowed" : "bg-[#111] hover:bg-black"
+            className={`w-full cursor-pointer text-primary-foreground rounded-full py-3 font-medium transition-colors ${
+              isLoading
+                ? "bg-muted text-muted-foreground cursor-not-allowed"
+                : "bg-primary hover:bg-primary/90"
             }`}
           >
             {isLoading ? "Resetting..." : "Reset password"}
@@ -183,14 +186,18 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <div className="min-h-screen bg-[#fafafa] flex items-center justify-center p-4 font-sans text-[#111]">
-      <div className="w-full max-w-md bg-white rounded-4xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 lg:p-10 border border-gray-100">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 font-sans text-foreground relative">
+      <div className="absolute top-4 right-4 z-20">
+        <ThemeToggle />
+      </div>
+
+      <div className="w-full max-w-md bg-card text-card-foreground rounded-3xl shadow-xl p-8 lg:p-10 border border-border">
         <div className="mb-8 flex justify-center">
           <Logo />
         </div>
         <Suspense
           fallback={
-            <div className="text-center text-sm text-gray-500 py-10">
+            <div className="text-center text-sm text-muted-foreground py-10">
               Loading...
             </div>
           }

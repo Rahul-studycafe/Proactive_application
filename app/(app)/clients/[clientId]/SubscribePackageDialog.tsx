@@ -71,7 +71,7 @@ export function SubscribePackageDialog({ clientId }: { clientId: string }) {
       <DialogTrigger asChild>
         <Button size="sm">+ Subscribe Package</Button>
       </DialogTrigger>
-      <DialogContent 
+      <DialogContent
         className="sm:max-w-[425px]"
         onInteractOutside={(e) => e.preventDefault()}
       >

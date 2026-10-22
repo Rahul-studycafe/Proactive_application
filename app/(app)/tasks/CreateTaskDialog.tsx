@@ -92,35 +92,38 @@ export function CreateTaskDialog({
   const { data: usersRes, isLoading: usersLoading } =
     useGetUsersQuery(undefined);
   const { data: existingTags = [] } = useGetTagsQuery(undefined);
-  
-  const { data: clientData } = useGetClientByIdQuery(clientId, { skip: !clientId });
+
+  const { data: clientData } = useGetClientByIdQuery(clientId, {
+    skip: !clientId,
+  });
 
   const [createTask, { isLoading: isCreating }] = useCreateTaskMutation();
 
   const clients = clientsRes?.clients || [];
   const services = Array.isArray(servicesRes) ? servicesRes : [];
-  const users = Array.isArray(usersRes) ? usersRes : (usersRes?.users || []);
+  const users = Array.isArray(usersRes) ? usersRes : usersRes?.users || [];
 
   const availableServices = useMemo(() => {
     if (!clientId || !clientData) return services;
-    
+
     const allowedServiceIds = new Set<string>();
-    
+
     clientData.subscribedServices?.forEach((sub: any) => {
-      const id = typeof sub.serviceId === 'object' ? sub.serviceId?._id : sub.serviceId;
+      const id =
+        typeof sub.serviceId === "object" ? sub.serviceId?._id : sub.serviceId;
       if (id) allowedServiceIds.add(String(id));
     });
 
     clientData.subscribedPackages?.forEach((sub: any) => {
       if (sub.packageId?.services) {
         sub.packageId.services.forEach((s: any) => {
-           const id = typeof s === 'object' ? s._id : s;
-           if (id) allowedServiceIds.add(String(id));
+          const id = typeof s === "object" ? s._id : s;
+          if (id) allowedServiceIds.add(String(id));
         });
       }
     });
 
-    // If a client has NO services, we might still want to let them select one if they are admin, 
+    // If a client has NO services, we might still want to let them select one if they are admin,
     // but the user requested to only show available services.
     return services.filter((s: any) => allowedServiceIds.has(String(s._id)));
   }, [clientId, clientData, services]);
@@ -192,7 +195,7 @@ export function CreateTaskDialog({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent 
+      <DialogContent
         className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto"
         onInteractOutside={(e) => e.preventDefault()}
       >
@@ -205,7 +208,11 @@ export function CreateTaskDialog({
               <Label>
                 Client <span className="text-red-500">*</span>
               </Label>
-              <Select value={clientId} onValueChange={setSelectedClientId} disabled={!!lockedClientId}>
+              <Select
+                value={clientId}
+                onValueChange={setSelectedClientId}
+                disabled={!!lockedClientId}
+              >
                 <SelectTrigger>
                   <SelectValue
                     placeholder={
@@ -327,7 +334,7 @@ export function CreateTaskDialog({
             </div>
           </div>
 
-          <div className="grid gap-2 border p-3 rounded-md bg-slate-50/50 dark:bg-slate-900/50">
+          <div className="grid gap-2 border border-border p-3 rounded-md bg-muted/40">
             <div className="flex items-center justify-between">
               <Label>Is this task billable?</Label>
               <Switch checked={isBillable} onCheckedChange={setIsBillable} />
@@ -345,7 +352,7 @@ export function CreateTaskDialog({
             )}
           </div>
 
-          <div className="grid gap-2 border p-3 rounded-md bg-slate-50/50 dark:bg-slate-900/50">
+          <div className="grid gap-2 border border-border p-3 rounded-md bg-muted/40">
             <div className="flex items-center justify-between">
               <Label>Create Doc. Collection Request</Label>
               <Switch
@@ -409,7 +416,7 @@ export function CreateTaskDialog({
                     <CommandEmpty>
                       {tagInput ? (
                         <div
-                          className="px-4 py-2 text-sm cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800"
+                          className="px-4 py-2 text-sm cursor-pointer hover:bg-accent hover:text-accent-foreground rounded-sm"
                           onClick={() => {
                             if (!selectedTags.includes(tagInput.trim())) {
                               setSelectedTags([

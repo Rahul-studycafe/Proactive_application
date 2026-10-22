@@ -24,32 +24,31 @@ export interface TasksTableProps {
 const getPriorityBadge = (priority: TaskPriority) => {
   switch (priority) {
     case "Urgent":
-      return "bg-red-50 text-red-700 border-red-200";
+      return "bg-destructive/15 text-destructive border-destructive/30";
     case "High":
-      return "bg-orange-50 text-orange-700 border-orange-200";
+      return "bg-warning/15 text-warning-foreground border-warning/30";
     case "Medium":
-      return "bg-blue-50 text-blue-700 border-blue-200";
+      return "bg-info/15 text-info border-info/30";
     case "Low":
-      return "bg-slate-50 text-slate-700 border-slate-200";
     default:
-      return "bg-slate-50 text-slate-700 border-slate-200";
+      return "bg-muted text-muted-foreground border-border";
   }
 };
 
 const getStatusBadge = (status: TaskStatus) => {
   switch (status) {
     case "Pending":
-      return "bg-slate-100 text-slate-700 border-slate-200";
+      return "bg-muted text-muted-foreground border-border";
     case "In Progress":
-      return "bg-blue-100 text-blue-700 border-blue-200";
+      return "bg-info/15 text-info border-info/30";
     case "Under Review":
-      return "bg-purple-100 text-purple-700 border-purple-200";
+      return "bg-accent text-accent-foreground border-accent-foreground/20";
     case "On Hold":
-      return "bg-amber-100 text-amber-700 border-amber-200";
+      return "bg-warning/15 text-warning-foreground border-warning/30";
     case "Completed":
-      return "bg-emerald-100 text-emerald-700 border-emerald-200";
+      return "bg-success/15 text-success border-success/30";
     default:
-      return "bg-slate-100 text-slate-700 border-slate-200";
+      return "bg-muted text-muted-foreground border-border";
   }
 };
 
@@ -130,17 +129,17 @@ export function TasksTable({
     const isActive = sortField === field;
     return (
       <TableHead
-        className={`cursor-pointer select-none transition-colors border-r last:border-r-0 border-slate-200 hover:bg-slate-100/70 hover:text-slate-800 ${isActive ? "bg-slate-100/80 text-slate-900 font-semibold" : ""} ${className || ""}`}
+        className={`cursor-pointer select-none transition-colors border-r last:border-r-0 border-border hover:bg-muted/70 hover:text-foreground ${isActive ? "bg-muted text-foreground font-semibold" : ""} ${className || ""}`}
         onClick={() => handleSort(field)}
       >
         <div className="flex items-center gap-1 justify-between">
           {label}
           {sortField === field && sortDir === "asc" ? (
-            <ArrowUp className="h-3.5 w-3.5 text-slate-600" />
+            <ArrowUp className="h-3.5 w-3.5 text-foreground" />
           ) : sortField === field && sortDir === "desc" ? (
-            <ArrowDown className="h-3.5 w-3.5 text-slate-600" />
+            <ArrowDown className="h-3.5 w-3.5 text-foreground" />
           ) : (
-            <ArrowUpDown className="h-3.5 w-3.5 text-slate-400" />
+            <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
           )}
         </div>
       </TableHead>
@@ -149,7 +148,7 @@ export function TasksTable({
 
   if (tasks.length === 0) {
     return (
-      <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-slate-200 bg-white/50 text-sm text-slate-400">
+      <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-border bg-card/50 text-sm text-muted-foreground">
         No tasks found matching your criteria.
       </div>
     );
@@ -159,7 +158,7 @@ export function TasksTable({
     <div className="space-y-4">
       <div className="rounded-md border bg-card overflow-hidden">
         <Table>
-          <TableHeader className="bg-slate-50/50">
+          <TableHeader className="bg-muted/40">
             <TableRow>
               {visibleColumns.includes("assignee") &&
                 renderSortableHeader("Assignee", "assignee")}
@@ -179,7 +178,7 @@ export function TasksTable({
             {sortedTasks.map((task) => (
               <TableRow
                 key={task._id}
-                className="cursor-pointer hover:bg-slate-50"
+                className="cursor-pointer hover:bg-muted/40 transition-colors"
                 onClick={() => onTaskClick?.(task)}
               >
                 {visibleColumns.includes("assignee") && (
@@ -189,7 +188,7 @@ export function TasksTable({
                         {task.assigneeIds.map((assignee, idx) => (
                           <div
                             key={assignee._id}
-                            className="h-6 w-6 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-medium text-white shadow-sm"
+                            className="h-6 w-6 rounded-full bg-primary flex items-center justify-center text-[10px] font-medium text-primary-foreground shadow-sm"
                             title={assignee.name}
                             style={{ marginLeft: idx > 0 ? "-0.5rem" : "0" }}
                           >
@@ -205,7 +204,7 @@ export function TasksTable({
                   </TableCell>
                 )}
                 {visibleColumns.includes("title") && (
-                  <TableCell className="font-medium max-w-[300px] truncate">
+                  <TableCell className="font-medium max-w-[300px] truncate text-foreground">
                     {(task as any).title ||
                       task.serviceId?.name ||
                       "Unnamed Task"}
@@ -213,7 +212,7 @@ export function TasksTable({
                 )}
                 {visibleColumns.includes("client") && (
                   <TableCell>
-                    <div className="flex items-center gap-1.5 text-xs text-slate-600">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       <Circle className="h-3 w-3" />
                       <span className="truncate">
                         {task.clientId?.name || "No Client"}
@@ -244,7 +243,7 @@ export function TasksTable({
                 {visibleColumns.includes("dueDate") && (
                   <TableCell>
                     {task.dueDate ? (
-                      <div className="flex items-center gap-1 text-xs font-medium text-slate-500">
+                      <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
                         <Clock className="h-3 w-3" />
                         {formatDate(task.dueDate)}
                       </div>

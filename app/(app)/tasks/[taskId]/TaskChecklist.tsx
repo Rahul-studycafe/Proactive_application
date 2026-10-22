@@ -20,7 +20,7 @@ export function TaskChecklist({
   checklist: any[];
 }) {
   const [newTaskName, setNewTaskName] = useState("");
-  
+
   const [toggleStep] = useToggleTaskChecklistStepMutation();
   const [addStep, { isLoading: isAdding }] = useAddTaskChecklistStepMutation();
   const [deleteStep] = useDeleteTaskChecklistStepMutation();
@@ -77,7 +77,9 @@ export function TaskChecklist({
               key={step._id || index}
               className={cn(
                 "group flex items-center justify-between p-3 border rounded-lg transition-colors",
-                step.isCompleted ? "bg-muted/50 border-transparent" : "bg-card hover:border-primary/50"
+                step.isCompleted
+                  ? "bg-muted/50 border-transparent"
+                  : "bg-card hover:border-primary/50",
               )}
             >
               <div
@@ -89,7 +91,7 @@ export function TaskChecklist({
                     "flex items-center justify-center h-5 w-5 rounded border transition-colors",
                     step.isCompleted
                       ? "bg-primary border-primary text-primary-foreground"
-                      : "border-input"
+                      : "border-input",
                   )}
                 >
                   {step.isCompleted && <Check className="h-3.5 w-3.5" />}
@@ -97,7 +99,7 @@ export function TaskChecklist({
                 <span
                   className={cn(
                     "text-sm font-medium transition-all",
-                    step.isCompleted && "line-through text-muted-foreground"
+                    step.isCompleted && "line-through text-muted-foreground",
                   )}
                 >
                   {step.stepName}

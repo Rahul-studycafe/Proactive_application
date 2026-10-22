@@ -79,7 +79,7 @@ export function CreateServiceDialog({
       <DialogTrigger asChild>
         {children || <Button>+ New Service</Button>}
       </DialogTrigger>
-      <DialogContent 
+      <DialogContent
         className="sm:max-w-[500px]"
         onInteractOutside={(e) => e.preventDefault()}
       >

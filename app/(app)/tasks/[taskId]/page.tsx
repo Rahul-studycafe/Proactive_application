@@ -51,27 +51,27 @@ import {
 
 const getFileIcon = (fileName: string) => {
   if (!fileName) return <File className="h-5 w-5 text-muted-foreground" />;
-  const ext = fileName.split('.').pop()?.toLowerCase();
+  const ext = fileName.split(".").pop()?.toLowerCase();
   switch (ext) {
-    case 'pdf':
-    case 'doc':
-    case 'docx':
-    case 'txt':
+    case "pdf":
+    case "doc":
+    case "docx":
+    case "txt":
       return <FileText className="h-5 w-5 text-blue-500" />;
-    case 'png':
-    case 'jpg':
-    case 'jpeg':
-    case 'svg':
-    case 'webp':
+    case "png":
+    case "jpg":
+    case "jpeg":
+    case "svg":
+    case "webp":
       return <FileImage className="h-5 w-5 text-purple-500" />;
-    case 'xls':
-    case 'xlsx':
-    case 'csv':
+    case "xls":
+    case "xlsx":
+    case "csv":
       return <FileSpreadsheet className="h-5 w-5 text-emerald-500" />;
-    case 'zip':
-    case 'rar':
-    case 'tar':
-    case 'gz':
+    case "zip":
+    case "rar":
+    case "tar":
+    case "gz":
       return <FileArchive className="h-5 w-5 text-amber-500" />;
     default:
       return <File className="h-5 w-5 text-muted-foreground" />;
@@ -80,12 +80,18 @@ const getFileIcon = (fileName: string) => {
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case "Completed": return "bg-emerald-100 text-emerald-700 hover:bg-emerald-200";
-    case "In Progress": return "bg-blue-100 text-blue-700 hover:bg-blue-200";
-    case "Under Review": return "bg-amber-100 text-amber-700 hover:bg-amber-200";
-    case "On Hold": return "bg-rose-100 text-rose-700 hover:bg-rose-200";
-    case "Cancelled": return "bg-slate-100 text-slate-700 hover:bg-slate-200";
-    default: return "bg-secondary text-secondary-foreground hover:bg-secondary/80"; // Pending
+    case "Completed":
+      return "bg-success/15 text-success hover:bg-success/25 border-success/30";
+    case "In Progress":
+      return "bg-primary/15 text-primary hover:bg-primary/25 border-primary/30";
+    case "Under Review":
+      return "bg-warning/15 text-warning-foreground hover:bg-warning/25 border-warning/30";
+    case "On Hold":
+      return "bg-destructive/15 text-destructive hover:bg-destructive/25 border-destructive/30";
+    case "Cancelled":
+      return "bg-muted text-muted-foreground hover:bg-muted/80 border-border";
+    default:
+      return "bg-secondary text-secondary-foreground hover:bg-secondary/80 border-border"; // Pending
   }
 };
 
@@ -104,12 +110,14 @@ export default function TaskDashboard() {
     useGetTaskDocumentsQuery({ taskId: taskId as string });
 
   const [addNote] = useAddTaskHistoryNoteMutation();
-  const [updateTaskStatus, { isLoading: isUpdatingStatus }] = useUpdateTaskStatusMutation();
+  const [updateTaskStatus, { isLoading: isUpdatingStatus }] =
+    useUpdateTaskStatusMutation();
   const [noteContent, setNoteContent] = useState("");
-  
-  const [uploadDoc, { isLoading: isUploading }] = useUploadTaskDocumentMutation();
+
+  const [uploadDoc, { isLoading: isUploading }] =
+    useUploadTaskDocumentMutation();
   const [deleteDoc] = useDeleteTaskDocumentMutation();
-  
+
   const documentInputRef = useRef<HTMLInputElement>(null);
   const supportingFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -123,24 +131,27 @@ export default function TaskDashboard() {
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, category: "document" | "supporting_file") => {
+  const handleFileUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    category: "document" | "supporting_file",
+  ) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       const formData = new FormData();
       formData.append("category", category);
       formData.append("clientId", task?.clientId?._id || "unknown");
       formData.append("file", file);
-      
+
       try {
-        await uploadDoc({ 
-          taskId: taskId as string, 
-          data: formData
+        await uploadDoc({
+          taskId: taskId as string,
+          data: formData,
         }).unwrap();
         toast.success("File uploaded successfully");
       } catch (err) {
         toast.error("Failed to upload file");
       }
-      
+
       // Reset input
       if (e.target) {
         e.target.value = "";
@@ -218,7 +229,10 @@ export default function TaskDashboard() {
                 value={task.status}
                 onValueChange={async (value) => {
                   try {
-                    await updateTaskStatus({ id: taskId as string, status: value }).unwrap();
+                    await updateTaskStatus({
+                      id: taskId as string,
+                      status: value,
+                    }).unwrap();
                     toast.success("Task status updated");
                   } catch (err) {
                     toast.error("Failed to update status");
@@ -226,7 +240,12 @@ export default function TaskDashboard() {
                 }}
                 disabled={isUpdatingStatus}
               >
-                <SelectTrigger className={cn("h-6 text-xs px-2 py-0 border-none w-auto focus:ring-0 focus:ring-offset-0 inline-flex items-center gap-1 font-medium rounded-full shadow-none transition-colors", getStatusColor(task.status))}>
+                <SelectTrigger
+                  className={cn(
+                    "h-6 text-xs px-2 py-0 border-none w-auto focus:ring-0 focus:ring-offset-0 inline-flex items-center gap-1 font-medium rounded-full shadow-none transition-colors",
+                    getStatusColor(task.status),
+                  )}
+                >
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -249,7 +268,11 @@ export default function TaskDashboard() {
       </div>
 
       {/* Standard Tabs */}
-      <Tabs value={currentTab} onValueChange={(v) => router.replace(`?tab=${v}`, { scroll: false })} className="space-y-6">
+      <Tabs
+        value={currentTab}
+        onValueChange={(v) => router.replace(`?tab=${v}`, { scroll: false })}
+        className="space-y-6"
+      >
         <TabsList className="bg-muted/50 rounded-lg p-1 h-auto flex flex-wrap max-w-full justify-start overflow-x-auto">
           <TabsTrigger value="details">Details</TabsTrigger>
           <TabsTrigger value="todo">To-Do</TabsTrigger>
@@ -415,10 +438,10 @@ export default function TaskDashboard() {
               </CardContent>
             </Card>
 
-            <TaskCustomFieldsCard 
-              taskId={taskId as string} 
-              customFieldsDef={task.serviceId?.customFieldsDef || []} 
-              customFieldValues={task.customFieldValues || {}} 
+            <TaskCustomFieldsCard
+              taskId={taskId as string}
+              customFieldsDef={task.serviceId?.customFieldsDef || []}
+              customFieldValues={task.customFieldValues || {}}
             />
           </div>
 
@@ -431,14 +454,19 @@ export default function TaskDashboard() {
                   Checklist
                 </CardTitle>
                 <div className="text-xs text-muted-foreground">
-                  {task.checklist?.filter((c: any) => c.isCompleted).length || 0} / {task.checklist?.length || 0}
+                  {task.checklist?.filter((c: any) => c.isCompleted).length ||
+                    0}{" "}
+                  / {task.checklist?.length || 0}
                 </div>
               </CardHeader>
               <CardContent className="flex-1 overflow-y-auto p-4">
                 {task.checklist && task.checklist.length > 0 ? (
                   <div className="space-y-3">
                     {task.checklist.map((step: any, i: number) => (
-                      <div key={step._id || i} className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-muted/50 transition-colors border border-transparent hover:border-border/50">
+                      <div
+                        key={step._id || i}
+                        className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-muted/50 transition-colors border border-transparent hover:border-border/50"
+                      >
                         {step.isCompleted ? (
                           <div className="mt-0.5 shrink-0 h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center">
                             <CheckCircle className="h-3.5 w-3.5 text-primary" />
@@ -448,7 +476,14 @@ export default function TaskDashboard() {
                             <Circle className="h-3.5 w-3.5 text-muted-foreground" />
                           </div>
                         )}
-                        <span className={cn("text-sm pt-0.5 font-medium", step.isCompleted ? "line-through text-muted-foreground" : "text-foreground")}>
+                        <span
+                          className={cn(
+                            "text-sm pt-0.5 font-medium",
+                            step.isCompleted
+                              ? "line-through text-muted-foreground"
+                              : "text-foreground",
+                          )}
+                        >
                           {step.stepName}
                         </span>
                       </div>
@@ -470,7 +505,9 @@ export default function TaskDashboard() {
                   Subtasks
                 </CardTitle>
                 <div className="text-xs text-muted-foreground">
-                  {task.subtasks?.filter((s: any) => s.status === 'Completed').length || 0} / {task.subtasks?.length || 0}
+                  {task.subtasks?.filter((s: any) => s.status === "Completed")
+                    .length || 0}{" "}
+                  / {task.subtasks?.length || 0}
                 </div>
               </CardHeader>
               <CardContent className="p-4 overflow-y-auto text-muted-foreground flex-1">
@@ -482,7 +519,7 @@ export default function TaskDashboard() {
                         className="flex items-center justify-between p-3.5 bg-card rounded-xl border border-border/60 shadow-sm hover:shadow hover:border-primary/20 transition-all group"
                       >
                         <div className="flex items-center gap-3.5">
-                          {st.status === 'Completed' ? (
+                          {st.status === "Completed" ? (
                             <div className="shrink-0 h-7 w-7 rounded-md bg-primary/10 flex items-center justify-center">
                               <CheckSquare className="h-4 w-4 text-primary" />
                             </div>
@@ -491,14 +528,26 @@ export default function TaskDashboard() {
                               <div className="h-3.5 w-3.5 rounded-sm border-2 border-muted-foreground/40 bg-background" />
                             </div>
                           )}
-                          <span className={cn("text-sm font-medium", st.status === 'Completed' ? "line-through text-muted-foreground" : "text-foreground")}>
+                          <span
+                            className={cn(
+                              "text-sm font-medium",
+                              st.status === "Completed"
+                                ? "line-through text-muted-foreground"
+                                : "text-foreground",
+                            )}
+                          >
                             {st.title}
                           </span>
                         </div>
-                        <Badge variant={st.status === 'Completed' ? "outline" : "secondary"} className={cn(
-                          "text-[10px] font-medium px-2 py-0.5 ml-2 shrink-0",
-                          st.status === 'Completed' && "opacity-60"
-                        )}>
+                        <Badge
+                          variant={
+                            st.status === "Completed" ? "outline" : "secondary"
+                          }
+                          className={cn(
+                            "text-[10px] font-medium px-2 py-0.5 ml-2 shrink-0",
+                            st.status === "Completed" && "opacity-60",
+                          )}
+                        >
                           {st.status}
                         </Badge>
                       </div>
@@ -575,7 +624,10 @@ export default function TaskDashboard() {
         <TabsContent value="todo">
           <Card className="shadow-sm border-border h-full">
             <CardContent className="p-6 h-full">
-              <TaskChecklist taskId={taskId as string} checklist={task.checklist || []} />
+              <TaskChecklist
+                taskId={taskId as string}
+                checklist={task.checklist || []}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -583,7 +635,10 @@ export default function TaskDashboard() {
         <TabsContent value="subtasks">
           <Card className="shadow-sm border-border h-full">
             <CardContent className="p-6 h-full">
-              <TaskSubtasks taskId={taskId as string} subtasks={task.subtasks || []} />
+              <TaskSubtasks
+                taskId={taskId as string}
+                subtasks={task.subtasks || []}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -598,8 +653,14 @@ export default function TaskDashboard() {
                 ref={documentInputRef}
                 onChange={(e) => handleFileUpload(e, "document")}
               />
-              <Button size="sm" onClick={() => documentInputRef.current?.click()} disabled={isUploading}>
-                {isUploading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              <Button
+                size="sm"
+                onClick={() => documentInputRef.current?.click()}
+                disabled={isUploading}
+              >
+                {isUploading ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : null}
                 Upload Document
               </Button>
             </CardHeader>
@@ -662,8 +723,14 @@ export default function TaskDashboard() {
                 ref={supportingFileInputRef}
                 onChange={(e) => handleFileUpload(e, "supporting_file")}
               />
-              <Button size="sm" onClick={() => supportingFileInputRef.current?.click()} disabled={isUploading}>
-                {isUploading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              <Button
+                size="sm"
+                onClick={() => supportingFileInputRef.current?.click()}
+                disabled={isUploading}
+              >
+                {isUploading ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : null}
                 Upload File
               </Button>
             </CardHeader>

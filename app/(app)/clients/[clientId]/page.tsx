@@ -1,7 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useParams, notFound, useRouter, usePathname, useSearchParams } from "next/navigation";
+import {
+  useParams,
+  notFound,
+  useRouter,
+  usePathname,
+  useSearchParams,
+} from "next/navigation";
 import { useRef } from "react";
 import { toast } from "sonner";
 import {
@@ -30,47 +36,51 @@ import {
   FileImage,
   FileSpreadsheet,
   FileArchive,
-  File
+  File,
+  Camera,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { 
+import {
   useGetClientByIdQuery,
   useGetClientDocumentsQuery,
   useUploadClientDocumentMutation,
-  useDeleteClientDocumentMutation
+  useDeleteClientDocumentMutation,
+  useUploadClientPhotoMutation,
+  useUpdateClientMutation,
 } from "@/lib/services/api";
 import { formatDate } from "@/lib/utils";
 import { SubscribeDialog } from "./SubscribeDialog";
 import { EditClientDialog } from "./EditClientDialog";
 import { Button } from "@/components/ui/button";
 import { CreateTaskDialog } from "../../tasks/CreateTaskDialog";
+import { ClientLedgerTab } from "./ClientLedgerTab";
 
 const getFileIcon = (fileName: string) => {
   if (!fileName) return <File className="h-5 w-5 text-muted-foreground" />;
-  const ext = fileName.split('.').pop()?.toLowerCase();
+  const ext = fileName.split(".").pop()?.toLowerCase();
   switch (ext) {
-    case 'pdf':
-    case 'doc':
-    case 'docx':
-    case 'txt':
+    case "pdf":
+    case "doc":
+    case "docx":
+    case "txt":
       return <FileText className="h-5 w-5 text-blue-500" />;
-    case 'png':
-    case 'jpg':
-    case 'jpeg':
-    case 'svg':
-    case 'webp':
+    case "png":
+    case "jpg":
+    case "jpeg":
+    case "svg":
+    case "webp":
       return <FileImage className="h-5 w-5 text-purple-500" />;
-    case 'xls':
-    case 'xlsx':
-    case 'csv':
+    case "xls":
+    case "xlsx":
+    case "csv":
       return <FileSpreadsheet className="h-5 w-5 text-emerald-500" />;
-    case 'zip':
-    case 'rar':
-    case 'tar':
-    case 'gz':
+    case "zip":
+    case "rar":
+    case "tar":
+    case "gz":
       return <FileArchive className="h-5 w-5 text-amber-500" />;
     default:
       return <File className="h-5 w-5 text-muted-foreground" />;
@@ -92,13 +102,53 @@ export default function ClientDetailPage() {
   };
 
   const { data: client, isLoading } = useGetClientByIdQuery(clientId);
-  
-  const { data: documentsResponse } = useGetClientDocumentsQuery({ clientId });
-  const documents = Array.isArray(documentsResponse) ? documentsResponse : documentsResponse?.data || [];
 
-  const [uploadDoc, { isLoading: isUploading }] = useUploadClientDocumentMutation();
+  const { data: documentsResponse } = useGetClientDocumentsQuery({ clientId });
+  const documents = Array.isArray(documentsResponse)
+    ? documentsResponse
+    : documentsResponse?.data || [];
+
+  const [uploadDoc, { isLoading: isUploading }] =
+    useUploadClientDocumentMutation();
   const [deleteDoc] = useDeleteClientDocumentMutation();
   const documentInputRef = useRef<HTMLInputElement>(null);
+
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const [uploadClientPhoto, { isLoading: isUploadingPhoto }] =
+    useUploadClientPhotoMutation();
+  const [updateClient] = useUpdateClientMutation();
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file (PNG, JPG, WebP)");
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("photo", file);
+
+      const res: any = await uploadClientPhoto(formData).unwrap();
+      const photoUrl = res?.photoUrl || res;
+
+      await updateClient({
+        id: clientId as string,
+        name: client?.name,
+        photoUrl,
+      }).unwrap();
+
+      toast.success("Client photo updated successfully");
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to update client photo");
+    } finally {
+      if (photoInputRef.current) {
+        photoInputRef.current.value = "";
+      }
+    }
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -108,12 +158,12 @@ export default function ClientDetailPage() {
       const formData = new FormData();
       formData.append("category", "document");
       formData.append("file", file);
-      
+
       await uploadDoc({
         clientId: clientId as string,
         data: formData,
       }).unwrap();
-      
+
       toast.success("Document uploaded successfully");
     } catch (error) {
       toast.error("Failed to upload document");
@@ -146,13 +196,26 @@ export default function ClientDetailPage() {
   // Tasks are now populated from the backend!
   const clientTasks = client.tasks || [];
 
-  const pendingTasks = clientTasks.filter((t: any) => t.status === "Pending").length;
-  const holdTasks = clientTasks.filter((t: any) => t.status === "On Hold").length;
-  const inProgressTasks = clientTasks.filter((t: any) => t.status === "In Progress").length;
-  const completedTasks = clientTasks.filter((t: any) => t.status === "Completed").length;
-  const unbilledTasks = clientTasks.filter((t: any) => t.isBillable && !t.isBilled).length;
+  const pendingTasks = clientTasks.filter(
+    (t: any) => t.status === "Pending",
+  ).length;
+  const holdTasks = clientTasks.filter(
+    (t: any) => t.status === "On Hold",
+  ).length;
+  const inProgressTasks = clientTasks.filter(
+    (t: any) => t.status === "In Progress",
+  ).length;
+  const completedTasks = clientTasks.filter(
+    (t: any) => t.status === "Completed",
+  ).length;
+  const unbilledTasks = clientTasks.filter(
+    (t: any) => t.isBillable && !t.isBilled,
+  ).length;
 
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || "http://localhost:5000";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_API_BASE_URL ||
+    process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "") ||
+    "http://localhost:5000";
 
   return (
     <div className="space-y-5">
@@ -167,18 +230,48 @@ export default function ClientDetailPage() {
 
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-4">
-          {client.photoUrl ? (
-            <Avatar className="h-14 w-14 rounded-xl">
-              <AvatarImage src={`${baseUrl}${client.photoUrl}`} alt={client.name} className="object-cover" />
-              {/* <AvatarFallback className="rounded-xl bg-primary text-lg font-semibold text-primary-foreground">
+          <div className="relative group">
+            <input
+              type="file"
+              ref={photoInputRef}
+              accept="image/*"
+              className="hidden"
+              onChange={handlePhotoUpload}
+              disabled={isUploadingPhoto}
+            />
+            {client.photoUrl ? (
+              <Avatar className="h-14 w-14 rounded-xl ring-2 ring-border">
+                <AvatarImage
+                  src={`${baseUrl}${client.photoUrl}`}
+                  alt={client.name}
+                  className={`object-cover ${isUploadingPhoto ? "opacity-50" : ""}`}
+                />
+                <AvatarFallback className="rounded-xl bg-primary text-lg font-semibold text-primary-foreground">
+                  {client.name?.[0] || "?"}
+                </AvatarFallback>
+              </Avatar>
+            ) : (
+              <div
+                className={`flex h-14 w-14 items-center justify-center rounded-xl bg-primary text-lg font-semibold text-primary-foreground ring-2 ring-border ${isUploadingPhoto ? "opacity-50" : ""}`}
+              >
                 {client.name?.[0] || "?"}
-              </AvatarFallback> */}
-            </Avatar>
-          ) : (
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary text-lg font-semibold text-primary-foreground">
-              {client.name?.[0] || "?"}
-            </div>
-          )}
+              </div>
+            )}
+            <button
+              type="button"
+              disabled={isUploadingPhoto}
+              onClick={() => photoInputRef.current?.click()}
+              className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-card shadow-sm ring-1 ring-border hover:bg-accent text-foreground transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              title="Upload client photo"
+              aria-label="Upload client photo"
+            >
+              {isUploadingPhoto ? (
+                <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+              ) : (
+                <Camera className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+              )}
+            </button>
+          </div>
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">
               {client.name}
@@ -205,7 +298,11 @@ export default function ClientDetailPage() {
         <EditClientDialog client={client} />
       </div>
 
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
+      <Tabs
+        value={activeTab}
+        onValueChange={handleTabChange}
+        className="space-y-4"
+      >
         <TabsList className="flex flex-wrap h-auto w-full justify-start gap-1 rounded-none border-b bg-transparent p-0">
           <TabsTrigger
             value="details"
@@ -273,7 +370,9 @@ export default function ClientDetailPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-semibold">{pendingTasks}</p>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Pending</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+                    Pending
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -284,7 +383,9 @@ export default function ClientDetailPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-semibold">{holdTasks}</p>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">On Hold</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+                    On Hold
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -295,7 +396,9 @@ export default function ClientDetailPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-semibold">{inProgressTasks}</p>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">In Progress</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+                    In Progress
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -306,7 +409,9 @@ export default function ClientDetailPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-semibold">{completedTasks}</p>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Completed</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+                    Completed
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -317,7 +422,9 @@ export default function ClientDetailPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-semibold">{unbilledTasks}</p>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Unbilled</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+                    Unbilled
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -327,15 +434,18 @@ export default function ClientDetailPage() {
                   <Wallet className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold">{client.openingBalance ? `₹${client.openingBalance}` : "₹0"}</p>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Ledger</p>
+                  <p className="text-2xl font-semibold">
+                    {client.openingBalance ? `₹${client.openingBalance}` : "₹0"}
+                  </p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+                    Ledger
+                  </p>
                 </div>
               </CardContent>
             </Card>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
             {/* General & Financial */}
             <Card className="shadow-sm border-border">
               <CardHeader className="pb-3 border-b">
@@ -346,23 +456,39 @@ export default function ClientDetailPage() {
               <CardContent className="p-6 space-y-4">
                 <div className="grid grid-cols-[140px_1fr] gap-4 items-center">
                   <span className="text-sm text-muted-foreground">File No</span>
-                  <span className="text-sm font-medium">{client.fileNo || "—"}</span>
+                  <span className="text-sm font-medium">
+                    {client.fileNo || "—"}
+                  </span>
                 </div>
                 <div className="grid grid-cols-[140px_1fr] gap-4 items-center">
                   <span className="text-sm text-muted-foreground">PAN</span>
-                  <span className="text-sm font-medium">{client.pan || "—"}</span>
+                  <span className="text-sm font-medium">
+                    {client.pan || "—"}
+                  </span>
                 </div>
                 <div className="grid grid-cols-[140px_1fr] gap-4 items-center">
                   <span className="text-sm text-muted-foreground">GSTIN</span>
-                  <span className="text-sm font-medium">{client.gstin || "—"}</span>
+                  <span className="text-sm font-medium">
+                    {client.gstin || "—"}
+                  </span>
                 </div>
                 <div className="grid grid-cols-[140px_1fr] gap-4 items-center">
-                  <span className="text-sm text-muted-foreground">Opening Balance</span>
-                  <span className="text-sm font-medium">{client.openingBalance ? `₹${client.openingBalance}` : "—"}</span>
+                  <span className="text-sm text-muted-foreground">
+                    Opening Balance
+                  </span>
+                  <span className="text-sm font-medium">
+                    {client.openingBalance ? `₹${client.openingBalance}` : "—"}
+                  </span>
                 </div>
                 <div className="grid grid-cols-[140px_1fr] gap-4 items-center">
-                  <span className="text-sm text-muted-foreground">Date of Birth / Inc.</span>
-                  <span className="text-sm font-medium">{client.dateOfBirth ? new Date(client.dateOfBirth).toLocaleDateString() : "—"}</span>
+                  <span className="text-sm text-muted-foreground">
+                    Date of Birth / Inc.
+                  </span>
+                  <span className="text-sm font-medium">
+                    {client.dateOfBirth
+                      ? new Date(client.dateOfBirth).toLocaleDateString()
+                      : "—"}
+                  </span>
                 </div>
               </CardContent>
             </Card>
@@ -376,50 +502,83 @@ export default function ClientDetailPage() {
               </CardHeader>
               <CardContent className="p-6 space-y-4">
                 <div className="grid grid-cols-[140px_1fr] gap-4 items-center">
-                  <span className="text-sm text-muted-foreground">Contact Person</span>
-                  <span className="text-sm font-medium">{client.contactPersonName || "—"}</span>
+                  <span className="text-sm text-muted-foreground">
+                    Contact Person
+                  </span>
+                  <span className="text-sm font-medium">
+                    {client.contactPersonName || "—"}
+                  </span>
                 </div>
                 <div className="grid grid-cols-[140px_1fr] gap-4 items-center">
                   <span className="text-sm text-muted-foreground">Email</span>
-                  <span className="text-sm font-medium">{client.email || "—"}</span>
+                  <span className="text-sm font-medium">
+                    {client.email || "—"}
+                  </span>
                 </div>
                 <div className="grid grid-cols-[140px_1fr] gap-4 items-center">
                   <span className="text-sm text-muted-foreground">Phone</span>
-                  <span className="text-sm font-medium">{client.mobile || "—"}</span>
+                  <span className="text-sm font-medium">
+                    {client.mobile || "—"}
+                  </span>
                 </div>
                 <div className="grid grid-cols-[140px_1fr] gap-4 items-center">
-                  <span className="text-sm text-muted-foreground">Alternate Phone</span>
-                  <span className="text-sm font-medium">{client.secondaryMobile || "—"}</span>
+                  <span className="text-sm text-muted-foreground">
+                    Alternate Phone
+                  </span>
+                  <span className="text-sm font-medium">
+                    {client.secondaryMobile || "—"}
+                  </span>
                 </div>
                 <div className="grid grid-cols-[140px_1fr] gap-4 items-start">
                   <span className="text-sm text-muted-foreground">Address</span>
                   <span className="text-sm font-medium leading-relaxed">
-                    {client.address ? `${client.address}, ${client.city || ''} ${client.state || ''} ${client.pincode || ''}`.replace(/,\s*$/, '').trim() : "—"}
+                    {client.address
+                      ? `${client.address}, ${client.city || ""} ${client.state || ""} ${client.pincode || ""}`
+                          .replace(/,\s*$/, "")
+                          .trim()
+                      : "—"}
                   </span>
                 </div>
               </CardContent>
             </Card>
 
             {/* Additional Details */}
-            {client.customFieldValues && Object.keys(client.customFieldValues).length > 0 && (
-              <Card className="shadow-sm border-border lg:col-span-2">
-                <CardHeader className="pb-3 border-b">
-                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-primary" /> Additional Details
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
-                    {Object.entries(client.customFieldValues).map(([key, val]) => (
-                      <div key={key} className="grid grid-cols-[140px_1fr] gap-4 items-center">
-                        <span className="text-sm text-muted-foreground truncate" title={key}>{key}</span>
-                        <span className="text-sm font-medium truncate" title={String(val)}>{(val as string) || "—"}</span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+            {client.customFieldValues &&
+              Object.keys(client.customFieldValues).length > 0 && (
+                <Card className="shadow-sm border-border lg:col-span-2">
+                  <CardHeader className="pb-3 border-b">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-primary" /> Additional
+                      Details
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
+                      {Object.entries(client.customFieldValues).map(
+                        ([key, val]) => (
+                          <div
+                            key={key}
+                            className="grid grid-cols-[140px_1fr] gap-4 items-center"
+                          >
+                            <span
+                              className="text-sm text-muted-foreground truncate"
+                              title={key}
+                            >
+                              {key}
+                            </span>
+                            <span
+                              className="text-sm font-medium truncate"
+                              title={String(val)}
+                            >
+                              {(val as string) || "—"}
+                            </span>
+                          </div>
+                        ),
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
             {/* Tags & Users */}
             <Card className="shadow-sm border-border">
@@ -436,11 +595,19 @@ export default function ClientDetailPage() {
                   {client.tags && client.tags.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
                       {client.tags.map((tag: string) => (
-                        <Badge key={tag} variant="secondary" className="font-normal">{tag}</Badge>
+                        <Badge
+                          key={tag}
+                          variant="secondary"
+                          className="font-normal"
+                        >
+                          {tag}
+                        </Badge>
                       ))}
                     </div>
                   ) : (
-                    <span className="text-sm text-muted-foreground">No tags assigned</span>
+                    <span className="text-sm text-muted-foreground">
+                      No tags assigned
+                    </span>
                   )}
                 </div>
                 <div>
@@ -450,16 +617,23 @@ export default function ClientDetailPage() {
                   {client.assignedUsers && client.assignedUsers.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
                       {client.assignedUsers.map((u: any, idx: number) => (
-                        <Badge key={idx} variant="outline" className="font-normal bg-background">{u.name || "User"}</Badge>
+                        <Badge
+                          key={idx}
+                          variant="outline"
+                          className="font-normal bg-background"
+                        >
+                          {u.name || "User"}
+                        </Badge>
                       ))}
                     </div>
                   ) : (
-                    <span className="text-sm text-muted-foreground">No users assigned</span>
+                    <span className="text-sm text-muted-foreground">
+                      No users assigned
+                    </span>
                   )}
                 </div>
               </CardContent>
             </Card>
-
           </div>
         </TabsContent>
 
@@ -619,15 +793,25 @@ export default function ClientDetailPage() {
         <TabsContent value="documents">
           <Card className="shadow-sm border-border">
             <CardHeader className="pb-3 border-b flex flex-row items-center justify-between">
-              <CardTitle className="text-sm font-semibold">Client Documents</CardTitle>
+              <CardTitle className="text-sm font-semibold">
+                Client Documents
+              </CardTitle>
               <input
                 type="file"
                 className="hidden"
                 ref={documentInputRef}
                 onChange={handleFileUpload}
               />
-              <Button size="sm" onClick={() => documentInputRef.current?.click()} disabled={isUploading}>
-                {isUploading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
+              <Button
+                size="sm"
+                onClick={() => documentInputRef.current?.click()}
+                disabled={isUploading}
+              >
+                {isUploading ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <Plus className="h-4 w-4 mr-2" />
+                )}
                 Upload Document
               </Button>
             </CardHeader>
@@ -678,11 +862,8 @@ export default function ClientDetailPage() {
             </CardContent>
           </Card>
         </TabsContent>
-        <TabsContent
-          value="ledger"
-          className="rounded-xl border bg-card shadow-sm p-6 text-center text-muted-foreground text-sm"
-        >
-          Coming Soon
+        <TabsContent value="ledger">
+          <ClientLedgerTab clientId={clientId} />
         </TabsContent>
         <TabsContent
           value="docs-in-out"

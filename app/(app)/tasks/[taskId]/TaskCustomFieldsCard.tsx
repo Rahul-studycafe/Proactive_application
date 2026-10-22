@@ -4,7 +4,13 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Edit2, Loader2, Check, X } from "lucide-react";
 import { useUpdateTaskMutation } from "@/lib/services/api";
@@ -28,7 +34,9 @@ export function TaskCustomFieldsCard({
   customFieldValues: Record<string, any>;
 }) {
   const [isEditing, setIsEditing] = useState(false);
-  const [values, setValues] = useState<Record<string, any>>(customFieldValues || {});
+  const [values, setValues] = useState<Record<string, any>>(
+    customFieldValues || {},
+  );
   const [updateTask, { isLoading }] = useUpdateTaskMutation();
 
   if (!customFieldsDef || customFieldsDef.length === 0) {
@@ -84,7 +92,11 @@ export function TaskCustomFieldsCard({
               onClick={handleSave}
               disabled={isLoading}
             >
-              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Check className="h-4 w-4" />
+              )}
             </Button>
           </div>
         )}
@@ -92,11 +104,16 @@ export function TaskCustomFieldsCard({
       <CardContent className="p-6 space-y-4">
         {customFieldsDef.map((field) => {
           const val = values[field._id] || "";
-          
+
           if (!isEditing) {
             return (
-              <div key={field._id} className="grid grid-cols-[120px_1fr] gap-4 items-center">
-                <span className="text-sm text-muted-foreground">{field.label}</span>
+              <div
+                key={field._id}
+                className="grid grid-cols-[120px_1fr] gap-4 items-center"
+              >
+                <span className="text-sm text-muted-foreground">
+                  {field.label}
+                </span>
                 <span className="text-sm font-medium">{val || "—"}</span>
               </div>
             );
@@ -105,12 +122,17 @@ export function TaskCustomFieldsCard({
           return (
             <div key={field._id} className="space-y-1.5">
               <Label>
-                {field.label} {field.isRequired && <span className="text-destructive">*</span>}
+                {field.label}{" "}
+                {field.isRequired && (
+                  <span className="text-destructive">*</span>
+                )}
               </Label>
               {field.fieldType === "select" ? (
                 <Select
                   value={String(val)}
-                  onValueChange={(v) => setValues({ ...values, [field._id]: v })}
+                  onValueChange={(v) =>
+                    setValues({ ...values, [field._id]: v })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select an option" />
@@ -125,9 +147,17 @@ export function TaskCustomFieldsCard({
                 </Select>
               ) : (
                 <Input
-                  type={field.fieldType === "number" ? "number" : field.fieldType === "date" ? "date" : "text"}
+                  type={
+                    field.fieldType === "number"
+                      ? "number"
+                      : field.fieldType === "date"
+                        ? "date"
+                        : "text"
+                  }
                   value={val}
-                  onChange={(e) => setValues({ ...values, [field._id]: e.target.value })}
+                  onChange={(e) =>
+                    setValues({ ...values, [field._id]: e.target.value })
+                  }
                   placeholder={`Enter ${field.label.toLowerCase()}`}
                 />
               )}

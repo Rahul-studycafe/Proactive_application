@@ -34,47 +34,47 @@ const COLUMNS: TaskStatus[] = [
 const getPriorityColor = (priority: TaskPriority) => {
   switch (priority) {
     case "Urgent":
-      return "bg-red-500";
+      return "bg-destructive";
     case "High":
-      return "bg-orange-500";
+      return "bg-warning";
     case "Medium":
-      return "bg-blue-500";
+      return "bg-primary";
     case "Low":
-      return "bg-slate-400";
+      return "bg-muted-foreground";
     default:
-      return "bg-slate-400";
+      return "bg-muted-foreground";
   }
 };
 
 const getPriorityBadge = (priority: TaskPriority) => {
   switch (priority) {
     case "Urgent":
-      return "bg-red-50 text-red-700 border-red-200";
+      return "bg-destructive/15 text-destructive border-destructive/30";
     case "High":
-      return "bg-orange-50 text-orange-700 border-orange-200";
+      return "bg-warning/15 text-warning-foreground border-warning/30";
     case "Medium":
-      return "bg-blue-50 text-blue-700 border-blue-200";
+      return "bg-primary/15 text-primary border-primary/30";
     case "Low":
-      return "bg-slate-50 text-slate-700 border-slate-200";
+      return "bg-muted text-muted-foreground border-border";
     default:
-      return "bg-slate-50 text-slate-700 border-slate-200";
+      return "bg-muted text-muted-foreground border-border";
   }
 };
 
 const getColumnDot = (status: TaskStatus) => {
   switch (status) {
     case "Pending":
-      return "bg-slate-400";
+      return "bg-muted-foreground";
     case "In Progress":
-      return "bg-blue-500";
+      return "bg-primary";
     case "Under Review":
       return "bg-purple-500";
     case "On Hold":
-      return "bg-amber-500";
+      return "bg-warning";
     case "Completed":
-      return "bg-emerald-500";
+      return "bg-success";
     default:
-      return "bg-slate-400";
+      return "bg-muted-foreground";
   }
 };
 
@@ -203,7 +203,7 @@ export default function TasksPage() {
           {COLUMNS.filter((c) => visibleColumns.includes(c)).map((col) => (
             <div
               key={col}
-              className="rounded-xl border bg-slate-50/50 p-4 flex flex-col min-h-[500px] min-w-[200px] w-full max-w-[280px] flex-shrink-0 snap-start"
+              className="rounded-xl border border-border bg-card/50 p-4 flex flex-col min-h-[500px] min-w-[200px] w-full max-w-[280px] flex-shrink-0 snap-start shadow-xs"
               onDrop={(e) => handleDrop(e, col)}
               onDragOver={handleDragOver}
             >
@@ -212,18 +212,18 @@ export default function TasksPage() {
                   <div
                     className={`h-2.5 w-2.5 rounded-full ${getColumnDot(col)}`}
                   />
-                  <h3 className="text-sm font-semibold tracking-tight">
+                  <h3 className="text-sm font-semibold tracking-tight text-foreground">
                     {col}
                   </h3>
                 </div>
-                <span className="rounded-full bg-slate-200/50 px-2.5 py-0.5 text-xs font-medium text-slate-600">
+                <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground border border-border">
                   {grouped[col].length}
                 </span>
               </div>
 
               <div className="space-y-3 flex-1">
                 {grouped[col].length === 0 ? (
-                  <div className="flex h-32 items-center justify-center rounded-lg border border-dashed border-slate-200 bg-white/50 text-sm text-slate-400">
+                  <div className="flex h-32 items-center justify-center rounded-lg border border-dashed border-border bg-muted/20 text-sm text-muted-foreground">
                     Drop tasks here
                   </div>
                 ) : (
@@ -233,21 +233,21 @@ export default function TasksPage() {
                       draggable
                       onDragStart={(e) => handleDragStart(e, t._id)}
                       onClick={() => router.push(`/tasks/${t._id}`)}
-                      className="group relative w-full cursor-pointer overflow-hidden rounded-lg border bg-white p-4 text-left shadow-sm transition-all hover:shadow-md hover:border-slate-300"
+                      className="group relative w-full cursor-pointer overflow-hidden rounded-lg border border-border bg-card p-4 text-left shadow-xs transition-all hover:shadow-md hover:border-primary/40"
                     >
                       <div
                         className={`absolute left-0 top-0 bottom-0 w-1 ${getPriorityColor(t.priority)}`}
                       />
 
                       <div className="mb-2.5 pl-1.5 flex items-start justify-between gap-2">
-                        <span className="font-medium text-sm text-slate-900 leading-snug line-clamp-2">
+                        <span className="font-medium text-sm text-foreground leading-snug line-clamp-2">
                           {(t as any).title ||
                             t.serviceId?.name ||
                             "Unnamed Task"}
                         </span>
                       </div>
 
-                      <div className="pl-1.5 mb-4 flex items-center gap-1.5 text-xs text-slate-500">
+                      <div className="pl-1.5 mb-4 flex items-center gap-1.5 text-xs text-muted-foreground">
                         <Circle className="h-3 w-3" />
                         <span className="truncate">
                           {t.clientId?.name || "No Client"}
@@ -263,8 +263,8 @@ export default function TasksPage() {
                             {t.priority}
                           </Badge>
                           {t.dueDate && (
-                            <div className="flex items-center gap-1 text-[11px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 shadow-sm">
-                              <Clock className="h-3 w-3 text-slate-400" />
+                            <div className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded border border-border shadow-xs">
+                              <Clock className="h-3 w-3 text-muted-foreground" />
                               {formatDate(t.dueDate)}
                             </div>
                           )}
@@ -275,7 +275,7 @@ export default function TasksPage() {
                             t.assigneeIds.map((assignee, idx) => (
                               <div
                                 key={assignee._id}
-                                className="h-6 w-6 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-medium text-white shadow-sm ring-2 ring-white"
+                                className="h-6 w-6 rounded-full bg-primary/20 text-primary border border-border flex items-center justify-center text-[10px] font-medium shadow-xs ring-1 ring-card"
                                 title={assignee.name}
                                 style={{
                                   marginLeft: idx > 0 ? "-0.5rem" : "0",
@@ -286,7 +286,7 @@ export default function TasksPage() {
                             ))
                           ) : (
                             <div
-                              className="h-6 w-6 rounded-full bg-slate-300 flex items-center justify-center text-[10px] font-medium text-white shadow-sm ring-2 ring-white"
+                              className="h-6 w-6 rounded-full bg-muted text-muted-foreground border border-border flex items-center justify-center text-[10px] font-medium shadow-xs ring-1 ring-card"
                               title="Unassigned"
                             >
                               ?
@@ -316,7 +316,7 @@ export default function TasksPage() {
                 className={page === 1 ? "pointer-events-none opacity-50" : ""}
               />
             </PaginationItem>
-            <PaginationItem className="px-4 text-sm font-medium text-slate-600">
+            <PaginationItem className="px-4 text-sm font-medium text-muted-foreground">
               Page {page} of {tasksRes.pagination.pages}
             </PaginationItem>
             <PaginationItem>

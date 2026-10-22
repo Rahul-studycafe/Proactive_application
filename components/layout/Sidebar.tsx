@@ -6,7 +6,8 @@ import {
   LayoutDashboard,
   Users,
   CheckSquare,
-  Receipt,
+  FileText,
+  CreditCard,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -41,7 +42,13 @@ const navItems: NavItem[] = [
   {
     to: "/invoices",
     label: "Invoices",
-    icon: Receipt,
+    icon: FileText,
+    requiredPermission: "invoices.view",
+  },
+  {
+    to: "/receipts",
+    label: "Receipts",
+    icon: CreditCard,
     requiredPermission: "invoices.view",
   },
   {
@@ -74,7 +81,7 @@ export function Sidebar() {
 
   return (
     <aside
-      className={`relative flex flex-col border-r bg-sidebar text-sidebar-foreground transition-all duration-200 ${
+      className={`relative flex flex-col border-r bg-sidebar text-sidebar-foreground transition-all duration-200 print:hidden ${
         collapsed ? "w-16" : "w-60"
       }`}
     >

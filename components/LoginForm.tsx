@@ -8,6 +8,8 @@ import { AnimatedCharacters, type CharMode } from "./AnimatedCharacters";
 import { Logo } from "./ui/logo";
 import { useLoginMutation } from "../lib/services/api";
 
+import { ThemeToggle } from "./ui/theme-toggle";
+
 import { useAuth } from "../contexts/AuthContext";
 
 export function LoginForm() {
@@ -58,9 +60,6 @@ export function LoginForm() {
       router.push("/"); // redirect to dashboard root
 
       console.log("Login Success");
-
-      // setTimeout(() => {
-      // }, 1000); // give it time to show the success animation
     } catch (err: any) {
       setSubmitState("error");
       setApiError(
@@ -73,15 +72,19 @@ export function LoginForm() {
   };
 
   return (
-    <div className="h-screen w-full bg-primary flex items-center justify-center overflow-hidden">
-      <div className="w-full h-full grid md:grid-cols-2 overflow-hidden bg-surface border border-border shadow-2xl relative">
+    <div className="h-screen w-full bg-background flex items-center justify-center overflow-hidden relative">
+      <div className="absolute top-4 right-4 z-20">
+        <ThemeToggle />
+      </div>
+
+      <div className="w-full h-full grid md:grid-cols-2 overflow-hidden bg-card border border-border shadow-2xl relative">
         {/* Left: illustration */}
-        <div className="bg-[#ececea] hidden md:flex items-end justify-center p-8 pb-12 relative">
+        <div className="bg-muted/30 hidden md:flex items-end justify-center p-8 pb-12 relative border-r border-border">
           <AnimatedCharacters mode={mode} />
         </div>
 
         {/* Right: form */}
-        <div className="bg-surface bg-white p-6 sm:p-6 lg:py-6 lg:px-16 flex flex-col overflow-y-auto">
+        <div className="bg-card p-6 sm:p-6 lg:py-6 lg:px-16 flex flex-col justify-center overflow-y-auto">
           <div className="flex flex-col items-center text-center mb-6">
             <Logo />
             <h1 className="mt-6 font-display text-2xl font-bold text-foreground">
@@ -94,13 +97,13 @@ export function LoginForm() {
 
           <form onSubmit={onSubmit} className="mt-8 space-y-4">
             {apiError && (
-              <div className="bg-red-50 border border-red-200 text-red-600 text-sm p-3 rounded-md mb-4 text-center">
+              <div className="bg-destructive/15 border border-destructive/30 text-destructive text-sm p-3 rounded-md mb-4 text-center">
                 {apiError}
               </div>
             )}
 
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-muted-foreground">
                 <Mail size={18} />
               </div>
               <input
@@ -109,12 +112,12 @@ export function LoginForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Email id"
-                className="w-full bg-white border border-gray-300 focus:border-[#111] rounded-full outline-none py-3 pl-11 pr-4 text-sm text-[#111] placeholder-gray-400 transition-colors"
+                className="w-full bg-background border border-input focus:border-ring rounded-full outline-none py-3 pl-11 pr-4 text-sm text-foreground placeholder:text-muted-foreground transition-colors"
               />
             </div>
 
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-muted-foreground">
                 <Lock size={18} />
               </div>
               <input
@@ -125,12 +128,12 @@ export function LoginForm() {
                 onFocus={() => setPwFocused(true)}
                 onBlur={() => setPwFocused(false)}
                 placeholder="Password"
-                className={`w-full bg-white border ${submitState === "error" ? "border-orange-500 focus:border-orange-500" : "border-gray-300 focus:border-[#111]"} rounded-full outline-none py-3 pl-11 pr-12 text-sm text-[#111] placeholder-gray-400 transition-colors`}
+                className={`w-full bg-background border ${submitState === "error" ? "border-destructive focus:border-destructive" : "border-input focus:border-ring"} rounded-full outline-none py-3 pl-11 pr-12 text-sm text-foreground placeholder:text-muted-foreground transition-colors`}
               />
               <button
                 type="button"
                 onClick={() => setShowPw((v) => !v)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#111] z-10 transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground z-10 transition-colors"
                 aria-label="Toggle password visibility"
               >
                 {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -138,17 +141,17 @@ export function LoginForm() {
             </div>
 
             <div className="flex items-center justify-between text-xs">
-              <label className="flex items-center gap-2 text-gray-600">
+              <label className="flex items-center gap-2 text-muted-foreground cursor-pointer">
                 <input
                   type="checkbox"
                   defaultChecked
-                  className="accent-[#111]"
+                  className="accent-primary"
                 />
                 Remember for 30 days
               </label>
               <Link
                 href="/forgot-password"
-                className="text-gray-500 hover:text-[#111]"
+                className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 Forgot password?
               </Link>
@@ -157,10 +160,10 @@ export function LoginForm() {
             <button
               type="submit"
               disabled={isLoading}
-              className={`w-full cursor-pointer text-white rounded-full py-3 font-medium transition-colors ${
+              className={`w-full cursor-pointer text-primary-foreground rounded-full py-3 font-medium transition-colors ${
                 isLoading
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-primary hover:bg-black"
+                  ? "bg-muted text-muted-foreground cursor-not-allowed"
+                  : "bg-primary hover:bg-primary/90"
               }`}
             >
               {isLoading ? "Logging in..." : "Log In"}
@@ -168,18 +171,18 @@ export function LoginForm() {
 
             <button
               type="button"
-              className="w-full cursor-pointer bg-gray-100 text-[#111] rounded-full py-3 font-medium flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
+              className="w-full cursor-pointer bg-secondary text-secondary-foreground border border-border rounded-full py-3 font-medium flex items-center justify-center gap-2 hover:bg-accent transition-colors"
             >
               <GoogleG />
               Log in with Google
             </button>
           </form>
 
-          <p className="text-xs text-center text-gray-500 mt-6">
+          <p className="text-xs text-center text-muted-foreground mt-6">
             Don't have an account?{" "}
             <a
               href={`${process.env.NEXT_PUBLIC_MAIN_URL || "http://localhost:3000"}/signup`}
-              className="text-[#111] font-medium"
+              className="text-foreground font-semibold hover:underline"
             >
               Sign Up
             </a>

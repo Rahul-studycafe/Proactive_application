@@ -82,7 +82,7 @@ export function ServicesTable() {
               <TableCell>
                 <Badge
                   variant="secondary"
-                  className="font-normal capitalize bg-slate-100 text-slate-700 hover:bg-slate-100"
+                  className="font-normal capitalize bg-muted text-muted-foreground hover:bg-muted"
                 >
                   {service.frequency?.type?.replace("_", " ") || "One-Time"}
                 </Badge>
@@ -90,7 +90,7 @@ export function ServicesTable() {
               <TableCell>
                 <Badge
                   variant="outline"
-                  className="font-normal bg-indigo-50 text-indigo-700 border-indigo-200"
+                  className="font-normal bg-primary/10 text-primary border-primary/20"
                 >
                   {service.clientsCount || 0}
                 </Badge>
@@ -100,7 +100,7 @@ export function ServicesTable() {
                   variant={service.isEnabled ? "default" : "secondary"}
                   className={
                     service.isEnabled
-                      ? "bg-green-100 text-green-700 hover:bg-green-100 font-normal"
+                      ? "bg-success/15 text-success hover:bg-success/20 font-normal border-success/30"
                       : "font-normal"
                   }
                 >

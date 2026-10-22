@@ -26,26 +26,26 @@ export function StatusBadge({ status, label, className }: StatusBadgeProps) {
     case "success":
       variant = "default";
       badgeColorClass =
-        "bg-green-100 text-green-800 hover:bg-green-100/80 border-transparent";
+        "bg-success/15 text-success hover:bg-success/25 border-success/30";
       break;
     case "pending":
     case "warning":
     case "in progress":
       variant = "secondary";
       badgeColorClass =
-        "bg-yellow-100 text-yellow-800 hover:bg-yellow-100/80 border-transparent";
+        "bg-warning/15 text-warning-foreground hover:bg-warning/25 border-warning/30";
       break;
     case "error":
     case "failed":
     case "inactive":
       variant = "destructive";
       badgeColorClass =
-        "bg-red-100 text-red-800 hover:bg-red-100/80 border-transparent";
+        "bg-destructive/15 text-destructive hover:bg-destructive/25 border-destructive/30";
       break;
     default:
       variant = "outline";
       badgeColorClass =
-        "bg-gray-100 text-gray-800 hover:bg-gray-100/80 border-transparent";
+        "bg-muted text-muted-foreground hover:bg-muted/80 border-border";
   }
 
   const displayLabel =

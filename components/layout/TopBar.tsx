@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useRouter } from "next/navigation";
 
 export function TopBar() {
@@ -23,7 +24,7 @@ export function TopBar() {
   };
 
   return (
-    <header className="flex h-16 items-center gap-4 border-b bg-card px-6">
+    <header className="flex h-16 items-center gap-4 border-b bg-card px-6 print:hidden">
       <div className="relative max-w-md flex-1">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
@@ -32,10 +33,14 @@ export function TopBar() {
         />
       </div>
 
-      <div className="ml-auto flex items-center gap-3">
+      <div className="ml-auto flex items-center gap-2 sm:gap-3">
         <span className="hidden text-sm font-medium text-muted-foreground md:inline">
           {user?.tenant}
         </span>
+
+        {/* Global Theme Switcher */}
+        <ThemeToggle />
+
         <button
           className="relative rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
           aria-label="Notifications"
@@ -61,7 +66,7 @@ export function TopBar() {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuLabel>{user?.email}</DropdownMenuLabel>
+            {/* <DropdownMenuLabel>{user?.email}</DropdownMenuLabel> */}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => router.push("/profile")}>
               <User className="mr-2 h-4 w-4" /> Profile

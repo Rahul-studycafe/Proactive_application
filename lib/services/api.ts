@@ -41,27 +41,44 @@ const baseQueryWithReauth: BaseQueryFn<
     if (!mutex.isLocked()) {
       const release = await mutex.acquire();
       try {
-        // try to get a new token
-        // Use 'include' credentials to send the HttpOnly refreshToken cookie
+        const storedRefreshToken =
+          typeof window !== "undefined"
+            ? localStorage.getItem("refreshToken")
+            : null;
+
+        if (!storedRefreshToken) {
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
+          if (typeof window !== "undefined") {
+            window.location.href = "/login";
+          }
+          return result;
+        }
+
+        // Send refreshToken in request body to POST /auth/refresh
         const refreshResult: any = await baseQuery(
-          { url: "/auth/refresh", method: "POST", credentials: "include" },
+          {
+            url: "/auth/refresh",
+            method: "POST",
+            body: { refreshToken: storedRefreshToken },
+          },
           api,
           extraOptions,
         );
-        if (
-          refreshResult.data?.accessToken ||
-          refreshResult.data?.data?.accessToken
-        ) {
-          const newToken =
-            refreshResult.data.accessToken ||
-            refreshResult.data.data.accessToken;
-          // store the new token
+
+        const resData = refreshResult.data?.data || refreshResult.data;
+        if (resData?.accessToken) {
+          const newToken = resData.accessToken;
           localStorage.setItem("accessToken", newToken);
-          // retry the initial query
+          if (resData.refreshToken) {
+            localStorage.setItem("refreshToken", resData.refreshToken);
+          }
+          // retry the initial query with the fresh access token
           result = await baseQuery(args, api, extraOptions);
         } else {
-          // refresh failed - log out
+          // refresh failed (token revoked or expired) - log out
           localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
           if (typeof window !== "undefined") {
             window.location.href = "/login";
           }
@@ -82,7 +99,18 @@ const baseQueryWithReauth: BaseQueryFn<
 export const applicationApi = createApi({
   reducerPath: "applicationApi",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["Task", "Client", "Tag", "Service", "User", "Package"],
+  tagTypes: [
+    "Task",
+    "Client",
+    "Tag",
+    "Service",
+    "User",
+    "Package",
+    "Invoice",
+    "Receipt",
+    "Ledger",
+    "Dashboard",
+  ],
   endpoints: (builder) => ({
     login: builder.mutation({
       query: (credentials) => ({
@@ -177,7 +205,9 @@ export const applicationApi = createApi({
         method: "PATCH",
         body: { isCompleted },
       }),
-      invalidatesTags: (result, error, { taskId }) => [{ type: "Task", id: taskId }],
+      invalidatesTags: (result, error, { taskId }) => [
+        { type: "Task", id: taskId },
+      ],
     }),
     addTaskChecklistStep: builder.mutation({
       query: ({ taskId, stepName }) => ({
@@ -185,14 +215,18 @@ export const applicationApi = createApi({
         method: "POST",
         body: { stepName },
       }),
-      invalidatesTags: (result, error, { taskId }) => [{ type: "Task", id: taskId }],
+      invalidatesTags: (result, error, { taskId }) => [
+        { type: "Task", id: taskId },
+      ],
     }),
     deleteTaskChecklistStep: builder.mutation({
       query: ({ taskId, stepIndex }) => ({
         url: `/tasks/${taskId}/checklist/${stepIndex}`,
         method: "DELETE",
       }),
-      invalidatesTags: (result, error, { taskId }) => [{ type: "Task", id: taskId }],
+      invalidatesTags: (result, error, { taskId }) => [
+        { type: "Task", id: taskId },
+      ],
     }),
     addSubtask: builder.mutation({
       query: ({ taskId, ...subtask }) => ({
@@ -200,7 +234,9 @@ export const applicationApi = createApi({
         method: "POST",
         body: subtask,
       }),
-      invalidatesTags: (result, error, { taskId }) => [{ type: "Task", id: taskId }],
+      invalidatesTags: (result, error, { taskId }) => [
+        { type: "Task", id: taskId },
+      ],
     }),
     updateSubtask: builder.mutation({
       query: ({ taskId, subtaskId, ...patch }) => ({
@@ -208,14 +244,18 @@ export const applicationApi = createApi({
         method: "PUT",
         body: patch,
       }),
-      invalidatesTags: (result, error, { taskId }) => [{ type: "Task", id: taskId }],
+      invalidatesTags: (result, error, { taskId }) => [
+        { type: "Task", id: taskId },
+      ],
     }),
     deleteSubtask: builder.mutation({
       query: ({ taskId, subtaskId }) => ({
         url: `/tasks/${taskId}/subtasks/${subtaskId}`,
         method: "DELETE",
       }),
-      invalidatesTags: (result, error, { taskId }) => [{ type: "Task", id: taskId }],
+      invalidatesTags: (result, error, { taskId }) => [
+        { type: "Task", id: taskId },
+      ],
     }),
     getTaskHistory: builder.query({
       query: (taskId) => `/tasks/${taskId}/history`,
@@ -434,6 +474,146 @@ export const applicationApi = createApi({
       ],
     }),
 
+    // Invoices
+    getInvoices: builder.query({
+      query: (params) => ({ url: "/invoices", params }),
+      providesTags: ["Invoice"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    getInvoiceById: builder.query({
+      query: (id: string) => `/invoices/${id}`,
+      providesTags: (_result: any, _error: any, id: string) => [
+        { type: "Invoice" as const, id },
+      ],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    getUnbilledTasks: builder.query({
+      query: (clientId: string) => `/invoices/unbilled/${clientId}`,
+      providesTags: (_result: any, _error: any, clientId: string) => [
+        { type: "Invoice" as const, id: `unbilled-${clientId}` },
+      ],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    createInvoice: builder.mutation({
+      query: (body) => ({
+        url: "/invoices",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Invoice", "Task"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    updateInvoice: builder.mutation({
+      query: ({ id, ...body }: { id: string;[key: string]: any }) => ({
+        url: `/invoices/${id}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: (_result: any, _error: any, { id }: { id: string }) => [
+        { type: "Invoice" as const, id },
+        "Invoice",
+        "Task",
+      ],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    cancelInvoice: builder.mutation({
+      query: (id: string) => ({
+        url: `/invoices/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Invoice", "Task"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+
+    // Receipts
+    getReceipts: builder.query({
+      query: (params) => ({ url: "/receipts", params }),
+      providesTags: ["Receipt"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    getReceiptById: builder.query({
+      query: (id: string) => ({ url: `/receipts/${id}` }),
+      providesTags: (_result, _error, id) => [{ type: "Receipt" as const, id }],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    getUnpaidInvoices: builder.query({
+      query: (clientId: string) => ({
+        url: "/receipts/unpaid-invoices",
+        params: { clientId },
+      }),
+      providesTags: ["Invoice"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    autoSettlePreview: builder.mutation({
+      query: (body: {
+        clientId: string;
+        totalAmount: number;
+        tdsAmount?: number;
+        discountAmount?: number;
+      }) => ({
+        url: "/receipts/auto-settle-preview",
+        method: "POST",
+        body,
+      }),
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    createReceipt: builder.mutation({
+      query: (body: {
+        clientId: string;
+        date: string;
+        paymentMode: string;
+        referenceNumber?: string;
+        totalAmount: number;
+        tdsAmount?: number;
+        discountAmount?: number;
+        notes?: string;
+        settlements?: Array<{
+          invoiceId: string;
+          settledAmount: number;
+          tdsDeducted?: number;
+        }>;
+        autoSettle?: boolean;
+      }) => ({
+        url: "/receipts",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Receipt", "Invoice", "Client", "Ledger", "Dashboard"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+
+    // Ledger
+    getLedger: builder.query({
+      query: ({
+        clientId,
+        from,
+        to,
+      }: {
+        clientId: string;
+        from?: string;
+        to?: string;
+      }) => ({
+        url: `/ledger/${clientId}`,
+        params: { from, to },
+      }),
+      providesTags: ["Ledger", "Receipt", "Invoice"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+
+    // Dashboard
+    getDashboardOverview: builder.query<any, void>({
+      query: () => ({ url: "/dashboard/overview" }),
+      providesTags: ["Dashboard", "Task", "Client", "Invoice", "Receipt"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    getClientSummary: builder.query({
+      query: (clientId: string) => ({
+        url: `/dashboard/clients/${clientId}/summary`,
+      }),
+      providesTags: ["Dashboard", "Client", "Task", "Invoice", "Receipt"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+
     // Users
     getUsers: builder.query({
       query: (params) => ({ url: "/users", params }),
@@ -486,5 +666,20 @@ export const {
   useDeletePackageMutation,
   useSubscribeClientToPackageMutation,
   useSubscribeClientToServiceMutation,
+  useGetInvoicesQuery,
+  useGetInvoiceByIdQuery,
+  useGetUnbilledTasksQuery,
+  useCreateInvoiceMutation,
+  useUpdateInvoiceMutation,
+  useCancelInvoiceMutation,
+  useGetReceiptsQuery,
+  useGetReceiptByIdQuery,
+  useGetUnpaidInvoicesQuery,
+  useAutoSettlePreviewMutation,
+  useCreateReceiptMutation,
+  useGetLedgerQuery,
+  useGetDashboardOverviewQuery,
+  useGetClientSummaryQuery,
   useGetUsersQuery,
 } = applicationApi;
+

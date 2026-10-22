@@ -92,7 +92,7 @@ export function CreatePackageDialog({
       <DialogTrigger asChild>
         {children || <Button>+ New Package</Button>}
       </DialogTrigger>
-      <DialogContent 
+      <DialogContent
         className="sm:max-w-[600px] max-h-[90vh] flex flex-col"
         onInteractOutside={(e) => e.preventDefault()}
       >
