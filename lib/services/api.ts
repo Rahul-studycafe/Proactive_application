@@ -96,6 +96,31 @@ const baseQueryWithReauth: BaseQueryFn<
   return result;
 };
 
+import type {
+  IAttendance,
+  DailyRosterResult,
+  CheckInPayload,
+  CheckOutPayload,
+  MarkAttendancePayload,
+  BulkMarkAttendancePayload,
+  MonthlyMatrixResult,
+  StaffAttendanceSummary,
+  OfficePerimeterConfig,
+  WorkingDaysConfig,
+} from "@/lib/types/attendance";
+import type {
+  AutomationLogsResponse,
+  TriggerAutomationPayload,
+  TriggerAutomationResult,
+  QueueHealthMetrics,
+} from "@/lib/types/automation";
+import type {
+  ClientEntityDistributionItem,
+  StaffPerformanceItem,
+  AttendanceKPIOverview,
+  DashboardOverviewData,
+} from "@/lib/types/analytics";
+
 export const applicationApi = createApi({
   reducerPath: "applicationApi",
   baseQuery: baseQueryWithReauth,
@@ -110,6 +135,10 @@ export const applicationApi = createApi({
     "Receipt",
     "Ledger",
     "Dashboard",
+    "Holiday",
+    "WorkingDays",
+    "Attendance",
+    "Automation",
   ],
   endpoints: (builder) => ({
     login: builder.mutation({
@@ -601,10 +630,10 @@ export const applicationApi = createApi({
     }),
 
     // Dashboard
-    getDashboardOverview: builder.query<any, void>({
+    getDashboardOverview: builder.query<DashboardOverviewData, void>({
       query: () => ({ url: "/dashboard/overview" }),
-      providesTags: ["Dashboard", "Task", "Client", "Invoice", "Receipt"],
-      transformResponse: (response: { data: any }) => response.data,
+      providesTags: ["Dashboard", "Task", "Client", "Invoice", "Receipt", "Attendance"],
+      transformResponse: (response: { data: DashboardOverviewData }) => response.data,
     }),
     getClientSummary: builder.query({
       query: (clientId: string) => ({
@@ -619,6 +648,267 @@ export const applicationApi = createApi({
       query: (params) => ({ url: "/users", params }),
       providesTags: ["User"],
       transformResponse: (response: { data: any }) => response.data,
+    }),
+
+    // Part 10: Holidays
+    getHolidays: builder.query({
+      query: (params?: { year?: string | number }) => ({
+        url: "/holidays",
+        params: params?.year ? { year: String(params.year) } : undefined,
+      }),
+      providesTags: ["Holiday"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+
+    createHoliday: builder.mutation({
+      query: (body: { name: string; date: string; type: string; description?: string }) => ({
+        url: "/holidays",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Holiday"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+
+    updateHoliday: builder.mutation({
+      query: ({ id, ...body }: { id: string; name?: string; date?: string; type?: string; description?: string }) => ({
+        url: `/holidays/${id}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["Holiday"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+
+    deleteHoliday: builder.mutation({
+      query: (id: string) => ({
+        url: `/holidays/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Holiday"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+
+    seedDefaultHolidays: builder.mutation({
+      query: (params?: { year?: string | number; region?: string }) => ({
+        url: "/holidays/seed-default",
+        method: "POST",
+        params: {
+          year: params?.year ? String(params.year) : "2026",
+          region: params?.region || "national",
+        },
+      }),
+      invalidatesTags: ["Holiday"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+
+    // Part 10: Working Days & Weekends
+    getWorkingDays: builder.query<WorkingDaysConfig, void>({
+      query: () => "/tenant-settings/work-days",
+      providesTags: ["WorkingDays"],
+      transformResponse: (response: { data: WorkingDaysConfig }) => response.data,
+    }),
+
+    updateWorkingDays: builder.mutation<
+      WorkingDaysConfig,
+      {
+        weekends?: string[];
+        standardWorkHoursPerDay?: number;
+        alternateWeekendRules?: { day: string; weeks: number[] };
+        officePerimeter?: Partial<OfficePerimeterConfig>;
+      }
+    >({
+      query: (body) => ({
+        url: "/tenant-settings/work-days",
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["WorkingDays"],
+      transformResponse: (response: { data: WorkingDaysConfig }) => response.data,
+    }),
+
+    getMyIp: builder.query<{ ip: string; normalizedIp: string }, void>({
+      query: () => "/tenant-settings/my-ip",
+      transformResponse: (response: { data: { ip: string; normalizedIp: string } }) =>
+        response.data,
+    }),
+
+    // Part 11: Attendance Endpoints
+    getTodayAttendance: builder.query<IAttendance | null, { date?: string } | void>({
+      query: (params) => ({
+        url: "/attendance/today",
+        params: params?.date ? { date: params.date } : undefined,
+      }),
+      providesTags: ["Attendance"],
+      transformResponse: (response: { data: IAttendance | null }) => response.data,
+    }),
+
+    checkIn: builder.mutation<IAttendance, CheckInPayload | void>({
+      query: (body) => ({
+        url: "/attendance/check-in",
+        method: "POST",
+        body: body || {},
+      }),
+      invalidatesTags: ["Attendance"],
+      transformResponse: (response: { data: IAttendance }) => response.data,
+    }),
+
+    checkOut: builder.mutation<IAttendance, CheckOutPayload | void>({
+      query: (body) => ({
+        url: "/attendance/check-out",
+        method: "POST",
+        body: body || {},
+      }),
+      invalidatesTags: ["Attendance"],
+      transformResponse: (response: { data: IAttendance }) => response.data,
+    }),
+
+    getDailyAttendance: builder.query<DailyRosterResult, { date?: string } | void>({
+      query: (params) => ({
+        url: "/attendance/daily",
+        params: params?.date ? { date: params.date } : undefined,
+      }),
+      providesTags: ["Attendance"],
+      transformResponse: (response: { data: DailyRosterResult }) => response.data,
+    }),
+
+    markAttendance: builder.mutation<IAttendance, MarkAttendancePayload>({
+      query: (body) => ({
+        url: "/attendance/mark",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Attendance"],
+      transformResponse: (response: { data: IAttendance }) => response.data,
+    }),
+
+    bulkMarkAttendance: builder.mutation<{ count: number }, BulkMarkAttendancePayload>({
+      query: (body) => ({
+        url: "/attendance/bulk",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Attendance"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+
+    getMonthlyMatrix: builder.query<
+      MonthlyMatrixResult,
+      {
+        month?: string | number;
+        year?: string | number;
+        departmentId?: string;
+        page?: number;
+        limit?: number;
+      } | void
+    >({
+      query: (params) => ({
+        url: "/attendance/monthly",
+        params: {
+          month: params?.month ? String(params.month) : undefined,
+          year: params?.year ? String(params.year) : undefined,
+          departmentId: params?.departmentId,
+          page: params?.page,
+          limit: params?.limit,
+        },
+      }),
+      providesTags: ["Attendance"],
+      transformResponse: (response: { data: MonthlyMatrixResult }) => response.data,
+    }),
+
+    getStaffAttendanceSummary: builder.query<
+      StaffAttendanceSummary,
+      {
+        userId: string;
+        month?: string | number;
+        year?: string | number;
+      }
+    >({
+      query: ({ userId, month, year }) => ({
+        url: `/attendance/summary/${userId}`,
+        params: {
+          month: month ? String(month) : undefined,
+          year: year ? String(year) : undefined,
+        },
+      }),
+      providesTags: ["Attendance"],
+      transformResponse: (response: { data: StaffAttendanceSummary }) => response.data,
+    }),
+
+    // Part 13: Automation & Recurring Tasks Endpoints
+    triggerTaskAutomation: builder.mutation<
+      TriggerAutomationResult,
+      TriggerAutomationPayload | void
+    >({
+      query: (body) => ({
+        url: "/automation/trigger-tasks",
+        method: "POST",
+        body: body || {},
+      }),
+      invalidatesTags: ["Automation", "Task"],
+      transformResponse: (response: { data: TriggerAutomationResult }) =>
+        response.data,
+    }),
+
+    getAutomationLogs: builder.query<
+      AutomationLogsResponse,
+      { page?: number; limit?: number } | void
+    >({
+      query: (params) => ({
+        url: "/automation/logs",
+        params: {
+          page: params?.page ? String(params.page) : undefined,
+          limit: params?.limit ? String(params.limit) : undefined,
+        },
+      }),
+      providesTags: ["Automation"],
+      transformResponse: (response: { data: AutomationLogsResponse }) =>
+        response.data,
+    }),
+
+    getQueueHealth: builder.query<QueueHealthMetrics, void>({
+      query: () => "/health",
+      transformResponse: (response: { data: QueueHealthMetrics }) => response.data,
+    }),
+
+    // Part 14: Dynamic Visual Analytics & BI Dashboards
+    getClientDistribution: builder.query<ClientEntityDistributionItem[], void>({
+      query: () => "/analytics/client-distribution",
+      providesTags: ["Client", "Dashboard"],
+      transformResponse: (response: { data: ClientEntityDistributionItem[] }) =>
+        response.data,
+    }),
+
+    getStaffPerformance: builder.query<
+      StaffPerformanceItem[],
+      { from?: string; to?: string } | void
+    >({
+      query: (params) => ({
+        url: "/analytics/staff-performance",
+        params: {
+          from: params?.from,
+          to: params?.to,
+        },
+      }),
+      providesTags: ["Task", "Dashboard", "User"],
+      transformResponse: (response: { data: StaffPerformanceItem[] }) =>
+        response.data,
+    }),
+
+    getAttendanceOverview: builder.query<
+      AttendanceKPIOverview,
+      { date?: string; departmentId?: string } | void
+    >({
+      query: (params) => ({
+        url: "/analytics/attendance-overview",
+        params: {
+          date: params?.date,
+          departmentId: params?.departmentId,
+        },
+      }),
+      providesTags: ["Attendance", "Dashboard"],
+      transformResponse: (response: { data: AttendanceKPIOverview }) =>
+        response.data,
     }),
   }),
 });
@@ -681,5 +971,27 @@ export const {
   useGetDashboardOverviewQuery,
   useGetClientSummaryQuery,
   useGetUsersQuery,
+  useGetHolidaysQuery,
+  useCreateHolidayMutation,
+  useUpdateHolidayMutation,
+  useDeleteHolidayMutation,
+  useSeedDefaultHolidaysMutation,
+  useGetWorkingDaysQuery,
+  useUpdateWorkingDaysMutation,
+  useGetMyIpQuery,
+  useGetTodayAttendanceQuery,
+  useCheckInMutation,
+  useCheckOutMutation,
+  useGetDailyAttendanceQuery,
+  useMarkAttendanceMutation,
+  useBulkMarkAttendanceMutation,
+  useGetMonthlyMatrixQuery,
+  useGetStaffAttendanceSummaryQuery,
+  useTriggerTaskAutomationMutation,
+  useGetAutomationLogsQuery,
+  useGetQueueHealthQuery,
+  useGetClientDistributionQuery,
+  useGetStaffPerformanceQuery,
+  useGetAttendanceOverviewQuery,
 } = applicationApi;
 

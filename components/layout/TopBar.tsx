@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useRouter } from "next/navigation";
+import { WebPunchWidget } from "@/components/attendance/WebPunchWidget";
 
 export function TopBar() {
   const { user, logout } = useAuth();
@@ -34,6 +35,9 @@ export function TopBar() {
       </div>
 
       <div className="ml-auto flex items-center gap-2 sm:gap-3">
+        {/* Daily Web Punch Widget */}
+        <WebPunchWidget variant="compact" />
+
         <span className="hidden text-sm font-medium text-muted-foreground md:inline">
           {user?.tenant}
         </span>

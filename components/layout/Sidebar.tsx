@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Sparkles,
   Layers,
+  CalendarCheck,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -56,6 +57,11 @@ const navItems: NavItem[] = [
     label: "Services",
     icon: Layers,
     requiredPermission: "settings.view", // Assuming it falls under settings for now
+  },
+  {
+    to: "/attendance",
+    label: "Attendance",
+    icon: CalendarCheck,
   },
   {
     to: "/settings",

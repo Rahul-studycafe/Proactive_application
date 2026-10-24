@@ -1,8 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Clock, Circle, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { Clock, Circle, Loader2, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -169,7 +171,13 @@ export default function TasksPage() {
           </Tabs>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <Link href="/tasks/automation">
+            <Button variant="outline" className="gap-1.5 text-xs">
+              <Zap className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
+              <span>Automation</span>
+            </Button>
+          </Link>
           <CreateTaskDialog />
         </div>
       </div>

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { RecurrenceBadge } from "@/components/services/RecurrenceBadge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -62,8 +63,8 @@ export function PackagesTable() {
                   </Badge>
                 )}
               </TableCell>
-              <TableCell className="capitalize text-muted-foreground">
-                {pkg.frequency.replace("_", " ")}
+              <TableCell>
+                <RecurrenceBadge frequency={pkg.frequency} />
               </TableCell>
               <TableCell>
                 <div className="flex flex-wrap gap-1 max-w-[300px]">

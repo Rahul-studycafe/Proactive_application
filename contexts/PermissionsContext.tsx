@@ -13,7 +13,10 @@ export type Permission =
   | "invoices.create"
   | "invoices.edit"
   | "settings.view"
-  | "settings.manage_users";
+  | "settings.manage_users"
+  | "attendance.manage"
+  | "attendance.view_all"
+  | "attendance.view_self";
 
 const adminPermissions: Permission[] = [
   "clients.view",
@@ -28,6 +31,9 @@ const adminPermissions: Permission[] = [
   "invoices.edit",
   "settings.view",
   "settings.manage_users",
+  "attendance.manage",
+  "attendance.view_all",
+  "attendance.view_self",
 ];
 
 const RBAC: Record<string, Permission[]> = {
@@ -44,6 +50,9 @@ const RBAC: Record<string, Permission[]> = {
     "invoices.view",
     "invoices.create",
     "settings.view",
+    "attendance.manage",
+    "attendance.view_all",
+    "attendance.view_self",
   ],
   Accountant: [
     "clients.view",
@@ -51,8 +60,10 @@ const RBAC: Record<string, Permission[]> = {
     "tasks.view",
     "tasks.edit",
     "invoices.view",
+    "attendance.view_all",
+    "attendance.view_self",
   ],
-  Staff: ["clients.view", "tasks.view"],
+  Staff: ["clients.view", "tasks.view", "attendance.view_self"],
 };
 
 interface PermissionsContextValue {

@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { BackButton } from "@/components/shared/BackButton";
+import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import {
   Table,
   TableBody,
@@ -162,14 +164,7 @@ export default function ViewInvoicePage() {
   if (error || !invoice) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Link
-            href="/invoices"
-            className="inline-flex items-center gap-1 hover:text-foreground"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" /> Back to Invoices
-          </Link>
-        </div>
+        <BackButton href="/invoices" label="Back to Invoices" />
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <FileText className="h-12 w-12 text-destructive mb-3 opacity-60" />
           <h2 className="text-lg font-semibold">Invoice not found</h2>
@@ -201,17 +196,20 @@ export default function ViewInvoicePage() {
 
   return (
     <div className="space-y-6 pb-16">
+      {/* ─── Breadcrumbs (Hidden in Print) ────── */}
+      <div className="print:hidden">
+        <Breadcrumbs
+          items={[
+            { label: "Invoices", href: "/invoices" },
+            { label: invoice.invoiceNo || "Invoice Details" },
+          ]}
+        />
+      </div>
+
       {/* ─── Top Navigation & Controls (Hidden in Print) ────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Link
-              href="/invoices"
-              className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" /> Back to Invoices
-            </Link>
-          </div>
+          <BackButton href="/invoices" label="Back to Invoices" />
           <div className="flex items-center gap-3 mt-1">
             <h1 className="text-2xl font-bold tracking-tight">
               {invoice.invoiceNo}

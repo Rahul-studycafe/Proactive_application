@@ -19,6 +19,8 @@ import {
   Pencil,
   Equal,
 } from "lucide-react";
+import { BackButton } from "@/components/shared/BackButton";
+import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import {
   useGetServiceByIdQuery,
   useUpdateServiceMutation,
@@ -280,25 +282,23 @@ export default function ServiceDetailPage() {
 
   return (
     <div className="space-y-5">
-      {/* Header */}
+      {/* Standard Breadcrumb & Back Navigation */}
+      <Breadcrumbs
+        items={[
+          { label: "Services", href: "/services" },
+          { label: formData.name || "Service Details" },
+        ]}
+      />
+
+      <BackButton href="/services" label="Back to Services" />
+
+      {/* Header Actions */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.push("/services")}
-            aria-label="Back"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <Link
-            href="/services"
-            className="text-base font-medium text-primary hover:underline"
-          >
-            Services
-          </Link>
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-          <span className="text-base font-semibold">{formData.name}</span>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">{formData.name}</h1>
+          <p className="text-sm text-muted-foreground">
+            Configure service workflow, recurring schedules, and pricing.
+          </p>
         </div>
 
         <div className="flex items-center gap-3">

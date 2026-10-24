@@ -35,6 +35,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatDate, cn } from "@/lib/utils";
+import { BackButton } from "@/components/shared/BackButton";
+import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -196,18 +198,20 @@ export default function TaskDashboard() {
 
   return (
     <div className="space-y-6 max-w-6xl">
-      {/* Consistent Breadcrumb */}
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
-        <Link
-          href="/tasks"
-          className="inline-flex items-center gap-1 hover:text-foreground"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" /> Back to Tasks
-        </Link>
+      {/* 2+ Level Breadcrumb Hierarchy */}
+      <Breadcrumbs
+        items={[
+          { label: "Tasks", href: "/tasks" },
+          { label: (task as any).title || task.serviceId?.name || "Task Details" },
+        ]}
+      />
+
+      {/* Consistent Back Button */}
+      <BackButton href="/tasks" label="Back to Tasks">
         <Button variant="destructive" size="sm" className="h-8 text-xs">
           <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Delete Task
         </Button>
-      </div>
+      </BackButton>
 
       {/* Task Header - Consistent with Client Header */}
       <div className="flex items-start justify-between">

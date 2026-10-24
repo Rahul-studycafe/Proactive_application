@@ -25,6 +25,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { BackButton } from "@/components/shared/BackButton";
+import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import {
   Select,
   SelectContent,
@@ -438,25 +440,22 @@ export default function NewClientPage() {
   return (
     <div className="w-full pb-10">
       <form onSubmit={onSubmit} className="space-y-6 max-w-7xl mx-auto">
+        <Breadcrumbs
+          items={[
+            { label: "Clients", href: "/clients" },
+            { label: "Add Client" },
+          ]}
+        />
+
+        <BackButton href="/clients" label="Back to Clients" />
+
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 border-b">
-          <div className="flex items-center gap-4">
-            <Button
-              asChild
-              variant="outline"
-              size="icon"
-              className="h-9 w-9 shrink-0"
-            >
-              <Link href="/clients">
-                <ArrowLeft className="h-4 w-4" />
-              </Link>
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">Add Client</h1>
-              <p className="text-sm text-muted-foreground">
-                Create a new client profile and configure their settings.
-              </p>
-            </div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Add Client</h1>
+            <p className="text-sm text-muted-foreground">
+              Create a new client profile and configure their settings.
+            </p>
           </div>
           <div className="flex items-center gap-3">
             <Button asChild variant="ghost">

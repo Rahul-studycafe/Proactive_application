@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { RecurrenceBadge } from "@/components/services/RecurrenceBadge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -80,12 +81,10 @@ export function ServicesTable() {
                 ₹{(service.defaultBillingRate || 0).toLocaleString("en-IN")}
               </TableCell>
               <TableCell>
-                <Badge
-                  variant="secondary"
-                  className="font-normal capitalize bg-muted text-muted-foreground hover:bg-muted"
-                >
-                  {service.frequency?.type?.replace("_", " ") || "One-Time"}
-                </Badge>
+                <RecurrenceBadge
+                  frequency={service.frequency}
+                  isRecurring={service.isRecurring}
+                />
               </TableCell>
               <TableCell>
                 <Badge

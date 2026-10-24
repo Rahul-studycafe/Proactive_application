@@ -43,6 +43,9 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { BackButton } from "@/components/shared/BackButton";
+import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
+import { RecurrenceBadge } from "@/components/services/RecurrenceBadge";
 import {
   useGetClientByIdQuery,
   useGetClientDocumentsQuery,
@@ -219,14 +222,14 @@ export default function ClientDetailPage() {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Link
-          href="/clients"
-          className="inline-flex items-center gap-1 hover:text-foreground"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" /> Back to Clients
-        </Link>
-      </div>
+      <Breadcrumbs
+        items={[
+          { label: "Clients", href: "/clients" },
+          { label: client.name || "Client Details" },
+        ]}
+      />
+
+      <BackButton href="/clients" label="Back to Clients" />
 
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-4">
@@ -672,8 +675,11 @@ export default function ClientDetailPage() {
                         <PackageIcon className="h-4 w-4" />
                       </div>
                       <div>
-                        <div className="text-sm font-medium">
-                          Package Subscription
+                        <div className="text-sm font-medium flex items-center gap-2">
+                          <span>{sub.packageId?.name || "Package Subscription"}</span>
+                          {(sub.packageId?.frequency || sub.frequency) && (
+                            <RecurrenceBadge frequency={sub.packageId?.frequency || sub.frequency} />
+                          )}
                         </div>
                         <div className="text-xs text-muted-foreground mt-1">
                           Subscribed on:{" "}
@@ -707,15 +713,16 @@ export default function ClientDetailPage() {
                         <FileText className="h-4 w-4" />
                       </div>
                       <div>
-                        <div className="text-sm font-medium">
-                          {sub.serviceId?.name || "Service Subscription"}
+                        <div className="text-sm font-medium flex items-center gap-2">
+                          <span>{sub.serviceId?.name || "Service Subscription"}</span>
+                          <RecurrenceBadge
+                            frequency={sub.serviceId?.frequency}
+                            isRecurring={sub.serviceId?.isRecurring}
+                          />
                         </div>
                         <div className="text-xs text-muted-foreground mt-1">
                           Subscribed on:{" "}
                           {new Date(sub.subscribedAt).toLocaleDateString()}
-                          {sub.serviceId?.isRecurring
-                            ? ` · ${sub.serviceId.frequency?.type?.replace("_", " ")}`
-                            : " · One-time"}
                         </div>
                       </div>
                     </div>

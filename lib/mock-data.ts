@@ -324,6 +324,14 @@ export const mockInvoices: Invoice[] = [
 
 export const mockUsers: AppUser[] = [
   {
+    id: "u-david",
+    name: "David",
+    email: "david@rahulandco.com",
+    role: "Admin",
+    status: "Active",
+    avatarColor: "#6366f1",
+  },
+  {
     id: "u1",
     name: "Janhvi Mathur",
     email: "janhvi@mative.in",

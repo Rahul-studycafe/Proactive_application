@@ -22,6 +22,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { BackButton } from "@/components/shared/BackButton";
+import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import {
   Select,
   SelectContent,
@@ -278,15 +280,15 @@ function NewInvoiceContent() {
 
   return (
     <div className="space-y-5 pb-10">
+      <Breadcrumbs
+        items={[
+          { label: "Invoices", href: "/invoices" },
+          { label: isEdit ? "Edit Invoice" : "New Invoice" },
+        ]}
+      />
+
       {/* ─── Back to Invoices Link ────────────────────────────── */}
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Link
-          href="/invoices"
-          className="inline-flex items-center gap-1 hover:text-foreground"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" /> Back to Invoices
-        </Link>
-      </div>
+      <BackButton href="/invoices" label="Back to Invoices" />
 
       {/* ─── Page Title Header ─────────────────────────────────── */}
       <div className="flex items-start justify-between">
