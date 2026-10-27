@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,7 +53,6 @@ import {
   useGetClientByIdQuery,
 } from "@/lib/services/api";
 import { type TaskPriority } from "@/lib/types";
-import { useMemo } from "react";
 import { useParams } from "next/navigation";
 
 export function CreateTaskDialog({
@@ -69,6 +68,7 @@ export function CreateTaskDialog({
 
   const [open, setOpen] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState("");
+  const [showAllServices, setShowAllServices] = useState(false);
 
   const clientId = lockedClientId || selectedClientId;
   const [serviceId, setServiceId] = useState("");
@@ -84,6 +84,11 @@ export function CreateTaskDialog({
   const [tagPopoverOpen, setTagPopoverOpen] = useState(false);
   const [docCollectionRequest, setDocCollectionRequest] = useState(false);
   const [docCollectionMessage, setDocCollectionMessage] = useState("");
+
+  // Reset showAllServices when client changes
+  useEffect(() => {
+    setShowAllServices(false);
+  }, [clientId]);
 
   const { data: clientsRes, isLoading: clientsLoading } =
     useGetClientsQuery(undefined);
@@ -103,8 +108,8 @@ export function CreateTaskDialog({
   const services = Array.isArray(servicesRes) ? servicesRes : [];
   const users = Array.isArray(usersRes) ? usersRes : usersRes?.users || [];
 
-  const availableServices = useMemo(() => {
-    if (!clientId || !clientData) return services;
+  const subscribedServicesList = useMemo(() => {
+    if (!clientId || !clientData) return [];
 
     const allowedServiceIds = new Set<string>();
 
@@ -115,18 +120,25 @@ export function CreateTaskDialog({
     });
 
     clientData.subscribedPackages?.forEach((sub: any) => {
-      if (sub.packageId?.services) {
-        sub.packageId.services.forEach((s: any) => {
+      const pkgServices = sub.packageId?.serviceIds || sub.packageId?.services;
+      if (pkgServices) {
+        pkgServices.forEach((s: any) => {
           const id = typeof s === "object" ? s._id : s;
           if (id) allowedServiceIds.add(String(id));
         });
       }
     });
 
-    // If a client has NO services, we might still want to let them select one if they are admin,
-    // but the user requested to only show available services.
     return services.filter((s: any) => allowedServiceIds.has(String(s._id)));
   }, [clientId, clientData, services]);
+
+  const availableServices = useMemo(() => {
+    if (!clientId) return services;
+    if (subscribedServicesList.length > 0 && !showAllServices) {
+      return subscribedServicesList;
+    }
+    return services;
+  }, [clientId, subscribedServicesList, showAllServices, services]);
 
   const handleCreate = async () => {
     if (!clientId || !serviceId || assigneeIds.length === 0) return;
@@ -231,9 +243,22 @@ export function CreateTaskDialog({
             </div>
 
             <div className="grid gap-2">
-              <Label>
-                Service <span className="text-red-500">*</span>
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label>
+                  Service <span className="text-red-500">*</span>
+                </Label>
+                {subscribedServicesList.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllServices((prev) => !prev)}
+                    className="text-[11px] text-primary hover:underline cursor-pointer"
+                  >
+                    {showAllServices
+                      ? `Show Subscribed Only (${subscribedServicesList.length})`
+                      : "+ Show All Services (Ad-hoc)"}
+                  </button>
+                )}
+              </div>
               <Select value={serviceId} onValueChange={setServiceId}>
                 <SelectTrigger>
                   <SelectValue
@@ -243,6 +268,16 @@ export function CreateTaskDialog({
                   />
                 </SelectTrigger>
                 <SelectContent>
+                  {subscribedServicesList.length > 0 && !showAllServices && (
+                    <div className="px-2 py-1 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                      Subscribed Services ({subscribedServicesList.length})
+                    </div>
+                  )}
+                  {subscribedServicesList.length === 0 && clientId && (
+                    <div className="px-2 py-1 text-[11px] text-amber-600 dark:text-amber-400 font-medium">
+                      No active subscriptions — showing all practice services
+                    </div>
+                  )}
                   {availableServices.map((service: any) => (
                     <SelectItem key={service._id} value={service._id}>
                       {service.name}
@@ -250,7 +285,7 @@ export function CreateTaskDialog({
                   ))}
                   {availableServices.length === 0 && (
                     <div className="p-2 text-sm text-muted-foreground text-center">
-                      No services subscribed by this client
+                      No services found in practice catalog
                     </div>
                   )}
                 </SelectContent>

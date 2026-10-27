@@ -48,9 +48,6 @@ import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { RecurrenceBadge } from "@/components/services/RecurrenceBadge";
 import {
   useGetClientByIdQuery,
-  useGetClientDocumentsQuery,
-  useUploadClientDocumentMutation,
-  useDeleteClientDocumentMutation,
   useUploadClientPhotoMutation,
   useUpdateClientMutation,
 } from "@/lib/services/api";
@@ -60,35 +57,11 @@ import { EditClientDialog } from "./EditClientDialog";
 import { Button } from "@/components/ui/button";
 import { CreateTaskDialog } from "../../tasks/CreateTaskDialog";
 import { ClientLedgerTab } from "./ClientLedgerTab";
+import { ClientDSCTab } from "./ClientDSCTab";
+import { ClientDocumentsTab } from "./ClientDocumentsTab";
+import { ClientPasswordsTab } from "@/components/passwords";
+import { ClientExpensesTab } from "@/components/expenses";
 
-const getFileIcon = (fileName: string) => {
-  if (!fileName) return <File className="h-5 w-5 text-muted-foreground" />;
-  const ext = fileName.split(".").pop()?.toLowerCase();
-  switch (ext) {
-    case "pdf":
-    case "doc":
-    case "docx":
-    case "txt":
-      return <FileText className="h-5 w-5 text-blue-500" />;
-    case "png":
-    case "jpg":
-    case "jpeg":
-    case "svg":
-    case "webp":
-      return <FileImage className="h-5 w-5 text-purple-500" />;
-    case "xls":
-    case "xlsx":
-    case "csv":
-      return <FileSpreadsheet className="h-5 w-5 text-emerald-500" />;
-    case "zip":
-    case "rar":
-    case "tar":
-    case "gz":
-      return <FileArchive className="h-5 w-5 text-amber-500" />;
-    default:
-      return <File className="h-5 w-5 text-muted-foreground" />;
-  }
-};
 
 export default function ClientDetailPage() {
   const params = useParams();
@@ -106,15 +79,7 @@ export default function ClientDetailPage() {
 
   const { data: client, isLoading } = useGetClientByIdQuery(clientId);
 
-  const { data: documentsResponse } = useGetClientDocumentsQuery({ clientId });
-  const documents = Array.isArray(documentsResponse)
-    ? documentsResponse
-    : documentsResponse?.data || [];
 
-  const [uploadDoc, { isLoading: isUploading }] =
-    useUploadClientDocumentMutation();
-  const [deleteDoc] = useDeleteClientDocumentMutation();
-  const documentInputRef = useRef<HTMLInputElement>(null);
 
   const photoInputRef = useRef<HTMLInputElement>(null);
   const [uploadClientPhoto, { isLoading: isUploadingPhoto }] =
@@ -153,38 +118,7 @@ export default function ClientDetailPage() {
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
 
-    try {
-      const formData = new FormData();
-      formData.append("category", "document");
-      formData.append("file", file);
-
-      await uploadDoc({
-        clientId: clientId as string,
-        data: formData,
-      }).unwrap();
-
-      toast.success("Document uploaded successfully");
-    } catch (error) {
-      toast.error("Failed to upload document");
-    } finally {
-      if (documentInputRef.current) {
-        documentInputRef.current.value = "";
-      }
-    }
-  };
-
-  const handleDeleteDocument = async (id: string) => {
-    try {
-      await deleteDoc({ id, clientId: clientId as string }).unwrap();
-      toast.success("Document deleted");
-    } catch (error) {
-      toast.error("Failed to delete document");
-    }
-  };
 
   if (isLoading) {
     return (
@@ -338,17 +272,18 @@ export default function ClientDetailPage() {
             Documents
           </TabsTrigger>
           <TabsTrigger
+            value="dsc"
+            className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2 pt-1 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
+          >
+            DSC Register
+          </TabsTrigger>
+          <TabsTrigger
             value="ledger"
             className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2 pt-1 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
           >
             Ledger
           </TabsTrigger>
-          <TabsTrigger
-            value="docs-in-out"
-            className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2 pt-1 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
-          >
-            Docs. In-Out Register
-          </TabsTrigger>
+
           <TabsTrigger
             value="passwords"
             className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2 pt-1 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
@@ -798,97 +733,34 @@ export default function ClientDetailPage() {
         </TabsContent>
 
         <TabsContent value="documents">
-          <Card className="shadow-sm border-border">
-            <CardHeader className="pb-3 border-b flex flex-row items-center justify-between">
-              <CardTitle className="text-sm font-semibold">
-                Client Documents
-              </CardTitle>
-              <input
-                type="file"
-                className="hidden"
-                ref={documentInputRef}
-                onChange={handleFileUpload}
-              />
-              <Button
-                size="sm"
-                onClick={() => documentInputRef.current?.click()}
-                disabled={isUploading}
-              >
-                {isUploading ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : (
-                  <Plus className="h-4 w-4 mr-2" />
-                )}
-                Upload Document
-              </Button>
-            </CardHeader>
-            <CardContent className="p-6">
-              {documents && documents.length > 0 ? (
-                <div className="space-y-3">
-                  {documents.map((doc: any) => (
-                    <div
-                      key={doc._id}
-                      className="flex items-center justify-between p-3 border rounded-lg bg-background"
-                    >
-                      <div className="flex items-center gap-3">
-                        {getFileIcon(doc.fileName)}
-                        <div>
-                          <p className="text-sm font-medium">{doc.fileName}</p>
-                          <p className="text-xs text-muted-foreground">
-                            Uploaded by {doc.uploadedBy?.name} on{" "}
-                            {formatDate(doc.createdAt)}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => window.open(doc.fileUrl, "_blank")}
-                        >
-                          View
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                          onClick={() => handleDeleteDocument(doc._id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="p-12 text-center text-muted-foreground flex flex-col items-center justify-center">
-                  <FileText className="h-8 w-8 mb-2 opacity-20" />
-                  <p>No documents uploaded yet.</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <ClientDocumentsTab
+            clientId={clientId}
+            clientName={client?.name}
+            initialSubTab={activeTab === "docs-in-out" ? "physical" : undefined}
+          />
+        </TabsContent>
+        <TabsContent value="dsc">
+          <ClientDSCTab clientId={clientId} />
         </TabsContent>
         <TabsContent value="ledger">
           <ClientLedgerTab clientId={clientId} />
         </TabsContent>
-        <TabsContent
-          value="docs-in-out"
-          className="rounded-xl border bg-card shadow-sm p-6 text-center text-muted-foreground text-sm"
-        >
-          Coming Soon
+        <TabsContent value="docs-in-out">
+          <ClientDocumentsTab
+            clientId={clientId}
+            clientName={client?.name}
+            initialSubTab="physical"
+          />
         </TabsContent>
-        <TabsContent
-          value="passwords"
-          className="rounded-xl border bg-card shadow-sm p-6 text-center text-muted-foreground text-sm"
-        >
-          Coming Soon
+        <TabsContent value="passwords">
+          <ClientPasswordsTab
+            clientId={clientId}
+            clientName={client?.name}
+            clientFileNo={client?.fileNo}
+          />
         </TabsContent>
-        <TabsContent
-          value="expenses"
-          className="rounded-xl border bg-card shadow-sm p-6 text-center text-muted-foreground text-sm"
-        >
-          Coming Soon
+        <TabsContent value="expenses">
+          <ClientExpensesTab clientId={clientId} clientName={client?.name} />
         </TabsContent>
       </Tabs>
     </div>

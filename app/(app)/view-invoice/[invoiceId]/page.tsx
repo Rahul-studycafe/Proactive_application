@@ -2,11 +2,13 @@
 
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { useState } from "react";
 import {
   ArrowLeft,
   Printer,
   Pencil,
   FileText,
+  FileMinus,
   Loader2,
   Building2,
   CheckCircle2,
@@ -14,6 +16,8 @@ import {
   Ban,
   Share2,
 } from "lucide-react";
+import { IssueCreditNoteModal } from "@/components/credit-notes/IssueCreditNoteModal";
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BackButton } from "@/components/shared/BackButton";
@@ -141,6 +145,8 @@ export default function ViewInvoicePage() {
     skip: !invoiceId,
   });
 
+  const [isCreditNoteModalOpen, setIsCreditNoteModalOpen] = useState(false);
+
   const handlePrint = () => {
     window.print();
   };
@@ -227,6 +233,16 @@ export default function ViewInvoicePage() {
           <Button variant="outline" size="sm" onClick={handleCopyLink}>
             <Share2 className="mr-1.5 h-4 w-4" /> Share
           </Button>
+          {invoice.status !== "Draft" && invoice.status !== "Cancelled" && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsCreditNoteModalOpen(true)}
+              className="gap-1.5 text-xs text-purple-600 dark:text-purple-400 border-purple-500/30 hover:bg-purple-500/10"
+            >
+              <FileMinus className="h-4 w-4" /> Issue Credit Note
+            </Button>
+          )}
           {invoice.status === "Draft" && (
             <Button asChild variant="outline" size="sm">
               <Link href={`/invoices/new?id=${invoice._id}`}>
@@ -555,6 +571,13 @@ export default function ViewInvoicePage() {
           </div>
         </div>
       </div>
+
+      <IssueCreditNoteModal
+        open={isCreditNoteModalOpen}
+        onOpenChange={setIsCreditNoteModalOpen}
+        preselectedInvoiceId={invoiceId}
+        onSuccess={(newCnId) => router.push(`/credit-notes/${newCnId}`)}
+      />
     </div>
   );
 }

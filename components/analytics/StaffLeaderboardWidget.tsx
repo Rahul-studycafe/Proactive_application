@@ -85,9 +85,7 @@ export function StaffLeaderboardWidget({
               <CardTitle className="text-base font-semibold">
                 Staff Performance Leaderboard
               </CardTitle>
-              <CardDescription className="text-xs">
-                Task completion rankings across active team members
-              </CardDescription>
+             
             </div>
           </div>
 

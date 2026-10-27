@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -26,7 +26,11 @@ import {
   Ban,
   Clock,
 } from "lucide-react";
-import { useTriggerTaskAutomationMutation } from "@/lib/services/api";
+import {
+  useTriggerTaskAutomationMutation,
+  useGetClientsQuery,
+  useGetServicesQuery,
+} from "@/lib/services/api";
 import { TriggerAutomationResult } from "@/lib/types/automation";
 import { toast } from "sonner";
 
@@ -47,6 +51,27 @@ export function TriggerAutomationModal({
   const [result, setResult] = useState<TriggerAutomationResult | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
+
+  const { data: clientsRes } = useGetClientsQuery(undefined);
+  const { data: servicesRes } = useGetServicesQuery(undefined);
+
+  const clientMap = useMemo(() => {
+    const map = new Map<string, string>();
+    const list = clientsRes?.clients || (Array.isArray(clientsRes) ? clientsRes : []);
+    list.forEach((c: any) => {
+      if (c._id) map.set(String(c._id), c.name);
+    });
+    return map;
+  }, [clientsRes]);
+
+  const serviceMap = useMemo(() => {
+    const map = new Map<string, string>();
+    const list = Array.isArray(servicesRes) ? servicesRes : [];
+    list.forEach((s: any) => {
+      if (s._id) map.set(String(s._id), s.name);
+    });
+    return map;
+  }, [servicesRes]);
 
   // Handle live elapsed timer during execution
   useEffect(() => {
@@ -239,36 +264,50 @@ export function TriggerAutomationModal({
                     Items Processed ({result.details.length})
                   </div>
                   <div className="max-h-40 overflow-y-auto rounded-lg border bg-muted/20 divide-y text-xs">
-                    {result.details.map((d, i) => (
-                      <div
-                        key={i}
-                        className="flex items-center justify-between px-3 py-2"
-                      >
-                        <div className="truncate mr-2">
-                          <span className="font-medium text-foreground">
-                            {d.clientId?.name || "Client"}
-                          </span>
-                          <span className="text-muted-foreground ml-1">
-                            · {d.serviceId?.name || "Service"}
-                          </span>
-                          <span className="text-[10px] text-muted-foreground/80 ml-1.5 font-mono">
-                            [{d.period}]
-                          </span>
-                        </div>
-                        <Badge
-                          variant="outline"
-                          className={
-                            d.status === "Created"
-                              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 text-[10px]"
-                              : d.status === "Failed"
-                              ? "border-rose-500/30 bg-rose-500/10 text-rose-600 text-[10px]"
-                              : "border-slate-500/30 bg-slate-500/10 text-slate-500 text-[10px]"
-                          }
+                    {result.details.map((d: any, i: number) => {
+                      const clientName =
+                        (typeof d.clientId === "object" ? d.clientId?.name : null) ||
+                        (d.clientName as string) ||
+                        clientMap.get(String(d.clientId)) ||
+                        "Client";
+
+                      const serviceName =
+                        (typeof d.serviceId === "object" ? d.serviceId?.name : null) ||
+                        (d.serviceName as string) ||
+                        serviceMap.get(String(d.serviceId)) ||
+                        "Service";
+
+                      return (
+                        <div
+                          key={i}
+                          className="flex items-center justify-between px-3 py-2"
                         >
-                          {d.status}
-                        </Badge>
-                      </div>
-                    ))}
+                          <div className="truncate mr-2">
+                            <span className="font-semibold text-foreground">
+                              {clientName}
+                            </span>
+                            <span className="text-muted-foreground ml-1">
+                              · {serviceName}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground/80 ml-1.5 font-mono">
+                              [{d.period}]
+                            </span>
+                          </div>
+                          <Badge
+                            variant="outline"
+                            className={
+                              d.status === "Created"
+                                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 text-[10px]"
+                                : d.status === "Failed"
+                                ? "border-rose-500/30 bg-rose-500/10 text-rose-600 text-[10px]"
+                                : "border-slate-500/30 bg-slate-500/10 text-slate-500 text-[10px]"
+                            }
+                          >
+                            {d.status}
+                          </Badge>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}

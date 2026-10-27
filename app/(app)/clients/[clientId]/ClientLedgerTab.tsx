@@ -6,6 +6,7 @@ import {
   Calendar,
   FileText,
   CreditCard,
+  FileMinus,
   Printer,
   RotateCcw,
   Loader2,
@@ -287,6 +288,7 @@ export function ClientLedgerTab({ clientId }: { clientId: string }) {
             ) : (
               ledger.entries.map((entry: any, index: number) => {
                 const isInvoice = entry.type === "Invoice";
+                const isCreditNote = entry.type === "Credit Note";
                 const isPositiveBal = (entry.balance || 0) > 0;
                 const isNegativeBal = (entry.balance || 0) < 0;
 
@@ -303,6 +305,13 @@ export function ClientLedgerTab({ clientId }: { clientId: string }) {
                         >
                           <FileText className="h-3 w-3" /> Invoice
                         </Badge>
+                      ) : isCreditNote ? (
+                        <Badge
+                          variant="outline"
+                          className="border-purple-500/30 bg-purple-500/10 text-purple-600 dark:text-purple-400 gap-1 text-[11px]"
+                        >
+                          <FileMinus className="h-3 w-3" /> Credit Note
+                        </Badge>
                       ) : (
                         <Badge
                           variant="outline"
@@ -317,6 +326,14 @@ export function ClientLedgerTab({ clientId }: { clientId: string }) {
                         <Link
                           href={`/view-invoice/${entry.referenceId}`}
                           className="inline-flex items-center gap-1 text-primary hover:underline"
+                        >
+                          {entry.referenceNo}
+                          <ExternalLink className="h-3 w-3 opacity-60" />
+                        </Link>
+                      ) : isCreditNote ? (
+                        <Link
+                          href={`/credit-notes/${entry.referenceId}`}
+                          className="inline-flex items-center gap-1 text-purple-600 dark:text-purple-400 hover:underline"
                         >
                           {entry.referenceNo}
                           <ExternalLink className="h-3 w-3 opacity-60" />

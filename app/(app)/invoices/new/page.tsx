@@ -39,6 +39,8 @@ import {
   useUpdateInvoiceMutation,
 } from "@/lib/services/api";
 import { toast } from "sonner";
+import { UnbilledExpensesAccordion } from "@/components/expenses";
+import { UnbilledExpenseItem } from "@/lib/types/expenses";
 
 interface InvoiceItem {
   referenceType: "Task" | "Expense" | "Manual";
@@ -226,6 +228,41 @@ function NewInvoiceContent() {
     ]);
   };
 
+  const addUnbilledExpense = (exp: UnbilledExpenseItem) => {
+    if (items.some((it) => it.referenceId === exp._id)) return;
+    setItems((p) => [
+      ...p,
+      {
+        referenceType: "Expense" as const,
+        referenceId: exp._id,
+        particulars: exp.particulars,
+        quantity: 1,
+        rate: exp.amount ?? 0,
+        discount: 0,
+        gstPercentage: 0, // Out-of-pocket client outlay recoveries are non-taxable / pure reimbursement
+      },
+    ]);
+  };
+
+  const addAllUnbilledExpenses = (exps: UnbilledExpenseItem[]) => {
+    const newItems = exps
+      .filter((exp) => !items.some((it) => it.referenceId === exp._id))
+      .map((exp) => ({
+        referenceType: "Expense" as const,
+        referenceId: exp._id,
+        particulars: exp.particulars,
+        quantity: 1,
+        rate: exp.amount ?? 0,
+        discount: 0,
+        gstPercentage: 0,
+      }));
+
+    if (newItems.length > 0) {
+      setItems((p) => [...p, ...newItems]);
+      toast.success(`Added ${newItems.length} unbilled outlay(s) to invoice`);
+    }
+  };
+
   const handleSave = async () => {
     if (!clientId) {
       toast.error("Please select a client");
@@ -391,6 +428,16 @@ function NewInvoiceContent() {
             </div>
           </div>
         )}
+
+        {/* Unbilled Client Outlays & Reimbursable Expenses (F-104) */}
+        <UnbilledExpensesAccordion
+          clientId={clientId}
+          alreadyAddedExpenseIds={items
+            .filter((it) => it.referenceType === "Expense" && it.referenceId)
+            .map((it) => it.referenceId!)}
+          onAddExpense={addUnbilledExpense}
+          onAddAllExpenses={addAllUnbilledExpenses}
+        />
 
         {/* Line Items Table */}
         <div className="overflow-hidden rounded-lg border">

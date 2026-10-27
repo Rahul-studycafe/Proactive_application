@@ -16,11 +16,13 @@ import {
   Zap,
   Palmtree,
   ArrowRight,
+  Receipt,
+  Clock,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useGetDashboardOverviewQuery } from "@/lib/services/api";
+import { useGetDashboardOverviewQuery, useGetExpenseAnalyticsQuery } from "@/lib/services/api";
 import { ClientEntityDonutChart } from "@/components/analytics/ClientEntityDonutChart";
 import { StaffLeaderboardWidget } from "@/components/analytics/StaffLeaderboardWidget";
 import { AttendanceKPIWidget } from "@/components/analytics/AttendanceKPIWidget";
@@ -44,6 +46,15 @@ function formatDate(dateStr: string | Date) {
 
 export default function DashboardPage() {
   const { data, isLoading } = useGetDashboardOverviewQuery();
+  const { data: expenseStats } = useGetExpenseAnalyticsQuery();
+
+  const expOverview = expenseStats?.overview || {
+    totalExpenseAmount: 0,
+    billedExpenseAmount: 0,
+    unbilledExpenseAmount: 0,
+    recoveryRatePercentage: 0,
+    count: 0,
+  };
 
   const quickStats = data?.quickStats || {
     totalClients: 0,
@@ -183,6 +194,95 @@ export default function DashboardPage() {
           })}
         </div>
       )}
+
+      {/* Practice Outlays KPI & Expense Summary Bar (F-105) */}
+      <div className="rounded-xl border border-border/70 bg-card p-3.5 sm:p-4 shadow-xs">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 pb-3 border-b border-border/60">
+          <div className="flex items-center gap-2.5">
+            <div className="h-7 w-7 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+              <Receipt className="h-3.5 w-3.5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold tracking-tight text-foreground flex items-center gap-2">
+                <span>Practice Outlays & Reimbursables</span>
+                {expOverview.count > 0 && (
+                  <Badge variant="secondary" className="text-[10px] py-0 px-1.5 h-4">
+                    {expOverview.count} records
+                  </Badge>
+                )}
+              </h3>
+              <p className="text-[11px] text-muted-foreground">
+                Government challans, court stampings, and client-reimbursable expenses
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/expenses"
+            className="text-xs font-medium text-primary hover:underline flex items-center gap-1 shrink-0"
+          >
+            <span>Master Outlays Directory</span>
+            <ArrowRight className="h-3 w-3" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 pt-3">
+          <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-border/60 bg-muted/20">
+            <div className="h-7 w-7 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+              <Receipt className="h-3.5 w-3.5" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-bold tracking-tight text-foreground">
+                {formatCurrency(expOverview.totalExpenseAmount)}
+              </p>
+              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                Total Outlays
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-border/60 bg-muted/20">
+            <div className="h-7 w-7 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
+                {formatCurrency(expOverview.billedExpenseAmount)}
+              </p>
+              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                Billed Recoveries
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-border/60 bg-muted/20">
+            <div className="h-7 w-7 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+              <Clock className="h-3.5 w-3.5" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-bold tracking-tight text-amber-600 dark:text-amber-400">
+                {formatCurrency(expOverview.unbilledExpenseAmount)}
+              </p>
+              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                Unbilled Exposure
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-border/60 bg-muted/20">
+            <div className="h-7 w-7 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+              <TrendingUp className="h-3.5 w-3.5" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-bold tracking-tight text-purple-600 dark:text-purple-400">
+                {expOverview.recoveryRatePercentage}%
+              </p>
+              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                Recovery Rate
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* 2. Middle Row Grid: Unified Activity Feed (60%) + Attendance KPI Ring (40%) */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 items-start">
