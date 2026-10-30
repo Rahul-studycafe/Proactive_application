@@ -4,7 +4,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -12,15 +11,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ClientExpense } from "@/lib/types/expenses";
 import {
-  FileText,
   Download,
   ExternalLink,
   Receipt,
   FileQuestion,
   Calendar,
   CreditCard,
-  Building2,
-  X,
 } from "lucide-react";
 
 interface ReceiptViewerDialogProps {
@@ -56,6 +52,30 @@ export function ReceiptViewerDialog({
 
   const clientName =
     typeof expense.clientId === "object" ? expense.clientId?.name : "Client Outlay";
+
+  const handleDownload = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!fileUrl) return;
+
+    try {
+      const res = await fetch(fileUrl);
+      if (!res.ok) throw new Error("Download request failed");
+      const blob = await res.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      const downloadName =
+        expense.receiptFileName ||
+        (isPdf ? `Receipt-${expense.expenseNo}.pdf` : `Receipt-${expense.expenseNo}.png`);
+      a.download = downloadName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(blobUrl);
+    } catch {
+      window.open(fileUrl, "_blank");
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -94,18 +114,32 @@ export function ReceiptViewerDialog({
             </div>
 
             {fileUrl && (
-              <a
-                href={fileUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                download={expense.receiptFileName || `Receipt-${expense.expenseNo}`}
-                className="shrink-0"
-              >
-                <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs">
+              <div className="flex items-center gap-2 shrink-0">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleDownload}
+                  className="h-8 gap-1.5 text-xs cursor-pointer"
+                >
                   <Download className="h-3.5 w-3.5" />
                   <span>Download</span>
                 </Button>
-              </a>
+                <a
+                  href={fileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex"
+                  title="Open in new window"
+                >
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </Button>
+                </a>
+              </div>
             )}
           </div>
         </div>
@@ -126,7 +160,7 @@ export function ReceiptViewerDialog({
             <div className="w-full h-[500px] rounded-lg overflow-hidden border border-border/60 bg-background">
               <iframe
                 src={`${fileUrl}#toolbar=1`}
-                className="w-full h-full"
+                className="w-full h-full border-0"
                 title={`Receipt-${expense.expenseNo}`}
               />
             </div>
@@ -165,7 +199,7 @@ export function ReceiptViewerDialog({
             variant="outline"
             size="sm"
             onClick={() => onOpenChange(false)}
-            className="h-7 text-xs"
+            className="h-7 text-xs cursor-pointer"
           >
             Close
           </Button>

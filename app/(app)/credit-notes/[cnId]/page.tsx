@@ -22,7 +22,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
-import { BackButton } from "@/components/shared/BackButton";
 import { useGetCreditNoteByIdQuery } from "@/lib/services/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { CreditNoteStatus } from "@/lib/types/credit-note";
@@ -191,14 +190,11 @@ export default function ViewCreditNotePage() {
 
       {/* Top Navigation & Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
-        <div className="space-y-1">
-          <BackButton href="/credit-notes" label="Back to Credit Notes" />
-          <div className="flex items-center gap-3 mt-1">
-            <h1 className="text-2xl font-bold tracking-tight">
-              {creditNote.creditNoteNo}
-            </h1>
-            {getStatusBadge(creditNote.status)}
-          </div>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold tracking-tight">
+            {creditNote.creditNoteNo}
+          </h1>
+          {getStatusBadge(creditNote.status)}
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">

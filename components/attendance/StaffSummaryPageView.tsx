@@ -25,7 +25,6 @@ import {
   useGetMonthlyMatrixQuery,
 } from "@/lib/services/api";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
-import { BackButton } from "@/components/shared/BackButton";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -220,12 +219,6 @@ export function StaffSummaryPageView({ userId }: StaffSummaryPageViewProps) {
             </Button>
           </div>
         }
-      />
-
-      {/* Back Button */}
-      <BackButton
-        href={`/attendance/matrix?month=${selectedMonth}&year=${selectedYear}`}
-        label="Back to Attendance Matrix"
       />
 
       {/* Staff Profile Hero Card */}

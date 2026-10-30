@@ -104,7 +104,7 @@ export function IssueCreditNoteModal({
         invoiceDetail.items || []
       ).map((item: any, idx: number) => ({
         id: item._id || String(idx),
-        description: item.description || "Service",
+        description: item.particulars || item.description || "Service",
         sacCode: item.sacCode || "998231",
         quantity: item.quantity || 1,
         rate: item.rate || 0,

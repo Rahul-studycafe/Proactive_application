@@ -264,7 +264,7 @@ export function WorkingDaysView({
     );
   }
 
-  const shouldShowBack = showBack ?? Boolean(onBack || backHref);
+  const shouldShowBack = showBack === true;
 
   return (
     <div className="space-y-6 max-w-6xl pb-10">

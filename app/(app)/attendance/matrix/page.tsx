@@ -1,5 +1,4 @@
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
-import { BackButton } from "@/components/shared/BackButton";
 import { MonthlyMatrixGrid } from "@/components/attendance/MonthlyMatrixGrid";
 
 export const metadata = {
@@ -17,8 +16,6 @@ export default function MonthlyMatrixPage() {
           { label: "Matrix" },
         ]}
       />
-
-      <BackButton href="/attendance" label="Back to Attendance Desk" />
 
       <div>
         <h1 className="text-2xl font-bold tracking-tight">

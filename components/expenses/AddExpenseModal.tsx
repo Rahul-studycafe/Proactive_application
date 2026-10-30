@@ -241,9 +241,9 @@ export function AddExpenseModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[560px] p-0 overflow-hidden border-border/70 shadow-2xl">
+      <DialogContent className="sm:max-w-[560px] p-0 max-h-[90vh] flex flex-col border-border/70 shadow-2xl">
         {/* Header */}
-        <div className="bg-gradient-to-r from-emerald-600/10 via-teal-600/10 to-blue-600/10 px-6 pt-6 pb-4 border-b border-border/50">
+        <div className="bg-gradient-to-r from-emerald-600/10 via-teal-600/10 to-blue-600/10 px-6 pt-6 pb-4 border-b border-border/50 shrink-0">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-emerald-600/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-inner">
               <Receipt className="h-5 w-5" />
@@ -261,7 +261,7 @@ export function AddExpenseModal({
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
+        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4 overflow-y-auto flex-1">
           {/* Client Selector (if not scoped to a specific client) */}
           {!defaultClientId && (
             <div className="space-y-1.5">

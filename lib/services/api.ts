@@ -93,6 +93,15 @@ const baseQueryWithReauth: BaseQueryFn<
       result = await baseQuery(args, api, extraOptions);
     }
   }
+
+  // Normalize backend error structure so error.data.message is always populated
+  if (result.error && result.error.data && typeof result.error.data === "object") {
+    const errData = result.error.data as any;
+    if (errData.error?.message && !errData.message) {
+      errData.message = errData.error.message;
+    }
+  }
+
   return result;
 };
 
@@ -226,6 +235,21 @@ export const applicationApi = createApi({
     "Expense",
     "Quotation",
     "Report",
+    "ClientPortalUser",
+    "PortalProfile",
+    "WebsiteSettings",
+    "PortalCompliance",
+    "PortalDocuments",
+    "PortalInvoices",
+    "PortalReceipts",
+    "PortalLedger",
+    "PortalDocRequests",
+    "PortalQueries",
+    "GatewayConfig",
+    "PaymentTransaction",
+    "BillingEntity",
+    "TenantSubscription",
+    "TenantUsage",
   ],
   endpoints: (builder) => ({
     login: builder.mutation({
@@ -291,7 +315,7 @@ export const applicationApi = createApi({
         method: "POST",
         body: taskData,
       }),
-      invalidatesTags: ["Task"],
+      invalidatesTags: ["Task", "DocumentRequest", "Client"],
       transformResponse: (response: { data: any }) => response.data,
     }),
     updateTask: builder.mutation({
@@ -576,6 +600,7 @@ export const applicationApi = createApi({
       invalidatesTags: (result, error, { clientId }) => [
         { type: "Client", id: clientId },
         "Client",
+        "DocumentRequest",
       ],
     }),
     subscribeClientToService: builder.mutation({
@@ -583,6 +608,27 @@ export const applicationApi = createApi({
         url: `/clients/${clientId}/services`,
         method: "POST",
         body: { serviceId, customPrice },
+      }),
+      invalidatesTags: (result, error, { clientId }) => [
+        { type: "Client", id: clientId },
+        "Client",
+        "DocumentRequest",
+      ],
+    }),
+    unsubscribeClientFromPackage: builder.mutation({
+      query: ({ clientId, packageId }) => ({
+        url: `/clients/${clientId}/packages/${packageId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, { clientId }) => [
+        { type: "Client", id: clientId },
+        "Client",
+      ],
+    }),
+    unsubscribeClientFromService: builder.mutation({
+      query: ({ clientId, serviceId }) => ({
+        url: `/clients/${clientId}/services/${serviceId}`,
+        method: "DELETE",
       }),
       invalidatesTags: (result, error, { clientId }) => [
         { type: "Client", id: clientId },
@@ -1624,6 +1670,301 @@ export const applicationApi = createApi({
       providesTags: ["Report", "Invoice"],
       transformResponse: (response: { data: DebtorsAgingReportResponse }) => response.data,
     }),
+
+    // ─── Client Portal Authentication & Profile Endpoints ───────────
+    portalLogin: builder.mutation({
+      query: (credentials: { emailOrPhone: string; password: string }) => ({
+        url: "/portal/auth/login",
+        method: "POST",
+        body: credentials,
+      }),
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    portalRequestOtp: builder.mutation({
+      query: (payload: { identifier: string }) => ({
+        url: "/portal/auth/request-otp",
+        method: "POST",
+        body: payload,
+      }),
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    portalVerifyOtp: builder.mutation({
+      query: (payload: { identifier: string; code: string }) => ({
+        url: "/portal/auth/verify-otp",
+        method: "POST",
+        body: payload,
+      }),
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    portalSendMagicLink: builder.mutation({
+      query: (payload: { email: string }) => ({
+        url: "/portal/auth/send-magic-link",
+        method: "POST",
+        body: payload,
+      }),
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    portalVerifyMagicLink: builder.mutation({
+      query: (payload: { token: string }) => ({
+        url: "/portal/auth/verify-magic-link",
+        method: "POST",
+        body: payload,
+      }),
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    portalLogout: builder.mutation<any, void>({
+      query: () => ({
+        url: "/portal/auth/logout",
+        method: "POST",
+      }),
+    }),
+    getPortalProfile: builder.query<any, void>({
+      query: () => "/portal/profile",
+      providesTags: ["PortalProfile"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    updatePortalProfile: builder.mutation({
+      query: (body) => ({
+        url: "/portal/profile",
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["PortalProfile"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    changePortalPassword: builder.mutation({
+      query: (body: { currentPassword: string; newPassword: string }) => ({
+        url: "/portal/auth/change-password",
+        method: "POST",
+        body,
+      }),
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+
+    // ─── Staff: Client Portal Users & Access Management ─────────────
+    getClientPortalUsers: builder.query<{ allowLogin: boolean; users: any[] }, string>({
+      query: (clientId: string) => `/clients/${clientId}/portal-users`,
+      providesTags: ["ClientPortalUser"],
+      transformResponse: (response: { data: { allowLogin: boolean; users: any[] } }) => response.data,
+    }),
+    createClientPortalUser: builder.mutation({
+      query: ({ clientId, ...body }) => ({
+        url: `/clients/${clientId}/portal-users`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["ClientPortalUser", "Client"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    updateClientPortalUser: builder.mutation({
+      query: ({ clientId, userId, ...body }) => ({
+        url: `/clients/${clientId}/portal-users/${userId}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["ClientPortalUser"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    deleteClientPortalUser: builder.mutation({
+      query: ({ clientId, userId }) => ({
+        url: `/clients/${clientId}/portal-users/${userId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["ClientPortalUser"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    resetClientPortalUserPassword: builder.mutation({
+      query: ({ clientId, userId, newPassword }) => ({
+        url: `/clients/${clientId}/portal-users/${userId}/reset-password`,
+        method: "POST",
+        body: { newPassword },
+      }),
+      invalidatesTags: ["ClientPortalUser"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    toggleClientPortalAccess: builder.mutation({
+      query: ({ clientId, allowLogin }) => ({
+        url: `/clients/${clientId}/portal-access`,
+        method: "PATCH",
+        body: { allowLogin },
+      }),
+      invalidatesTags: ["ClientPortalUser", "Client"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+
+    // ─── Website CMS & Portal Configuration ─────────────────────────
+    getPortalWebsiteConfig: builder.query<any, string | void>({
+      query: (subdomain) => ({
+        url: "/portal/website-config",
+        params: subdomain ? { subdomain } : undefined,
+      }),
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    getWebsiteSettings: builder.query<any, void>({
+      query: () => "/tenant-settings/website",
+      providesTags: ["WebsiteSettings"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    updateWebsiteSettings: builder.mutation<any, any>({
+      query: (body) => ({
+        url: "/tenant-settings/website",
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["WebsiteSettings"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+
+    // ─── Part 26: Client Self-Service Hub Endpoints ────────────────
+    getComplianceCalendar: builder.query<any[], { year?: number; month?: number; status?: string } | void>({
+      query: (params) => ({
+        url: "/portal/compliance-calendar",
+        params: params || undefined,
+      }),
+      providesTags: ["PortalCompliance"],
+      transformResponse: (response: { data: any[] }) => response.data,
+    }),
+    getPortalDocuments: builder.query<any[], { folder?: string; search?: string; from?: string; to?: string } | void>({
+      query: (params) => ({
+        url: "/portal/documents",
+        params: params || undefined,
+      }),
+      providesTags: ["PortalDocuments"],
+      transformResponse: (response: { data: any[] }) => response.data,
+    }),
+    getPortalInvoices: builder.query<any[], void>({
+      query: () => "/portal/invoices",
+      providesTags: ["PortalInvoices"],
+      transformResponse: (response: { data: any[] }) => response.data,
+    }),
+    getPortalReceipts: builder.query<any[], void>({
+      query: () => "/portal/receipts",
+      providesTags: ["PortalReceipts"],
+      transformResponse: (response: { data: any[] }) => response.data,
+    }),
+    getPortalLedger: builder.query<any, { from?: string; to?: string } | void>({
+      query: (params) => ({
+        url: "/portal/ledger",
+        params: params || undefined,
+      }),
+      providesTags: ["PortalLedger"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    getPortalDocumentRequests: builder.query<any[], void>({
+      query: () => "/portal/document-requests",
+      providesTags: ["PortalDocRequests"],
+      transformResponse: (response: { data: any[] }) => response.data,
+    }),
+    fulfillPortalDocumentRequest: builder.mutation<any, { requestId: string; formData: FormData }>({
+      query: ({ requestId, formData }) => ({
+        url: `/portal/requests/${requestId}/fulfill`,
+        method: "POST",
+        body: formData,
+      }),
+      invalidatesTags: ["PortalDocRequests", "PortalDocuments"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    getPortalQueryTickets: builder.query<any[], void>({
+      query: () => "/portal/queries",
+      providesTags: ["PortalQueries"],
+      transformResponse: (response: { data: any[] }) => response.data,
+    }),
+    createPortalQueryTicket: builder.mutation<any, { type: string; subject: string; message: string; attachments?: string[] }>({
+      query: (body) => ({
+        url: "/portal/queries",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["PortalQueries"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+
+    // ─── Part 27: Payment Gateway & UPI Endpoints ──────────────────
+    getGatewayConfigs: builder.query<any[], void>({
+      query: () => "/tenant-settings/payment-gateways",
+      providesTags: ["GatewayConfig"],
+      transformResponse: (response: { data: any[] }) => response.data,
+    }),
+    upsertGatewayConfig: builder.mutation<any, any>({
+      query: (body) => ({
+        url: "/tenant-settings/payment-gateways",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["GatewayConfig"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    getInvoiceUpiQr: builder.query<{ npciUri: string; qrDataUrl: string; upiId: string; amount: number; invoiceNo: string }, string>({
+      query: (invoiceId) => `/invoices/${invoiceId}/upi-qr`,
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    createInvoicePaymentLink: builder.mutation<{ paymentLinkId: string; shortUrl: string }, string>({
+      query: (invoiceId) => ({
+        url: `/invoices/${invoiceId}/payment-link`,
+        method: "POST",
+      }),
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    getPaymentTransactions: builder.query<{ transactions: any[]; total: number }, { status?: string; from?: string; to?: string; clientId?: string; invoiceId?: string } | void>({
+      query: (params) => ({
+        url: "/client-payments/transactions",
+        params: params || undefined,
+      }),
+      providesTags: ["PaymentTransaction"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+
+    // ─── Part 29: Multi-Branch & SaaS Licensing Endpoints ───────────
+    getBillingEntities: builder.query<any[], void>({
+      query: () => "/tenant-settings/billing-entities",
+      providesTags: ["BillingEntity"],
+      transformResponse: (response: { data: any[] }) => response.data,
+    }),
+    createBillingEntity: builder.mutation<any, any>({
+      query: (body) => ({
+        url: "/tenant-settings/billing-entities",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["BillingEntity"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    updateBillingEntity: builder.mutation<any, { id: string; [key: string]: any }>({
+      query: ({ id, ...body }) => ({
+        url: `/tenant-settings/billing-entities/${id}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["BillingEntity"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    deleteBillingEntity: builder.mutation<any, string>({
+      query: (id) => ({
+        url: `/tenant-settings/billing-entities/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["BillingEntity"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    getTenantUsage: builder.query<any, void>({
+      query: () => "/tenant-settings/usage",
+      providesTags: ["TenantUsage"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    getTenantSubscription: builder.query<any, void>({
+      query: () => "/tenant-settings/subscription",
+      providesTags: ["TenantSubscription"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    updateTenantSubscription: builder.mutation<any, any>({
+      query: (body) => ({
+        url: "/tenant-settings/subscription",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["TenantSubscription", "TenantUsage"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
   }),
 });
 
@@ -1670,6 +2011,8 @@ export const {
   useDeletePackageMutation,
   useSubscribeClientToPackageMutation,
   useSubscribeClientToServiceMutation,
+  useUnsubscribeClientFromPackageMutation,
+  useUnsubscribeClientFromServiceMutation,
   useGetInvoicesQuery,
   useGetInvoiceByIdQuery,
   useGetUnbilledTasksQuery,
@@ -1769,6 +2112,45 @@ export const {
   useGetDscRenewalsReportQuery,
   useGetInvoicesReportQuery,
   useGetDebtorsAgingReportQuery,
+  usePortalLoginMutation,
+  usePortalRequestOtpMutation,
+  usePortalVerifyOtpMutation,
+  usePortalSendMagicLinkMutation,
+  usePortalVerifyMagicLinkMutation,
+  usePortalLogoutMutation,
+  useGetPortalProfileQuery,
+  useUpdatePortalProfileMutation,
+  useChangePortalPasswordMutation,
+  useGetClientPortalUsersQuery,
+  useCreateClientPortalUserMutation,
+  useUpdateClientPortalUserMutation,
+  useDeleteClientPortalUserMutation,
+  useResetClientPortalUserPasswordMutation,
+  useToggleClientPortalAccessMutation,
+  useGetPortalWebsiteConfigQuery,
+  useGetWebsiteSettingsQuery,
+  useUpdateWebsiteSettingsMutation,
+  useGetComplianceCalendarQuery,
+  useGetPortalDocumentsQuery,
+  useGetPortalInvoicesQuery,
+  useGetPortalReceiptsQuery,
+  useGetPortalLedgerQuery,
+  useGetPortalDocumentRequestsQuery,
+  useFulfillPortalDocumentRequestMutation,
+  useGetPortalQueryTicketsQuery,
+  useCreatePortalQueryTicketMutation,
+  useGetGatewayConfigsQuery,
+  useUpsertGatewayConfigMutation,
+  useGetInvoiceUpiQrQuery,
+  useCreateInvoicePaymentLinkMutation,
+  useGetPaymentTransactionsQuery,
+  useGetBillingEntitiesQuery,
+  useCreateBillingEntityMutation,
+  useUpdateBillingEntityMutation,
+  useDeleteBillingEntityMutation,
+  useGetTenantUsageQuery,
+  useGetTenantSubscriptionQuery,
+  useUpdateTenantSubscriptionMutation,
 } = applicationApi;
 
 

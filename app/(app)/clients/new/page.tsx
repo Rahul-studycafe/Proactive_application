@@ -25,7 +25,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { BackButton } from "@/components/shared/BackButton";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import {
   Select,
@@ -49,6 +48,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { PlanLimitModal } from "@/components/shared/PlanLimitModal";
 
 const entityTypes = [
   "Individual",
@@ -104,6 +104,9 @@ export default function NewClientPage() {
 
   const { data: clientsRes } = useGetClientsQuery(undefined);
   const clients = clientsRes?.clients || [];
+
+  // Quota enforcement
+  const [showQuotaModal, setShowQuotaModal] = useState(false);
 
   // Basic
   const [photo, setPhoto] = useState<string | null>(null);
@@ -424,7 +427,12 @@ export default function NewClientPage() {
       toast.success(`Client "${name}" created successfully`);
       router.push("/clients");
     } catch (error: any) {
-      toast.error(error.data?.message || "Failed to create client");
+      const msg = error?.data?.message || error?.message || "";
+      if (error?.status === 403 && (msg.toLowerCase().includes("limit reached") || msg.toLowerCase().includes("quota"))) {
+        setShowQuotaModal(true);
+      } else {
+        toast.error(msg || "Failed to create client");
+      }
     }
   };
 
@@ -446,8 +454,6 @@ export default function NewClientPage() {
             { label: "Add Client" },
           ]}
         />
-
-        <BackButton href="/clients" label="Back to Clients" />
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b">
@@ -909,6 +915,12 @@ export default function NewClientPage() {
           </div>
         </div>
       </form>
+
+      <PlanLimitModal
+        open={showQuotaModal}
+        onOpenChange={setShowQuotaModal}
+        limitType="clients"
+      />
     </div>
   );
 }

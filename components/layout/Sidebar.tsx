@@ -30,6 +30,7 @@ import {
   BarChart3,
   Clock,
   Lock,
+  QrCode,
 } from "lucide-react";
 
 import { usePermissions, type Permission } from "@/contexts/PermissionsContext";
@@ -112,6 +113,11 @@ const navItems: NavItem[] = [
         to: "/expenses",
         label: "Expenses",
         icon: Receipt,
+      },
+      {
+        to: "/finance/payments",
+        label: "Digital Payments",
+        icon: QrCode,
       },
     ],
   },

@@ -43,24 +43,27 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { BackButton } from "@/components/shared/BackButton";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { RecurrenceBadge } from "@/components/services/RecurrenceBadge";
 import {
   useGetClientByIdQuery,
   useUploadClientPhotoMutation,
   useUpdateClientMutation,
+  useUnsubscribeClientFromServiceMutation,
 } from "@/lib/services/api";
 import { formatDate } from "@/lib/utils";
 import { SubscribeDialog } from "./SubscribeDialog";
 import { EditClientDialog } from "./EditClientDialog";
 import { Button } from "@/components/ui/button";
 import { CreateTaskDialog } from "../../tasks/CreateTaskDialog";
+import { ClientRetainersTab } from "./ClientRetainersTab";
 import { ClientLedgerTab } from "./ClientLedgerTab";
 import { ClientDSCTab } from "./ClientDSCTab";
 import { ClientDocumentsTab } from "./ClientDocumentsTab";
 import { ClientPasswordsTab } from "@/components/passwords";
 import { ClientExpensesTab } from "@/components/expenses";
+import { ClientPortalTab } from "./ClientPortalTab";
+import { EnablePortalLoginModal } from "@/components/clients/EnablePortalLoginModal";
 
 
 export default function ClientDetailPage() {
@@ -85,6 +88,7 @@ export default function ClientDetailPage() {
   const [uploadClientPhoto, { isLoading: isUploadingPhoto }] =
     useUploadClientPhotoMutation();
   const [updateClient] = useUpdateClientMutation();
+  const [unsubscribeService] = useUnsubscribeClientFromServiceMutation();
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -155,15 +159,13 @@ export default function ClientDetailPage() {
     "http://localhost:5000";
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <Breadcrumbs
         items={[
           { label: "Clients", href: "/clients" },
           { label: client.name || "Client Details" },
         ]}
       />
-
-      <BackButton href="/clients" label="Back to Clients" />
 
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-4">
@@ -232,7 +234,10 @@ export default function ClientDetailPage() {
             </div>
           </div>
         </div>
-        <EditClientDialog client={client} />
+        <div className="flex items-center gap-2">
+          <EnablePortalLoginModal clientId={clientId} client={client} />
+          <EditClientDialog client={client} />
+        </div>
       </div>
 
       <Tabs
@@ -251,13 +256,13 @@ export default function ClientDetailPage() {
             value="services"
             className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2 pt-1 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
           >
-            Services
+            Services{client?.subscribedServices?.length ? ` (${client.subscribedServices.length})` : ""}
           </TabsTrigger>
           <TabsTrigger
             value="retainers"
             className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2 pt-1 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
           >
-            Retainers
+            Retainers{client?.subscribedPackages?.length ? ` (${client.subscribedPackages.length})` : ""}
           </TabsTrigger>
           <TabsTrigger
             value="tasks"
@@ -295,6 +300,12 @@ export default function ClientDetailPage() {
             className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2 pt-1 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
           >
             Expenses
+          </TabsTrigger>
+          <TabsTrigger
+            value="portal"
+            className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2 pt-1 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
+          >
+            Portal Access
           </TabsTrigger>
         </TabsList>
 
@@ -579,113 +590,139 @@ export default function ClientDetailPage() {
           <div className="rounded-xl border bg-card shadow-sm">
             <div className="flex items-center justify-between px-5 py-4 border-b">
               <div>
-                <h3 className="text-lg font-medium">
-                  Services & Subscriptions
+                <h3 className="text-base font-semibold">
+                  Individual Subscribed Services
                 </h3>
-                <p className="text-sm text-muted-foreground">
-                  Manage this client's commercial packages and individual
-                  services.
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Standalone compliance and advisory services subscribed by this client.
                 </p>
               </div>
-              <SubscribeDialog clientId={clientId} />
+              <SubscribeDialog
+                clientId={clientId}
+                client={client}
+                defaultTab="service"
+                triggerButton={
+                  <Button size="sm" className="gap-2 shadow-xs">
+                    <Plus className="h-4 w-4" /> Add Service
+                  </Button>
+                }
+              />
             </div>
 
-            {(!client.subscribedPackages ||
-              client.subscribedPackages.length === 0) &&
-            (!client.subscribedServices ||
-              client.subscribedServices.length === 0) ? (
+            {/* Note banner if client has retainers */}
+            {client.subscribedPackages && client.subscribedPackages.length > 0 && (
+              <div className="mx-5 mt-4 rounded-lg bg-primary/5 border border-primary/15 px-4 py-3 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2.5">
+                  <PackageIcon className="h-4 w-4 text-primary shrink-0" />
+                  <span>
+                    This client is also enrolled in{" "}
+                    <strong>{client.subscribedPackages.length} commercial Retainer package(s)</strong>.
+                  </span>
+                </div>
+                <Button
+                  variant="link"
+                  size="sm"
+                  className="h-auto p-0 text-xs font-semibold text-primary"
+                  onClick={() => handleTabChange("retainers")}
+                >
+                  View Retainers →
+                </Button>
+              </div>
+            )}
+
+            {!client.subscribedServices || client.subscribedServices.length === 0 ? (
               <div className="px-6 py-12 text-center text-sm text-muted-foreground flex flex-col items-center justify-center gap-3">
-                <PackageIcon className="h-10 w-10 text-muted-foreground/50" />
-                <p>No active subscriptions.</p>
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted/60 text-muted-foreground mb-1">
+                  <FileText className="h-6 w-6 opacity-60" />
+                </div>
+                <h4 className="text-sm font-semibold">No Individual Services Subscribed</h4>
+                <p className="text-xs text-muted-foreground max-w-sm mb-2">
+                  No standalone services are directly assigned to this client.
+                </p>
+                <SubscribeDialog
+                  clientId={clientId}
+                  client={client}
+                  defaultTab="service"
+                  triggerButton={
+                    <Button size="sm" variant="outline" className="gap-2">
+                      <Plus className="h-4 w-4" /> Subscribe to a Service
+                    </Button>
+                  }
+                />
               </div>
             ) : (
               <ul className="divide-y">
-                {client.subscribedPackages?.map((sub: any, idx: number) => (
-                  <li
-                    key={`pkg-${idx}`}
-                    className="flex items-center justify-between px-5 py-4 hover:bg-muted/50"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="mt-1 bg-primary/10 p-2 rounded-lg text-primary">
-                        <PackageIcon className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium flex items-center gap-2">
-                          <span>{sub.packageId?.name || "Package Subscription"}</span>
-                          {(sub.packageId?.frequency || sub.frequency) && (
-                            <RecurrenceBadge frequency={sub.packageId?.frequency || sub.frequency} />
-                          )}
+                {client.subscribedServices.map((sub: any, idx: number) => {
+                  const svcId = sub.serviceId?._id || sub.serviceId;
+                  const svcName = sub.serviceId?.name || "Service Subscription";
+                  return (
+                    <li
+                      key={`svc-${idx}`}
+                      className="flex items-center justify-between px-5 py-4 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="mt-1 bg-blue-500/10 p-2 rounded-lg text-blue-600 dark:text-blue-400">
+                          <FileText className="h-4 w-4" />
                         </div>
-                        <div className="text-xs text-muted-foreground mt-1">
-                          Subscribed on:{" "}
-                          {new Date(sub.subscribedAt).toLocaleDateString()}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Badge
-                        variant="outline"
-                        className="bg-success/10 text-success border-success/20 font-normal"
-                      >
-                        Active Package
-                      </Badge>
-                      {sub.customPrice !== undefined && (
-                        <span className="text-sm font-semibold">
-                          ₹{sub.customPrice.toLocaleString("en-IN")}
-                        </span>
-                      )}
-                    </div>
-                  </li>
-                ))}
-
-                {client.subscribedServices?.map((sub: any, idx: number) => (
-                  <li
-                    key={`svc-${idx}`}
-                    className="flex items-center justify-between px-5 py-4 hover:bg-muted/50"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="mt-1 bg-blue-100 p-2 rounded-lg text-blue-700">
-                        <FileText className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium flex items-center gap-2">
-                          <span>{sub.serviceId?.name || "Service Subscription"}</span>
-                          <RecurrenceBadge
-                            frequency={sub.serviceId?.frequency}
-                            isRecurring={sub.serviceId?.isRecurring}
-                          />
-                        </div>
-                        <div className="text-xs text-muted-foreground mt-1">
-                          Subscribed on:{" "}
-                          {new Date(sub.subscribedAt).toLocaleDateString()}
+                        <div>
+                          <div className="text-sm font-medium flex items-center gap-2">
+                            <span>{svcName}</span>
+                            <RecurrenceBadge
+                              frequency={sub.serviceId?.frequency}
+                              isRecurring={sub.serviceId?.isRecurring}
+                            />
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            Subscribed on:{" "}
+                            {sub.subscribedAt
+                              ? new Date(sub.subscribedAt).toLocaleDateString()
+                              : "N/A"}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Badge
-                        variant="outline"
-                        className="bg-success/10 text-success border-success/20 font-normal"
-                      >
-                        Active Service
-                      </Badge>
-                      {sub.customPrice !== undefined && (
-                        <span className="text-sm font-semibold">
-                          ₹{sub.customPrice.toLocaleString("en-IN")}
-                        </span>
-                      )}
-                    </div>
-                  </li>
-                ))}
+                      <div className="flex items-center gap-3">
+                        <Badge
+                          variant="outline"
+                          className="bg-success/10 text-success border-success/20 font-normal text-xs"
+                        >
+                          Active Service
+                        </Badge>
+                        {sub.customPrice !== undefined && (
+                          <span className="text-sm font-semibold">
+                            ₹{Number(sub.customPrice).toLocaleString("en-IN")}
+                          </span>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                          title="Unsubscribe Service"
+                          onClick={async () => {
+                            if (!confirm(`Are you sure you want to unsubscribe from "${svcName}"?`)) return;
+                            try {
+                              await unsubscribeService({
+                                clientId,
+                                serviceId: svcId.toString(),
+                              }).unwrap();
+                              toast.success("Successfully unsubscribed from service");
+                            } catch (err: any) {
+                              toast.error(err?.data?.message || "Failed to unsubscribe");
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </div>
         </TabsContent>
 
-        <TabsContent
-          value="retainers"
-          className="rounded-xl border bg-card shadow-sm p-6 text-center text-muted-foreground text-sm"
-        >
-          Coming Soon
+        <TabsContent value="retainers">
+          <ClientRetainersTab clientId={clientId} client={client} />
         </TabsContent>
 
         <TabsContent value="tasks" className="space-y-4">
@@ -706,27 +743,67 @@ export default function ClientDetailPage() {
               </div>
             ) : (
               <ul className="divide-y">
-                {clientTasks.map((t: any) => (
-                  <li
-                    key={t.id || t._id}
-                    className="flex items-center justify-between px-5 py-4 hover:bg-muted/50 transition-colors"
-                  >
-                    <div>
-                      <div className="text-sm font-medium hover:underline cursor-pointer text-primary">
-                        <Link href={`/tasks/${t.id || t._id}`}>
-                          {t.serviceId?.name || "Unknown Task"}
-                        </Link>
+                {clientTasks.map((t: any) => {
+                  const periodLabel =
+                    t.period?.label ||
+                    (t.dueDate
+                      ? new Date(t.dueDate).toLocaleDateString("en-US", {
+                          month: "short",
+                          year: "numeric",
+                        })
+                      : null);
+
+                  return (
+                    <li
+                      key={t.id || t._id}
+                      className="flex items-center justify-between px-5 py-4 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Link
+                            href={`/tasks/${t.id || t._id}`}
+                            className="text-sm font-semibold hover:underline cursor-pointer text-foreground hover:text-primary transition-colors"
+                          >
+                            {t.serviceId?.name || t.description || "Unknown Task"}
+                          </Link>
+                          {periodLabel && (
+                            <Badge
+                              variant="secondary"
+                              className="text-[11px] font-medium px-2 py-0.5 bg-primary/10 text-primary border-primary/20"
+                            >
+                              {periodLabel}
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="text-xs text-muted-foreground flex items-center gap-3 flex-wrap">
+                          {periodLabel && (
+                            <span>
+                              Period:{" "}
+                              <strong className="text-foreground font-medium">
+                                {periodLabel}
+                              </strong>
+                            </span>
+                          )}
+                          <span>
+                            Due{" "}
+                            {t.dueDate
+                              ? new Date(t.dueDate).toLocaleDateString()
+                              : "No date"}
+                          </span>
+                          {(t.billableAmount !== undefined && t.billableAmount !== null) && (
+                            <span>
+                              Amount:{" "}
+                              <strong className="text-foreground font-medium">
+                                ₹{Number(t.billableAmount).toLocaleString("en-IN")}
+                              </strong>
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        Due{" "}
-                        {t.dueDate
-                          ? new Date(t.dueDate).toLocaleDateString()
-                          : "No date"}
-                      </div>
-                    </div>
-                    <Badge variant="outline">{t.status}</Badge>
-                  </li>
-                ))}
+                      <Badge variant="outline">{t.status}</Badge>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </div>
@@ -761,6 +838,9 @@ export default function ClientDetailPage() {
         </TabsContent>
         <TabsContent value="expenses">
           <ClientExpensesTab clientId={clientId} clientName={client?.name} />
+        </TabsContent>
+        <TabsContent value="portal">
+          <ClientPortalTab clientId={clientId} client={client} />
         </TabsContent>
       </Tabs>
     </div>

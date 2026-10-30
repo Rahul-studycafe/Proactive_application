@@ -22,7 +22,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { BackButton } from "@/components/shared/BackButton";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import {
   Select,
@@ -33,6 +32,7 @@ import {
 } from "@/components/ui/select";
 import {
   useGetClientsQuery,
+  useGetBillingEntitiesQuery,
   useGetInvoiceByIdQuery,
   useGetUnbilledTasksQuery,
   useCreateInvoiceMutation,
@@ -93,10 +93,15 @@ function NewInvoiceContent() {
   });
   const clients = clientsData?.clients ?? [];
 
+  // Fetch billing entities for branch context
+  const { data: billingEntities = [], isLoading: loadingEntities } =
+    useGetBillingEntitiesQuery();
+
   // Fetch existing invoice if editing
   const { data: existingInvoice, isLoading: loadingInvoice } =
     useGetInvoiceByIdQuery(invoiceId!, { skip: !invoiceId });
 
+  const [billingEntityId, setBillingEntityId] = useState("");
   const [clientId, setClientId] = useState("");
   const [invoiceDate, setInvoiceDate] = useState(
     new Date().toISOString().slice(0, 10)
@@ -128,6 +133,9 @@ function NewInvoiceContent() {
       );
       setNotes(inv.notes || "");
       setSaveAsStatus(inv.status || "Draft");
+      if (inv.billingEntityId) {
+        setBillingEntityId(inv.billingEntityId._id || inv.billingEntityId);
+      }
       if (inv.items?.length) {
         setItems(
           inv.items.map((it: any) => ({
@@ -151,6 +159,24 @@ function NewInvoiceContent() {
       setClientId(clients[0]._id);
     }
   }, [clients, clientId, isEdit]);
+
+  // Auto-set billing entity from active localStorage context or default
+  useEffect(() => {
+    if (!billingEntityId && billingEntities.length > 0 && !isEdit) {
+      const stored =
+        typeof window !== "undefined"
+          ? localStorage.getItem("activeBillingEntityId")
+          : null;
+      const found = billingEntities.find((b: any) => b._id === stored);
+      if (found) {
+        setBillingEntityId(found._id);
+      } else {
+        const def =
+          billingEntities.find((b: any) => b.isDefault) || billingEntities[0];
+        if (def) setBillingEntityId(def._id);
+      }
+    }
+  }, [billingEntities, billingEntityId, isEdit]);
 
   // Fetch unbilled tasks for selected client
   const { data: unbilledTasks } = useGetUnbilledTasksQuery(clientId, {
@@ -214,18 +240,36 @@ function NewInvoiceContent() {
 
   const addUnbilledTask = (task: any) => {
     if (items.some((it) => it.referenceId === task._id)) return;
-    setItems((p) => [
-      ...p,
-      {
-        referenceType: "Task" as const,
-        referenceId: task._id,
-        particulars: task.title,
-        quantity: 1,
-        rate: task.billingAmount ?? 0,
-        discount: 0,
-        gstPercentage: 18,
-      },
-    ]);
+
+    // Resolve service name and period label
+    const serviceName =
+      task.serviceId?.name || task.title || task.description || "Task";
+    const periodLabel = task.period?.label;
+    const fullParticulars = periodLabel
+      ? `${serviceName} - ${periodLabel}`
+      : serviceName;
+    const taskRate = task.billingAmount || task.billableAmount || 0;
+    const gstPct = task.serviceId?.gstPercentage ?? 18;
+    const sacCode = task.serviceId?.sacCode || "";
+
+    const newItem: InvoiceItem = {
+      referenceType: "Task" as const,
+      referenceId: task._id,
+      particulars: fullParticulars,
+      sacCode,
+      quantity: 1,
+      rate: taskRate,
+      discount: 0,
+      gstPercentage: gstPct,
+    };
+
+    setItems((prev) => {
+      // If there is only one empty placeholder line, replace it cleanly
+      if (prev.length === 1 && !prev[0].particulars.trim() && prev[0].rate === 0) {
+        return [newItem];
+      }
+      return [...prev, newItem];
+    });
   };
 
   const addUnbilledExpense = (exp: UnbilledExpenseItem) => {
@@ -275,6 +319,7 @@ function NewInvoiceContent() {
 
     const payload = {
       clientId,
+      billingEntityId: billingEntityId || undefined,
       date: new Date(invoiceDate).toISOString(),
       dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
       notes: notes || undefined,
@@ -316,16 +361,13 @@ function NewInvoiceContent() {
   }
 
   return (
-    <div className="space-y-5 pb-10">
+    <div className="space-y-6 pb-10">
       <Breadcrumbs
         items={[
           { label: "Invoices", href: "/invoices" },
           { label: isEdit ? "Edit Invoice" : "New Invoice" },
         ]}
       />
-
-      {/* ─── Back to Invoices Link ────────────────────────────── */}
-      <BackButton href="/invoices" label="Back to Invoices" />
 
       {/* ─── Page Title Header ─────────────────────────────────── */}
       <div className="flex items-start justify-between">
@@ -344,7 +386,26 @@ function NewInvoiceContent() {
       {/* ─── Invoice Form Card ─────────────────────────────────── */}
       <div className="space-y-5 rounded-xl border bg-card p-6 shadow-sm">
         {/* Header Fields */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="space-y-1.5">
+            <Label>Billing Branch / Entity</Label>
+            <Select
+              value={billingEntityId}
+              onValueChange={setBillingEntityId}
+              disabled={isEdit || loadingEntities}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Default Branch" />
+              </SelectTrigger>
+              <SelectContent>
+                {billingEntities.map((b: any) => (
+                  <SelectItem key={b._id} value={b._id}>
+                    {b.branchName || b.name} {b.stateCode ? `(${b.stateCode})` : ""}{b.isDefault ? " (Default)" : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="space-y-1.5">
             <Label>Client</Label>
             <Select
@@ -408,6 +469,14 @@ function NewInvoiceContent() {
                 const alreadyAdded = items.some(
                   (it) => it.referenceId === task._id
                 );
+                const serviceName =
+                  task.serviceId?.name || task.title || task.description || "Task";
+                const periodLabel = task.period?.label;
+                const taskAmount = task.billingAmount || task.billableAmount || 0;
+                const buttonLabel = periodLabel
+                  ? `${serviceName} (${periodLabel})`
+                  : serviceName;
+
                 return (
                   <Button
                     key={task._id}
@@ -418,10 +487,8 @@ function NewInvoiceContent() {
                     className="text-xs"
                   >
                     <Plus className="mr-1 h-3 w-3" />
-                    {task.title}
-                    {task.billingAmount
-                      ? ` (${formatCurrency(task.billingAmount)})`
-                      : ""}
+                    {buttonLabel}
+                    {taskAmount ? ` (${formatCurrency(taskAmount)})` : ""}
                   </Button>
                 );
               })}

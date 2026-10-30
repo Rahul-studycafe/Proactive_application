@@ -1,6 +1,5 @@
 "use client";
 
-import { BackButton } from "@/components/shared/BackButton";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { QueueHealthCard } from "@/components/automation/QueueHealthCard";
 import { TriggerAutomationModal } from "@/components/automation/TriggerAutomationModal";
@@ -18,7 +17,6 @@ export default function AutomationSettingsPage() {
           { label: "Automation & Queue Settings" },
         ]}
       />
-      <BackButton href="/settings" label="Back to Settings" />
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

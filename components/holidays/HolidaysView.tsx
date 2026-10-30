@@ -200,7 +200,7 @@ export function HolidaysView({
     }
   };
 
-  const shouldShowBack = showBack ?? Boolean(onBack || backHref);
+  const shouldShowBack = showBack === true;
 
   return (
     <div className="space-y-6">

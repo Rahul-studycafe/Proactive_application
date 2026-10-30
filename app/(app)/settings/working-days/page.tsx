@@ -1,5 +1,4 @@
 import { WorkingDaysView } from "@/components/settings/WorkingDaysView";
-import { BackButton } from "@/components/shared/BackButton";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 
 export const metadata = {
@@ -16,7 +15,6 @@ export default function WorkingDaysPage() {
           { label: "Working Days & Office Perimeter" },
         ]}
       />
-      <BackButton href="/settings" label="Back to Settings" />
       <WorkingDaysView />
     </div>
   );

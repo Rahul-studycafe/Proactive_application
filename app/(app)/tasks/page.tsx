@@ -150,7 +150,13 @@ export default function TasksPage() {
       await updateStatus({ id: taskId, status: newStatus }).unwrap();
       toast.success("Task status updated");
     } catch (err: any) {
-      toast.error(err.data?.message || "Failed to update status");
+      const message =
+        err?.data?.error?.message ||
+        err?.data?.message ||
+        err?.data?.error ||
+        err?.message ||
+        "Failed to update status";
+      toast.error(message);
     }
   };
 

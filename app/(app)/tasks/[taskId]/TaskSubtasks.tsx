@@ -50,9 +50,11 @@ const TASK_STATUSES = [
 export function TaskSubtasks({
   taskId,
   subtasks = [],
+  isReadOnly = false,
 }: {
   taskId: string;
   subtasks: any[];
+  isReadOnly?: boolean;
 }) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
@@ -68,6 +70,7 @@ export function TaskSubtasks({
   const [deleteSubtask] = useDeleteSubtaskMutation();
 
   const handleStatusChange = async (subtaskId: string, newStatus: string) => {
+    if (isReadOnly) return;
     try {
       await updateSubtask({
         taskId,
@@ -75,14 +78,19 @@ export function TaskSubtasks({
         status: newStatus,
       }).unwrap();
       toast.success("Subtask status updated");
-    } catch (error) {
-      toast.error("Failed to update status");
+    } catch (error: any) {
+      const message =
+        error?.data?.error?.message ||
+        error?.data?.message ||
+        error?.message ||
+        "Failed to update status";
+      toast.error(message);
     }
   };
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTitle.trim()) return;
+    if (isReadOnly || !newTitle.trim()) return;
     try {
       await addSubtask({
         taskId,
@@ -97,20 +105,31 @@ export function TaskSubtasks({
       setNewAssignee("");
       setNewDueDate(undefined);
       toast.success("Subtask added");
-    } catch (error) {
-      toast.error("Failed to add subtask");
+    } catch (error: any) {
+      const message =
+        error?.data?.error?.message ||
+        error?.data?.message ||
+        error?.message ||
+        "Failed to add subtask";
+      toast.error(message);
     }
   };
 
   const handleDelete = async (subtaskId: string) => {
+    if (isReadOnly) return;
     try {
       await deleteSubtask({
         taskId,
         subtaskId,
       }).unwrap();
       toast.success("Subtask deleted");
-    } catch (error) {
-      toast.error("Failed to delete subtask");
+    } catch (error: any) {
+      const message =
+        error?.data?.error?.message ||
+        error?.data?.message ||
+        error?.message ||
+        "Failed to delete subtask";
+      toast.error(message);
     }
   };
 
@@ -139,7 +158,8 @@ export function TaskSubtasks({
         <h3 className="font-medium text-sm text-muted-foreground">
           Manage sub-tasks to track granular progress
         </h3>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        {!isReadOnly && (
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button size="sm">
               <Plus className="h-4 w-4 mr-2" />
@@ -228,6 +248,7 @@ export function TaskSubtasks({
             </form>
           </DialogContent>
         </Dialog>
+        )}
       </div>
 
       <div className="flex-1 space-y-3">
@@ -270,6 +291,7 @@ export function TaskSubtasks({
                     onValueChange={(val) =>
                       handleStatusChange(subtask._id, val)
                     }
+                    disabled={isReadOnly}
                   >
                     <SelectTrigger
                       className={cn(
@@ -316,14 +338,16 @@ export function TaskSubtasks({
                     )}
                   </div>
 
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                    onClick={() => handleDelete(subtask._id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  {!isReadOnly && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                      onClick={() => handleDelete(subtask._id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
             );

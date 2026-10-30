@@ -35,7 +35,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatDate, cn } from "@/lib/utils";
-import { BackButton } from "@/components/shared/BackButton";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -183,6 +182,8 @@ export default function TaskDashboard() {
     );
   }
 
+  const isReadOnly = task.status === "Completed" || task.status === "Cancelled";
+
   const handleAddNote = async () => {
     if (!noteContent.trim()) return;
     try {
@@ -205,13 +206,6 @@ export default function TaskDashboard() {
           { label: (task as any).title || task.serviceId?.name || "Task Details" },
         ]}
       />
-
-      {/* Consistent Back Button */}
-      <BackButton href="/tasks" label="Back to Tasks">
-        <Button variant="destructive" size="sm" className="h-8 text-xs">
-          <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Delete Task
-        </Button>
-      </BackButton>
 
       {/* Task Header - Consistent with Client Header */}
       <div className="flex items-start justify-between">
@@ -238,8 +232,14 @@ export default function TaskDashboard() {
                       status: value,
                     }).unwrap();
                     toast.success("Task status updated");
-                  } catch (err) {
-                    toast.error("Failed to update status");
+                  } catch (err: any) {
+                    const message =
+                      err?.data?.error?.message ||
+                      err?.data?.message ||
+                      err?.data?.error ||
+                      err?.message ||
+                      "Failed to update status";
+                    toast.error(message);
                   }
                 }}
                 disabled={isUpdatingStatus}
@@ -264,11 +264,6 @@ export default function TaskDashboard() {
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="default" size="sm">
-            Verify
-          </Button>
-        </div>
       </div>
 
       {/* Standard Tabs */}
@@ -277,6 +272,15 @@ export default function TaskDashboard() {
         onValueChange={(v) => router.replace(`?tab=${v}`, { scroll: false })}
         className="space-y-6"
       >
+        {isReadOnly && (
+          <div className="flex items-center gap-2.5 p-3 bg-muted/60 border rounded-lg text-xs text-muted-foreground">
+            <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0" />
+            <span>
+              This task is <strong>{task.status}</strong>. To-dos, subtasks, notes, and file uploads are locked. To make further changes, change the status dropdown to <em>In Progress</em> or <em>Under Review</em>.
+            </span>
+          </div>
+        )}
+
         <TabsList className="bg-muted/50 rounded-lg p-1 h-auto flex flex-wrap max-w-full justify-start overflow-x-auto">
           <TabsTrigger value="details">Details</TabsTrigger>
           <TabsTrigger value="todo">To-Do</TabsTrigger>
@@ -303,7 +307,13 @@ export default function TaskDashboard() {
                 <div className="grid grid-cols-[120px_1fr] gap-4 items-center">
                   <span className="text-sm text-muted-foreground">Period</span>
                   <span className="text-sm font-medium">
-                    {task.period?.label || "2023-24"}
+                    {task.period?.label ||
+                      (task.dueDate
+                        ? new Date(task.dueDate).toLocaleDateString("en-US", {
+                            month: "short",
+                            year: "numeric",
+                          })
+                        : "Ad-hoc")}
                   </span>
                 </div>
 
@@ -380,7 +390,10 @@ export default function TaskDashboard() {
                 <div className="grid grid-cols-[120px_1fr] gap-4 items-center">
                   <span className="text-sm text-muted-foreground">Amount</span>
                   <span className="text-sm font-medium">
-                    ₹{task.billableAmount || "0.00"}
+                    ₹{((task.billableAmount !== undefined && task.billableAmount !== null)
+                      ? task.billableAmount
+                      : (task.billingAmount || 0)
+                    ).toLocaleString("en-IN")}
                   </span>
                 </div>
               </CardContent>
@@ -446,6 +459,7 @@ export default function TaskDashboard() {
               taskId={taskId as string}
               customFieldsDef={task.serviceId?.customFieldsDef || []}
               customFieldValues={task.customFieldValues || {}}
+              isReadOnly={isReadOnly}
             />
           </div>
 
@@ -572,26 +586,32 @@ export default function TaskDashboard() {
                 <CardTitle className="text-sm font-semibold">
                   Additional Notes
                 </CardTitle>
-                <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
+                {/* <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
                   + Add Note
-                </Button>
+                </Button> */}
               </CardHeader>
               <CardContent className="p-6 space-y-4">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Type a note..."
-                    className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-                    value={noteContent}
-                    onChange={(e) => setNoteContent(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") handleAddNote();
-                    }}
-                  />
-                  <Button size="sm" onClick={handleAddNote}>
-                    Add Note
-                  </Button>
-                </div>
+                {!isReadOnly ? (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Type a note..."
+                      className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                      value={noteContent}
+                      onChange={(e) => setNoteContent(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleAddNote();
+                      }}
+                    />
+                    <Button size="sm" onClick={handleAddNote}>
+                      Add Note
+                    </Button>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground italic">
+                    Notes are locked while the task is {task.status.toLowerCase()}.
+                  </p>
+                )}
 
                 {notesOnly && notesOnly.length > 0 ? (
                   <div className="space-y-3 mt-4">
@@ -631,6 +651,7 @@ export default function TaskDashboard() {
               <TaskChecklist
                 taskId={taskId as string}
                 checklist={task.checklist || []}
+                isReadOnly={isReadOnly}
               />
             </CardContent>
           </Card>
@@ -642,6 +663,7 @@ export default function TaskDashboard() {
               <TaskSubtasks
                 taskId={taskId as string}
                 subtasks={task.subtasks || []}
+                isReadOnly={isReadOnly}
               />
             </CardContent>
           </Card>
@@ -660,7 +682,7 @@ export default function TaskDashboard() {
               <Button
                 size="sm"
                 onClick={() => documentInputRef.current?.click()}
-                disabled={isUploading}
+                disabled={isUploading || isReadOnly}
               >
                 {isUploading ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -694,14 +716,16 @@ export default function TaskDashboard() {
                         >
                           View
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                          onClick={() => handleDeleteDocument(doc._id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        {!isReadOnly && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => handleDeleteDocument(doc._id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -730,7 +754,7 @@ export default function TaskDashboard() {
               <Button
                 size="sm"
                 onClick={() => supportingFileInputRef.current?.click()}
-                disabled={isUploading}
+                disabled={isUploading || isReadOnly}
               >
                 {isUploading ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -764,14 +788,16 @@ export default function TaskDashboard() {
                         >
                           View
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                          onClick={() => handleDeleteDocument(doc._id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        {!isReadOnly && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => handleDeleteDocument(doc._id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))}

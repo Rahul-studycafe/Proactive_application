@@ -14,6 +14,7 @@ import {
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useRouter } from "next/navigation";
 import { WebPunchWidget } from "@/components/attendance/WebPunchWidget";
+import { BranchSwitcher } from "@/components/layout/BranchSwitcher";
 
 export function TopBar() {
   const { user, logout } = useAuth();
@@ -35,6 +36,9 @@ export function TopBar() {
       </div>
 
       <div className="ml-auto flex items-center gap-2 sm:gap-3">
+        {/* Multi-Branch Billing Entity Switcher */}
+        <BranchSwitcher />
+
         {/* Daily Web Punch Widget */}
         <WebPunchWidget variant="compact" />
 

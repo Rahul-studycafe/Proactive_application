@@ -1,5 +1,4 @@
 import { HolidaysView } from "@/components/holidays/HolidaysView";
-import { BackButton } from "@/components/shared/BackButton";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 
 export const metadata = {
@@ -16,7 +15,6 @@ export default function HolidaysPage() {
           { label: "Holidays & Gazettes" },
         ]}
       />
-      <BackButton href="/settings" label="Back to Settings" />
       <HolidaysView />
     </div>
   );

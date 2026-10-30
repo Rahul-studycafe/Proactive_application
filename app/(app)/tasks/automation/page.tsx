@@ -1,6 +1,5 @@
 "use client";
 
-import { BackButton } from "@/components/shared/BackButton";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { TriggerAutomationModal } from "@/components/automation/TriggerAutomationModal";
 import { AutomationLogsTable } from "@/components/automation/AutomationLogsTable";
@@ -39,7 +38,6 @@ export default function AutomationHubPage() {
           { label: "Task Automation Hub" },
         ]}
       />
-      <BackButton href="/tasks" label="Back to Tasks" />
 
       {/* Hero Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

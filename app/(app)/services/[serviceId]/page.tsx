@@ -19,7 +19,6 @@ import {
   Pencil,
   Equal,
 } from "lucide-react";
-import { BackButton } from "@/components/shared/BackButton";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import {
   useGetServiceByIdQuery,
@@ -281,16 +280,14 @@ export default function ServiceDetailPage() {
   }
 
   return (
-    <div className="space-y-5">
-      {/* Standard Breadcrumb & Back Navigation */}
+    <div className="space-y-6">
+      {/* Standard Breadcrumb Navigation */}
       <Breadcrumbs
         items={[
           { label: "Services", href: "/services" },
           { label: formData.name || "Service Details" },
         ]}
       />
-
-      <BackButton href="/services" label="Back to Services" />
 
       {/* Header Actions */}
       <div className="flex items-center justify-between">

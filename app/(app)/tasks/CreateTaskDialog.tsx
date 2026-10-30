@@ -54,6 +54,110 @@ import {
 } from "@/lib/services/api";
 import { type TaskPriority } from "@/lib/types";
 import { useParams } from "next/navigation";
+import { toast } from "sonner";
+
+export interface PeriodOption {
+  label: string;
+  month?: number;
+  year?: number;
+  isDefault?: boolean;
+}
+
+export function getPeriodOptionsForFrequency(
+  frequencyType?: string,
+  referenceDate: Date = new Date()
+): PeriodOption[] {
+  const normFreq = (frequencyType || "").toLowerCase().replace("-", "_");
+  const currentYear = referenceDate.getFullYear();
+  const currentMonthIdx = referenceDate.getMonth(); // 0 to 11
+
+  const MONTH_NAMES = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+  ];
+
+  if (normFreq === "monthly") {
+    const options: PeriodOption[] = [];
+    // 2 future months, current month, 9 past months (12 months)
+    for (let offset = 2; offset >= -9; offset--) {
+      const d = new Date(currentYear, currentMonthIdx + offset, 1);
+      const mIdx = d.getMonth();
+      const y = d.getFullYear();
+      const label = `${MONTH_NAMES[mIdx]} ${y}`;
+      options.push({
+        label,
+        month: mIdx + 1,
+        year: y,
+        isDefault: offset === 0,
+      });
+    }
+    return options;
+  }
+
+  if (normFreq === "quarterly") {
+    const fyStart = currentMonthIdx < 3 ? currentYear - 1 : currentYear;
+    const quarters: PeriodOption[] = [];
+
+    // Next FY, Current FY, Previous FY
+    for (const fy of [fyStart + 1, fyStart, fyStart - 1]) {
+      quarters.push(
+        { label: `Q4 (Jan - Mar ${fy + 1})`, month: 3, year: fy + 1 },
+        { label: `Q3 (Oct - Dec ${fy})`, month: 12, year: fy },
+        { label: `Q2 (Jul - Sep ${fy})`, month: 9, year: fy },
+        { label: `Q1 (Apr - Jun ${fy})`, month: 6, year: fy }
+      );
+    }
+
+    let currentQLbl = "";
+    if (currentMonthIdx >= 3 && currentMonthIdx <= 5) currentQLbl = `Q1 (Apr - Jun ${fyStart})`;
+    else if (currentMonthIdx >= 6 && currentMonthIdx <= 8) currentQLbl = `Q2 (Jul - Sep ${fyStart})`;
+    else if (currentMonthIdx >= 9 && currentMonthIdx <= 11) currentQLbl = `Q3 (Oct - Dec ${fyStart})`;
+    else currentQLbl = `Q4 (Jan - Mar ${fyStart + 1})`;
+
+    return quarters.map((q) => ({
+      ...q,
+      isDefault: q.label === currentQLbl,
+    }));
+  }
+
+  if (normFreq === "half_yearly") {
+    const fyStart = currentMonthIdx < 3 ? currentYear - 1 : currentYear;
+    const halfYears: PeriodOption[] = [];
+    for (const fy of [fyStart + 1, fyStart, fyStart - 1]) {
+      halfYears.push(
+        { label: `H2 (Oct - Mar ${fy + 1})`, month: 3, year: fy + 1 },
+        { label: `H1 (Apr - Sep ${fy})`, month: 9, year: fy }
+      );
+    }
+    const currentHLbl =
+      currentMonthIdx >= 3 && currentMonthIdx <= 8
+        ? `H1 (Apr - Sep ${fyStart})`
+        : `H2 (Oct - Mar ${fyStart + 1})`;
+
+    return halfYears.map((h) => ({
+      ...h,
+      isDefault: h.label === currentHLbl,
+    }));
+  }
+
+  if (normFreq === "yearly") {
+    const fyStart = currentMonthIdx < 3 ? currentYear - 1 : currentYear;
+    const years: PeriodOption[] = [];
+    for (let offset = 1; offset >= -2; offset--) {
+      const fy = fyStart + offset;
+      const nextShort = String((fy + 1) % 100).padStart(2, "0");
+      years.push({
+        label: `FY ${fy}-${nextShort}`,
+        year: fy,
+        month: 3,
+        isDefault: offset === 0,
+      });
+    }
+    return years;
+  }
+
+  return [];
+}
 
 export function CreateTaskDialog({
   defaultClientId = "",
@@ -68,10 +172,10 @@ export function CreateTaskDialog({
 
   const [open, setOpen] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState("");
-  const [showAllServices, setShowAllServices] = useState(false);
 
   const clientId = lockedClientId || selectedClientId;
   const [serviceId, setServiceId] = useState("");
+  const [selectedPeriod, setSelectedPeriod] = useState<PeriodOption | null>(null);
   const [assigneeIds, setAssigneeIds] = useState<string[]>([]);
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<TaskPriority>("Medium");
@@ -85,9 +189,9 @@ export function CreateTaskDialog({
   const [docCollectionRequest, setDocCollectionRequest] = useState(false);
   const [docCollectionMessage, setDocCollectionMessage] = useState("");
 
-  // Reset showAllServices when client changes
+  // Reset service selection whenever client changes
   useEffect(() => {
-    setShowAllServices(false);
+    setServiceId("");
   }, [clientId]);
 
   const { data: clientsRes, isLoading: clientsLoading } =
@@ -108,40 +212,99 @@ export function CreateTaskDialog({
   const services = Array.isArray(servicesRes) ? servicesRes : [];
   const users = Array.isArray(usersRes) ? usersRes : usersRes?.users || [];
 
+  // Strictly resolve ONLY services subscribed by the client (direct or via package)
   const subscribedServicesList = useMemo(() => {
     if (!clientId || !clientData) return [];
 
     const allowedServiceIds = new Set<string>();
+    const directServices: any[] = [];
 
     clientData.subscribedServices?.forEach((sub: any) => {
-      const id =
-        typeof sub.serviceId === "object" ? sub.serviceId?._id : sub.serviceId;
-      if (id) allowedServiceIds.add(String(id));
+      const s = sub.serviceId;
+      const id = typeof s === "object" ? s?._id : s;
+      if (id) {
+        allowedServiceIds.add(String(id));
+        if (typeof s === "object" && s?.name) {
+          directServices.push({ _id: String(id), name: s.name });
+        }
+      }
     });
 
     clientData.subscribedPackages?.forEach((sub: any) => {
       const pkgServices = sub.packageId?.serviceIds || sub.packageId?.services;
-      if (pkgServices) {
+      if (Array.isArray(pkgServices)) {
         pkgServices.forEach((s: any) => {
-          const id = typeof s === "object" ? s._id : s;
-          if (id) allowedServiceIds.add(String(id));
+          const id = typeof s === "object" ? s?._id : s;
+          if (id) {
+            allowedServiceIds.add(String(id));
+            if (typeof s === "object" && s?.name) {
+              directServices.push({ _id: String(id), name: s.name });
+            }
+          }
         });
       }
     });
 
-    return services.filter((s: any) => allowedServiceIds.has(String(s._id)));
+    if (allowedServiceIds.size === 0) return [];
+
+    if (services.length > 0) {
+      return services.filter((s: any) => allowedServiceIds.has(String(s._id)));
+    }
+
+    const seen = new Set<string>();
+    return directServices.filter((s) => {
+      if (seen.has(s._id)) return false;
+      seen.add(s._id);
+      return true;
+    });
   }, [clientId, clientData, services]);
 
-  const availableServices = useMemo(() => {
-    if (!clientId) return services;
-    if (subscribedServicesList.length > 0 && !showAllServices) {
-      return subscribedServicesList;
-    }
-    return services;
-  }, [clientId, subscribedServicesList, showAllServices, services]);
+  const availableServices = subscribedServicesList;
+
+  const selectedService = useMemo(() => {
+    return (
+      services.find((s: any) => String(s._id) === serviceId) ||
+      availableServices.find((s: any) => String(s._id) === serviceId)
+    );
+  }, [services, availableServices, serviceId]);
+
+  const isRecurring = Boolean(
+    selectedService?.isRecurring &&
+    selectedService?.frequency?.type &&
+    selectedService?.frequency?.type !== "one_time"
+  );
+
+  const frequencyType = selectedService?.frequency?.type;
+
+  const periodOptions = useMemo(() => {
+    if (!isRecurring || !frequencyType) return [];
+    return getPeriodOptionsForFrequency(frequencyType);
+  }, [isRecurring, frequencyType]);
 
   const handleCreate = async () => {
     if (!clientId || !serviceId || assigneeIds.length === 0) return;
+
+    if (isRecurring && !selectedPeriod?.label) {
+      toast.error(`Please select a Period for this ${frequencyType?.replace("_", "-") || "recurring"} service.`);
+      return;
+    }
+
+    const periodPayload = selectedPeriod?.label
+      ? {
+          month: selectedPeriod.month,
+          year: selectedPeriod.year,
+          label: selectedPeriod.label,
+        }
+      : dueDate
+      ? {
+          month: new Date(dueDate).getMonth() + 1,
+          year: new Date(dueDate).getFullYear(),
+          label: new Date(dueDate).toLocaleDateString("en-US", {
+            month: "short",
+            year: "numeric",
+          }),
+        }
+      : undefined;
 
     try {
       await createTask({
@@ -150,6 +313,7 @@ export function CreateTaskDialog({
         assigneeIds,
         description: description || undefined,
         priority,
+        period: periodPayload,
         dueDate: dueDate || undefined,
         targetDate: targetDate || undefined,
         isBillable,
@@ -162,16 +326,23 @@ export function CreateTaskDialog({
           : undefined,
       }).unwrap();
 
+      toast.success("Task created successfully");
       setOpen(false);
       resetForm();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to create task", err);
+      toast.error(
+        err?.data?.error?.message ||
+        err?.data?.message ||
+        "Failed to create task"
+      );
     }
   };
 
   const resetForm = () => {
     setSelectedClientId("");
     setServiceId("");
+    setSelectedPeriod(null);
     setAssigneeIds([]);
     setDescription("");
     setPriority("Medium");
@@ -247,51 +418,185 @@ export function CreateTaskDialog({
                 <Label>
                   Service <span className="text-red-500">*</span>
                 </Label>
-                {subscribedServicesList.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setShowAllServices((prev) => !prev)}
-                    className="text-[11px] text-primary hover:underline cursor-pointer"
-                  >
-                    {showAllServices
-                      ? `Show Subscribed Only (${subscribedServicesList.length})`
-                      : "+ Show All Services (Ad-hoc)"}
-                  </button>
+                {clientId && subscribedServicesList.length > 0 && (
+                  <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+                    {subscribedServicesList.length} Subscribed Service{subscribedServicesList.length > 1 ? "s" : ""}
+                  </span>
                 )}
               </div>
-              <Select value={serviceId} onValueChange={setServiceId}>
-                <SelectTrigger>
+              <Select
+                value={serviceId}
+                onValueChange={(val) => {
+                  setServiceId(val);
+                  const selected =
+                    services.find((s: any) => String(s._id) === val) ||
+                    availableServices.find((s: any) => String(s._id) === val);
+
+                  if (selected) {
+                    setIsBillable(selected.isBillable ?? true);
+
+                    // Check if service is recurring
+                    const isRec = Boolean(
+                      selected.isRecurring &&
+                      selected.frequency?.type &&
+                      selected.frequency?.type !== "one_time"
+                    );
+
+                    if (isRec && selected.frequency?.type) {
+                      const opts = getPeriodOptionsForFrequency(selected.frequency.type);
+                      const def = opts.find((o) => o.isDefault) || opts[0];
+                      if (def) {
+                        setSelectedPeriod({
+                          label: def.label,
+                          month: def.month,
+                          year: def.year,
+                        });
+
+                        // Auto-populate due date based on service dueDay if empty
+                        if (selected.frequency.dueDay) {
+                          const targetMonth = def.month || new Date().getMonth() + 1;
+                          const targetYear = def.year || new Date().getFullYear();
+                          const nextM = targetMonth === 12 ? 1 : targetMonth + 1;
+                          const nextY = targetMonth === 12 ? targetYear + 1 : targetYear;
+                          const maxDays = new Date(nextY, nextM, 0).getDate();
+                          const day = Math.min(selected.frequency.dueDay, maxDays);
+                          const pad = (n: number) => String(n).padStart(2, "0");
+                          setDueDate(`${nextY}-${pad(nextM)}-${pad(day)}`);
+                        }
+                      }
+                    } else {
+                      setSelectedPeriod(null);
+                    }
+
+                    // Check if client has a custom negotiated price for this service
+                    const clientSub = clientData?.subscribedServices?.find(
+                      (sub: any) => {
+                        const sId = typeof sub.serviceId === "object" ? sub.serviceId?._id : sub.serviceId;
+                        return String(sId) === val;
+                      }
+                    );
+
+                    if (
+                      clientSub &&
+                      clientSub.customPrice !== undefined &&
+                      clientSub.customPrice !== null &&
+                      clientSub.customPrice !== "" &&
+                      Number(clientSub.customPrice) > 0
+                    ) {
+                      setBillableAmount(String(clientSub.customPrice));
+                    } else if (selected.defaultBillingRate !== undefined && selected.defaultBillingRate !== null) {
+                      setBillableAmount(String(selected.defaultBillingRate));
+                    }
+
+                    if (selected.autoDocCollection?.isEnabled) {
+                      setDocCollectionRequest(true);
+                      if (selected.autoDocCollection.defaultMessage) {
+                        setDocCollectionMessage(selected.autoDocCollection.defaultMessage);
+                      }
+                    }
+                  }
+                }}
+                disabled={!clientId || subscribedServicesList.length === 0}
+              >
+                <SelectTrigger className={!clientId || subscribedServicesList.length === 0 ? "opacity-75" : ""}>
                   <SelectValue
                     placeholder={
-                      servicesLoading ? "Loading..." : "Select Service"
+                      !clientId
+                        ? "Select Client first"
+                        : subscribedServicesList.length === 0
+                        ? "No subscribed services"
+                        : servicesLoading
+                        ? "Loading services..."
+                        : "Select Subscribed Service"
                     }
                   />
                 </SelectTrigger>
                 <SelectContent>
-                  {subscribedServicesList.length > 0 && !showAllServices && (
-                    <div className="px-2 py-1 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                      Subscribed Services ({subscribedServicesList.length})
-                    </div>
-                  )}
-                  {subscribedServicesList.length === 0 && clientId && (
-                    <div className="px-2 py-1 text-[11px] text-amber-600 dark:text-amber-400 font-medium">
-                      No active subscriptions — showing all practice services
-                    </div>
-                  )}
-                  {availableServices.map((service: any) => (
-                    <SelectItem key={service._id} value={service._id}>
-                      {service.name}
-                    </SelectItem>
-                  ))}
-                  {availableServices.length === 0 && (
-                    <div className="p-2 text-sm text-muted-foreground text-center">
-                      No services found in practice catalog
+                  {subscribedServicesList.length > 0 ? (
+                    <>
+                      <div className="px-2 py-1 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                        Subscribed Services ({subscribedServicesList.length})
+                      </div>
+                      {subscribedServicesList.map((service: any) => (
+                        <SelectItem key={service._id} value={service._id}>
+                          {service.name}
+                        </SelectItem>
+                      ))}
+                    </>
+                  ) : (
+                    <div className="p-3 text-xs text-amber-600 dark:text-amber-400 text-center">
+                      No subscribed services found for this client.
                     </div>
                   )}
                 </SelectContent>
               </Select>
+              {clientId && subscribedServicesList.length === 0 && (
+                <p className="text-[11px] text-amber-600 dark:text-amber-400">
+                  This client has not subscribed to any services. Tasks can only be created for subscribed services. Please subscribe this client under their profile first.
+                </p>
+              )}
             </div>
           </div>
+
+          {/* Dynamic Period Selector for Recurring Services */}
+          {isRecurring && (
+            <div className="grid gap-2 p-3.5 rounded-lg border border-primary/25 bg-primary/5 dark:bg-primary/10 transition-all">
+              <div className="flex items-center justify-between">
+                <Label className="text font-semibold flex items-center gap-2 text-xs text-primary dark:text-primary">
+                  <span className="h-2 w-2 rounded-full bg-primary " />
+                  Period ({frequencyType ? frequencyType.replace("_", "-").toUpperCase() : "RECURRING"}) <span className="text-red-500">*</span>
+                </Label>
+                <span className="text-[11px] text-muted-foreground font-medium">
+                  Select compliance period
+                </span>
+              </div>
+              <Select
+                value={selectedPeriod?.label || ""}
+                onValueChange={(val) => {
+                  const found = periodOptions.find((p) => p.label === val);
+                  if (found) {
+                    setSelectedPeriod({
+                      label: found.label,
+                      month: found.month,
+                      year: found.year,
+                    });
+                    if (selectedService?.frequency?.dueDay) {
+                      const targetMonth = found.month || new Date().getMonth() + 1;
+                      const targetYear = found.year || new Date().getFullYear();
+                      const nextM = targetMonth === 12 ? 1 : targetMonth + 1;
+                      const nextY = targetMonth === 12 ? targetYear + 1 : targetYear;
+                      const maxDays = new Date(nextY, nextM, 0).getDate();
+                      const day = Math.min(selectedService.frequency.dueDay, maxDays);
+                      const pad = (n: number) => String(n).padStart(2, "0");
+                      setDueDate(`${nextY}-${pad(nextM)}-${pad(day)}`);
+                    }
+                  }
+                }}
+              >
+                <SelectTrigger className="bg-background">
+                  <SelectValue
+                    placeholder={`Select ${
+                      frequencyType ? frequencyType.replace("_", "-") : "period"
+                    }`}
+                  />
+                </SelectTrigger>
+                <SelectContent className="max-h-[220px]">
+                  {periodOptions.map((opt) => (
+                    <SelectItem key={opt.label} value={opt.label}>
+                      <div className="flex items-center justify-between w-full gap-4">
+                        <span className="font-medium">{opt.label}</span>
+                        {opt.isDefault && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/15 text-primary font-semibold">
+                            Current
+                          </span>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">

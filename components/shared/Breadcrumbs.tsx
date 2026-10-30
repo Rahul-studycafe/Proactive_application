@@ -18,6 +18,8 @@ export interface BreadcrumbSegment {
   label: string;
   /** Optional target URL (if omitted or item is last, renders as current page) */
   href?: string;
+  /** Optional click handler (e.g. for in-page tab/state resets) */
+  onClick?: () => void;
   /** Optional icon to render next to the label */
   icon?: LucideIcon | React.ComponentType<{ className?: string }>;
 }
@@ -53,7 +55,7 @@ export function Breadcrumbs({
       )}
     >
       <Breadcrumb>
-        <BreadcrumbList className="flex items-center gap-1.5 sm:gap-2">
+        <BreadcrumbList className="flex items-center gap-1.5 sm:gap-2 text-sm text-muted-foreground">
           {showHome && (
             <>
               <BreadcrumbItem>
@@ -68,7 +70,7 @@ export function Breadcrumbs({
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator>
-                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/60" />
+                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0" />
               </BreadcrumbSeparator>
             </>
           )}
@@ -80,27 +82,37 @@ export function Breadcrumbs({
             return (
               <React.Fragment key={`${item.label}-${index}`}>
                 <BreadcrumbItem>
-                  {isLast || !item.href ? (
+                  {isLast || (!item.href && !item.onClick) ? (
                     <BreadcrumbPage className="font-semibold text-foreground flex items-center gap-1.5">
-                      {Icon && <Icon className="h-3.5 w-3.5 text-primary" />}
-                      <span>{item.label}</span>
+                      {Icon && <Icon className="h-3.5 w-3.5 text-primary shrink-0" />}
+                      <span className="truncate max-w-[280px] sm:max-w-[400px]">{item.label}</span>
                     </BreadcrumbPage>
-                  ) : (
+                  ) : item.href ? (
                     <BreadcrumbLink asChild>
                       <Link
                         href={item.href}
-                        className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+                        onClick={item.onClick}
+                        className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5 font-normal"
                       >
-                        {Icon && <Icon className="h-3.5 w-3.5" />}
+                        {Icon && <Icon className="h-3.5 w-3.5 shrink-0" />}
                         <span>{item.label}</span>
                       </Link>
                     </BreadcrumbLink>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={item.onClick}
+                      className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5 font-normal cursor-pointer bg-transparent border-0 p-0 text-sm"
+                    >
+                      {Icon && <Icon className="h-3.5 w-3.5 shrink-0" />}
+                      <span>{item.label}</span>
+                    </button>
                   )}
                 </BreadcrumbItem>
 
                 {!isLast && (
                   <BreadcrumbSeparator>
-                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/60" />
+                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0" />
                   </BreadcrumbSeparator>
                 )}
               </React.Fragment>

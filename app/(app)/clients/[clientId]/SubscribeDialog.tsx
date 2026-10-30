@@ -30,12 +30,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
 import {
   useSubscribeClientToPackageMutation,
   useSubscribeClientToServiceMutation,
   useGetPackagesQuery,
   useGetServicesQuery,
+  useGetClientByIdQuery,
 } from "@/lib/services/api";
 
 const formSchema = z.object({
@@ -43,9 +45,27 @@ const formSchema = z.object({
   customPrice: z.coerce.number().optional(),
 });
 
-export function SubscribeDialog({ clientId }: { clientId: string }) {
+interface SubscribeDialogProps {
+  clientId: string;
+  client?: any;
+  defaultTab?: "package" | "service";
+  triggerButton?: React.ReactNode;
+}
+
+export function SubscribeDialog({
+  clientId,
+  client: initialClient,
+  defaultTab = "package",
+  triggerButton,
+}: SubscribeDialogProps) {
   const [open, setOpen] = useState(false);
-  const [tab, setTab] = useState<"package" | "service">("package");
+  const [tab, setTab] = useState<"package" | "service">(defaultTab);
+
+  // If client wasn't passed directly, fetch it
+  const { data: fetchedClient } = useGetClientByIdQuery(clientId, {
+    skip: !!initialClient,
+  });
+  const client = initialClient || fetchedClient;
 
   const [subscribeToPackage, { isLoading: isSubscribingPkg }] =
     useSubscribeClientToPackageMutation();
@@ -62,6 +82,22 @@ export function SubscribeDialog({ clientId }: { clientId: string }) {
 
   const isLoading = isSubscribingPkg || isSubscribingSvc;
 
+  const isPackageSubscribed = (pkgId: string) => {
+    return client?.subscribedPackages?.some(
+      (p: any) =>
+        ((p.packageId as any)?._id || p.packageId || p._id)?.toString() ===
+        pkgId?.toString()
+    );
+  };
+
+  const isServiceSubscribed = (svcId: string) => {
+    return client?.subscribedServices?.some(
+      (s: any) =>
+        ((s.serviceId as any)?._id || s.serviceId || s._id)?.toString() ===
+        svcId?.toString()
+    );
+  };
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -76,35 +112,56 @@ export function SubscribeDialog({ clientId }: { clientId: string }) {
     form.reset({ subscriptionId: "", customPrice: undefined });
   };
 
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (isOpen) {
+      setTab(defaultTab);
+      form.reset({ subscriptionId: "", customPrice: undefined });
+    }
+  };
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
+      const parsedCustomPrice =
+        values.customPrice !== undefined && !isNaN(values.customPrice)
+          ? values.customPrice
+          : undefined;
+
       if (tab === "package") {
         await subscribeToPackage({
           clientId,
           packageId: values.subscriptionId,
-          customPrice: values.customPrice,
+          customPrice: parsedCustomPrice,
         }).unwrap();
+        toast.success("Successfully subscribed to package");
       } else {
         await subscribeToService({
           clientId,
           serviceId: values.subscriptionId,
-          customPrice: values.customPrice,
+          customPrice: parsedCustomPrice,
         }).unwrap();
+        toast.success("Successfully subscribed to service");
       }
       setOpen(false);
       form.reset();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to subscribe:", error);
+      const errorMsg =
+        error?.data?.error?.message ||
+        error?.data?.message ||
+        error?.message ||
+        "Failed to subscribe";
+      toast.error(errorMsg);
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button size="sm">+ Add Subscription</Button>
+        {triggerButton || <Button size="sm">+ Add Subscription</Button>}
       </DialogTrigger>
       <DialogContent
-        className="sm:max-w-[425px]"
+        className="sm:max-w-[440px]"
         onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
@@ -153,23 +210,65 @@ export function SubscribeDialog({ clientId }: { clientId: string }) {
                           <div className="flex justify-center p-2">
                             <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                           </div>
+                        ) : packages.length === 0 ? (
+                          <div className="p-2 text-xs text-muted-foreground text-center">
+                            No packages available
+                          </div>
                         ) : (
-                          packages.map((pkg: any) => (
-                            <SelectItem key={pkg._id} value={pkg._id}>
-                              {pkg.name} (₹{pkg.defaultBillingAmount})
-                            </SelectItem>
-                          ))
+                          packages.map((pkg: any) => {
+                            const isSubscribed = isPackageSubscribed(pkg._id);
+                            return (
+                              <SelectItem
+                                key={pkg._id}
+                                value={pkg._id}
+                                disabled={isSubscribed}
+                                className={isSubscribed ? "opacity-60 cursor-not-allowed" : ""}
+                              >
+                                <div className="flex items-center justify-between w-full gap-2">
+                                  <span>
+                                    {pkg.name} (₹{pkg.defaultBillingAmount?.toLocaleString("en-IN")})
+                                  </span>
+                                  {isSubscribed && (
+                                    <span className="text-[10px] font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-800 shrink-0">
+                                      Already Subscribed
+                                    </span>
+                                  )}
+                                </div>
+                              </SelectItem>
+                            );
+                          })
                         )
                       ) : isLoadingServices ? (
                         <div className="flex justify-center p-2">
                           <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                         </div>
+                      ) : services.length === 0 ? (
+                        <div className="p-2 text-xs text-muted-foreground text-center">
+                          No services available
+                        </div>
                       ) : (
-                        services.map((svc: any) => (
-                          <SelectItem key={svc._id} value={svc._id}>
-                            {svc.name} (₹{svc.defaultBillingRate})
-                          </SelectItem>
-                        ))
+                        services.map((svc: any) => {
+                          const isSubscribed = isServiceSubscribed(svc._id);
+                          return (
+                            <SelectItem
+                              key={svc._id}
+                              value={svc._id}
+                              disabled={isSubscribed}
+                              className={isSubscribed ? "opacity-60 cursor-not-allowed" : ""}
+                            >
+                              <div className="flex items-center justify-between w-full gap-2">
+                                <span>
+                                  {svc.name} (₹{svc.defaultBillingRate?.toLocaleString("en-IN")})
+                                </span>
+                                {isSubscribed && (
+                                  <span className="text-[10px] font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-800 shrink-0">
+                                    Already Subscribed
+                                  </span>
+                                )}
+                              </div>
+                            </SelectItem>
+                          );
+                        })
                       )}
                     </SelectContent>
                   </Select>

@@ -15,9 +15,11 @@ import { cn } from "@/lib/utils";
 export function TaskChecklist({
   taskId,
   checklist = [],
+  isReadOnly = false,
 }: {
   taskId: string;
   checklist: any[];
+  isReadOnly?: boolean;
 }) {
   const [newTaskName, setNewTaskName] = useState("");
 
@@ -26,20 +28,21 @@ export function TaskChecklist({
   const [deleteStep] = useDeleteTaskChecklistStepMutation();
 
   const handleToggle = async (stepIndex: number, currentStatus: boolean) => {
+    if (isReadOnly) return;
     try {
       await toggleStep({
         taskId,
         stepIndex,
         isCompleted: !currentStatus,
       }).unwrap();
-    } catch (error) {
-      toast.error("Failed to update step status");
+    } catch (error: any) {
+      toast.error(error?.data?.message || error?.message || "Failed to update step status");
     }
   };
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTaskName.trim()) return;
+    if (isReadOnly || !newTaskName.trim()) return;
     try {
       await addStep({
         taskId,
@@ -47,20 +50,21 @@ export function TaskChecklist({
       }).unwrap();
       setNewTaskName("");
       toast.success("To-Do added");
-    } catch (error) {
-      toast.error("Failed to add To-Do");
+    } catch (error: any) {
+      toast.error(error?.data?.message || error?.message || "Failed to add To-Do");
     }
   };
 
   const handleDelete = async (stepIndex: number) => {
+    if (isReadOnly) return;
     try {
       await deleteStep({
         taskId,
         stepIndex,
       }).unwrap();
       toast.success("To-Do deleted");
-    } catch (error) {
-      toast.error("Failed to delete To-Do");
+    } catch (error: any) {
+      toast.error(error?.data?.message || error?.message || "Failed to delete To-Do");
     }
   };
 
@@ -83,7 +87,10 @@ export function TaskChecklist({
               )}
             >
               <div
-                className="flex items-center gap-3 cursor-pointer flex-1"
+                className={cn(
+                  "flex items-center gap-3 flex-1",
+                  isReadOnly ? "cursor-default" : "cursor-pointer"
+                )}
                 onClick={() => handleToggle(index, step.isCompleted)}
               >
                 <div
@@ -92,6 +99,7 @@ export function TaskChecklist({
                     step.isCompleted
                       ? "bg-primary border-primary text-primary-foreground"
                       : "border-input",
+                    isReadOnly && "opacity-75"
                   )}
                 >
                   {step.isCompleted && <Check className="h-3.5 w-3.5" />}
@@ -105,41 +113,49 @@ export function TaskChecklist({
                   {step.stepName}
                 </span>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDelete(index);
-                }}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              {!isReadOnly && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(index);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           ))
         )}
       </div>
 
-      <form onSubmit={handleAdd} className="flex gap-2">
-        <Input
-          placeholder="Add a new to-do..."
-          value={newTaskName}
-          onChange={(e) => setNewTaskName(e.target.value)}
-          disabled={isAdding}
-          className="flex-1"
-        />
-        <Button type="submit" disabled={isAdding || !newTaskName.trim()}>
-          {isAdding ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <>
-              <Plus className="h-4 w-4 mr-2" />
-              Add
-            </>
-          )}
-        </Button>
-      </form>
+      {isReadOnly ? (
+        <div className="p-3 text-xs text-muted-foreground bg-muted/40 rounded-lg text-center border">
+          To-Do checklist is locked because this task is finalized.
+        </div>
+      ) : (
+        <form onSubmit={handleAdd} className="flex gap-2">
+          <Input
+            placeholder="Add a new to-do..."
+            value={newTaskName}
+            onChange={(e) => setNewTaskName(e.target.value)}
+            disabled={isAdding}
+            className="flex-1"
+          />
+          <Button type="submit" disabled={isAdding || !newTaskName.trim()}>
+            {isAdding ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <>
+                <Plus className="h-4 w-4 mr-2" />
+                Add
+              </>
+            )}
+          </Button>
+        </form>
+      )}
     </div>
   );
 }

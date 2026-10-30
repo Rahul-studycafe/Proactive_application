@@ -205,9 +205,21 @@ export function TasksTable({
                 )}
                 {visibleColumns.includes("title") && (
                   <TableCell className="font-medium max-w-[300px] truncate text-foreground">
-                    {(task as any).title ||
-                      task.serviceId?.name ||
-                      "Unnamed Task"}
+                    <div className="flex items-center gap-2">
+                      <span className="truncate">
+                        {(task as any).title ||
+                          task.serviceId?.name ||
+                          "Unnamed Task"}
+                      </span>
+                      {task.period?.label && (
+                        <Badge
+                          variant="secondary"
+                          className="text-[10px] font-normal px-1.5 py-0 shrink-0 text-primary bg-primary/10 border-primary/20"
+                        >
+                          {task.period.label}
+                        </Badge>
+                      )}
+                    </div>
                   </TableCell>
                 )}
                 {visibleColumns.includes("client") && (

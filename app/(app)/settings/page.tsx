@@ -18,6 +18,7 @@ import {
   Building,
   Zap,
   History,
+  Sparkles,
 } from "lucide-react";
 
 import { mockUsers } from "@/lib/mock-data";
@@ -33,7 +34,6 @@ import {
 } from "@/components/ui/table";
 import { HolidaysView } from "@/components/holidays/HolidaysView";
 import { WorkingDaysView } from "@/components/settings/WorkingDaysView";
-import { BackButton } from "@/components/shared/BackButton";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { QueueHealthCard } from "@/components/automation/QueueHealthCard";
 import { TriggerAutomationModal } from "@/components/automation/TriggerAutomationModal";
@@ -49,6 +49,22 @@ interface SettingModule {
 
 const SETTING_MODULES: SettingModule[] = [
   // System Section
+  {
+    id: "subscription",
+    title: "SaaS Subscription & Plan",
+    description: "Manage practice subscription tier, user seat limits, client quota, and storage.",
+    icon: Sparkles,
+    colorClass: "bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400",
+    category: "System",
+  },
+  {
+    id: "website-cms",
+    title: "Website & Portal CMS",
+    description: "White-label subdomain, agency branding, custom domain, and client portal layout.",
+    icon: Globe2,
+    colorClass: "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400",
+    category: "System",
+  },
   {
     id: "automation-settings",
     title: "Automation & Engine",
@@ -135,6 +151,14 @@ const SETTING_MODULES: SettingModule[] = [
 
   // Billing Section
   {
+    id: "payment-gateways",
+    title: "Payment Gateways & UPI",
+    description: "Configure Razorpay, Cashfree, dynamic NPCI UPI QR, and webhook keys.",
+    icon: CreditCard,
+    colorClass: "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400",
+    category: "Billing",
+  },
+  {
     id: "billing-preferences",
     title: "Billing Preferences",
     description: "Manage invoice templates, currency, and payment terms.",
@@ -167,6 +191,22 @@ function SettingsContent() {
   }, [searchParams]);
 
   const selectModule = (id: string) => {
+    if (id === "website-cms") {
+      router.push("/settings/website");
+      return;
+    }
+    if (id === "payment-gateways") {
+      router.push("/settings/payment-gateways");
+      return;
+    }
+    if (id === "billing-entities") {
+      router.push("/settings/billing-entities");
+      return;
+    }
+    if (id === "subscription") {
+      router.push("/settings/subscription");
+      return;
+    }
     setActiveModule(id);
     router.push(`/settings?module=${id}`, { scroll: false });
   };
@@ -184,11 +224,10 @@ function SettingsContent() {
       <div className="space-y-6">
         <Breadcrumbs
           items={[
-            { label: "Settings", href: "/settings" },
+            { label: "Settings", href: "/settings", onClick: backToSettings },
             { label: currentModuleObj?.title || "Module Settings" },
           ]}
         />
-        <BackButton onClick={backToSettings} label="Back to Settings" />
 
         <div className="pt-1">
           {activeModule === "holidays-list" && <HolidaysView />}
@@ -288,7 +327,9 @@ function SettingsContent() {
                   {currentModuleObj?.description} (Coming soon in future module releases).
                 </p>
                 <div className="mt-4 flex justify-center">
-                  <BackButton onClick={backToSettings} label="Back to Settings" />
+                  <Button variant="outline" size="sm" onClick={backToSettings}>
+                    Return to Settings
+                  </Button>
                 </div>
               </div>
             )}

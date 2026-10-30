@@ -20,7 +20,6 @@ import { IssueCreditNoteModal } from "@/components/credit-notes/IssueCreditNoteM
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BackButton } from "@/components/shared/BackButton";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import {
   Table,
@@ -170,7 +169,12 @@ export default function ViewInvoicePage() {
   if (error || !invoice) {
     return (
       <div className="space-y-6">
-        <BackButton href="/invoices" label="Back to Invoices" />
+        <Breadcrumbs
+          items={[
+            { label: "Invoices", href: "/invoices" },
+            { label: "Invoice Not Found" },
+          ]}
+        />
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <FileText className="h-12 w-12 text-destructive mb-3 opacity-60" />
           <h2 className="text-lg font-semibold">Invoice not found</h2>
@@ -214,19 +218,16 @@ export default function ViewInvoicePage() {
 
       {/* ─── Top Navigation & Controls (Hidden in Print) ────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
-        <div className="space-y-1">
-          <BackButton href="/invoices" label="Back to Invoices" />
-          <div className="flex items-center gap-3 mt-1">
-            <h1 className="text-2xl font-bold tracking-tight">
-              {invoice.invoiceNo}
-            </h1>
-            <Badge
-              variant="outline"
-              className={statusStyle[invoice.status] ?? ""}
-            >
-              {invoice.status}
-            </Badge>
-          </div>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold tracking-tight">
+            {invoice.invoiceNo}
+          </h1>
+          <Badge
+            variant="outline"
+            className={statusStyle[invoice.status] ?? ""}
+          >
+            {invoice.status}
+          </Badge>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">

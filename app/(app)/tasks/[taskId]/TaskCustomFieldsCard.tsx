@@ -28,10 +28,12 @@ export function TaskCustomFieldsCard({
   taskId,
   customFieldsDef,
   customFieldValues = {},
+  isReadOnly = false,
 }: {
   taskId: string;
   customFieldsDef: CustomFieldDef[];
   customFieldValues: Record<string, any>;
+  isReadOnly?: boolean;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [values, setValues] = useState<Record<string, any>>(
@@ -65,7 +67,7 @@ export function TaskCustomFieldsCard({
     <Card className="shadow-sm border-border">
       <CardHeader className="pb-3 border-b flex flex-row items-center justify-between">
         <CardTitle className="text-sm font-semibold">Custom Fields</CardTitle>
-        {!isEditing ? (
+        {!isReadOnly && !isEditing ? (
           <Button
             variant="ghost"
             size="sm"
@@ -74,7 +76,7 @@ export function TaskCustomFieldsCard({
           >
             <Edit2 className="h-3.5 w-3.5 mr-1.5" /> Edit
           </Button>
-        ) : (
+        ) : !isReadOnly && isEditing ? (
           <div className="flex items-center gap-1">
             <Button
               variant="ghost"
@@ -99,7 +101,7 @@ export function TaskCustomFieldsCard({
               )}
             </Button>
           </div>
-        )}
+        ) : null}
       </CardHeader>
       <CardContent className="p-6 space-y-4">
         {customFieldsDef.map((field) => {
