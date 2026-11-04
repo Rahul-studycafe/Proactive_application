@@ -55,10 +55,10 @@ const MONTH_NAMES = [
 export function MonthlyMatrixGrid() {
   const currentDate = new Date();
   const [selectedMonth, setSelectedMonth] = useState<string>(
-    String(currentDate.getMonth() + 1)
+    String(currentDate.getMonth() + 1),
   );
   const [selectedYear, setSelectedYear] = useState<string>(
-    String(currentDate.getFullYear())
+    String(currentDate.getFullYear()),
   );
   const [search, setSearch] = useState("");
 
@@ -76,7 +76,11 @@ export function MonthlyMatrixGrid() {
   } | null>(null);
 
   // RTK Query: fetch monthly matrix
-  const { data: matrixResult, isLoading, isFetching } = useGetMonthlyMatrixQuery({
+  const {
+    data: matrixResult,
+    isLoading,
+    isFetching,
+  } = useGetMonthlyMatrixQuery({
     month: selectedMonth,
     year: selectedYear,
   });
@@ -84,15 +88,16 @@ export function MonthlyMatrixGrid() {
   const rawStaffList = matrixResult?.staff || [];
 
   // If role is self-only (Phase F-59), filter strictly to the logged-in user
-  const visibleStaffList = isSelfOnly && user
-    ? rawStaffList.filter(
-        (s) =>
-          s._id === (user as any).id ||
-          s._id === (user as any)._id ||
-          s.email === user.email ||
-          s.username === user.email
-      )
-    : rawStaffList;
+  const visibleStaffList =
+    isSelfOnly && user
+      ? rawStaffList.filter(
+          (s) =>
+            s._id === (user as any).id ||
+            s._id === (user as any)._id ||
+            s.email === user.email ||
+            s.username === user.email,
+        )
+      : rawStaffList;
 
   // Filter staff by search query
   const filteredStaff = visibleStaffList.filter((s) => {
@@ -108,7 +113,7 @@ export function MonthlyMatrixGrid() {
 
   const handleCellClick = (
     staff: MonthlyMatrixStaffMember,
-    day: MonthlyMatrixDay
+    day: MonthlyMatrixDay,
   ) => {
     if (!canManage) return;
 
@@ -158,7 +163,11 @@ export function MonthlyMatrixGrid() {
               <SelectValue placeholder="Year" />
             </SelectTrigger>
             <SelectContent>
-              {[currentDate.getFullYear() - 1, currentDate.getFullYear(), currentDate.getFullYear() + 1].map((y) => (
+              {[
+                currentDate.getFullYear() - 1,
+                currentDate.getFullYear(),
+                currentDate.getFullYear() + 1,
+              ].map((y) => (
                 <SelectItem key={y} value={String(y)}>
                   {y}
                 </SelectItem>
@@ -211,8 +220,8 @@ export function MonthlyMatrixGrid() {
                         isHoliday
                           ? "bg-purple-500/15 text-purple-700 dark:text-purple-300"
                           : isWeekend
-                          ? "bg-muted/80 text-muted-foreground"
-                          : "text-foreground"
+                            ? "bg-muted/80 text-muted-foreground"
+                            : "text-foreground"
                       }`}
                     >
                       <div className="font-bold text-xs">{day.day}</div>
@@ -285,8 +294,8 @@ export function MonthlyMatrixGrid() {
                             day.isHoliday
                               ? "bg-purple-500/5"
                               : day.isWeekend
-                              ? "bg-muted/20"
-                              : ""
+                                ? "bg-muted/20"
+                                : ""
                           }`}
                         >
                           <MatrixCell
@@ -311,37 +320,52 @@ export function MonthlyMatrixGrid() {
           <div className="flex flex-wrap items-center gap-4">
             <span className="font-semibold text-foreground">Legend:</span>
             <span className="flex items-center gap-1">
-              <span className="inline-block h-3.5 w-3.5 rounded bg-emerald-500/20 border border-emerald-500/40 text-[9px] font-bold text-center leading-3 text-emerald-700">P</span>
+              <span className="inline-block h-3.5 w-3.5 rounded bg-emerald-500/20 border border-emerald-500/40 text-[9px] font-bold text-center leading-3 text-emerald-700">
+                P
+              </span>
               Present
             </span>
             <span className="flex items-center gap-1">
-              <span className="inline-block h-3.5 w-3.5 rounded bg-amber-500/20 border border-amber-500/40 text-[9px] font-bold text-center leading-3 text-amber-700">HD</span>
+              <span className="inline-block h-3.5 w-3.5 rounded bg-amber-500/20 border border-amber-500/40 text-[9px] font-bold text-center leading-3 text-amber-700">
+                HD
+              </span>
               Half Day
             </span>
             <span className="flex items-center gap-1">
-              <span className="inline-block h-3.5 w-3.5 rounded bg-blue-500/20 border border-blue-500/40 text-[9px] font-bold text-center leading-3 text-blue-700">PL</span>
+              <span className="inline-block h-3.5 w-3.5 rounded bg-blue-500/20 border border-blue-500/40 text-[9px] font-bold text-center leading-3 text-blue-700">
+                PL
+              </span>
               Paid Leave
             </span>
             <span className="flex items-center gap-1">
-              <span className="inline-block h-3.5 w-3.5 rounded bg-rose-500/20 border border-rose-500/40 text-[9px] font-bold text-center leading-3 text-rose-700">A</span>
+              <span className="inline-block h-3.5 w-3.5 rounded bg-rose-500/20 border border-rose-500/40 text-[9px] font-bold text-center leading-3 text-rose-700">
+                A
+              </span>
               Absent
             </span>
             <span className="flex items-center gap-1">
-              <span className="inline-block h-3.5 w-3.5 rounded bg-purple-500/20 border border-purple-500/40 text-[9px] font-bold text-center leading-3 text-purple-700">H</span>
+              <span className="inline-block h-3.5 w-3.5 rounded bg-purple-500/20 border border-purple-500/40 text-[9px] font-bold text-center leading-3 text-purple-700">
+                H
+              </span>
               Holiday
             </span>
             <span className="flex items-center gap-1">
-              <span className="inline-block h-3.5 w-3.5 rounded bg-muted border text-[9px] font-bold text-center leading-3">W</span>
+              <span className="inline-block h-3.5 w-3.5 rounded bg-muted border text-[9px] font-bold text-center leading-3">
+                W
+              </span>
               Weekend
             </span>
             <span className="flex items-center gap-1">
-              <span className="inline-block h-3.5 w-3.5 rounded border border-dashed text-[9px] text-center leading-3">--</span>
+              <span className="inline-block h-3.5 w-3.5 rounded border border-dashed text-[9px] text-center leading-3">
+                --
+              </span>
               Unmarked
             </span>
           </div>
 
           <div className="text-[11px] text-muted-foreground">
-            Tip: Click employee name for monthly payroll audit drawer. Click cell to adjust.
+            Tip: Click employee name for monthly payroll audit drawer. Click
+            cell to adjust.
           </div>
         </div>
       </div>

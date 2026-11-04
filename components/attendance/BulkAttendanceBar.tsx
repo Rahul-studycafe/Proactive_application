@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCheck, Users, X, Loader2, Sparkles, AlertCircle } from "lucide-react";
+import {
+  CheckCheck,
+  Users,
+  X,
+  Loader2,
+  Sparkles,
+  AlertCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import type { AttendanceStatus } from "@/lib/types/attendance";
@@ -30,7 +37,9 @@ export function BulkAttendanceBar({
   onClearSelection,
   targetDate,
 }: BulkAttendanceBarProps) {
-  const [confirmStatus, setConfirmStatus] = useState<AttendanceStatus | null>(null);
+  const [confirmStatus, setConfirmStatus] = useState<AttendanceStatus | null>(
+    null,
+  );
   const [bulkMarkAttendance, { isLoading }] = useBulkMarkAttendanceMutation();
 
   if (selectedUserIds.length === 0) return null;
@@ -51,13 +60,15 @@ export function BulkAttendanceBar({
       }).unwrap();
 
       toast.success(
-        `Successfully marked ${result?.count || effectiveCount} employees as ${confirmStatus}`
+        `Successfully marked ${result?.count || effectiveCount} employees as ${confirmStatus}`,
       );
       onClearSelection();
       setConfirmStatus(null);
     } catch (err: any) {
       toast.error(
-        err?.data?.error?.message || err?.data?.message || "Failed to bulk mark attendance"
+        err?.data?.error?.message ||
+          err?.data?.message ||
+          "Failed to bulk mark attendance",
       );
     }
   };
@@ -73,7 +84,10 @@ export function BulkAttendanceBar({
             {count} {count === 1 ? "Staff Member" : "Staff Members"} Selected
           </span>
           {isCapped && (
-            <Badge variant="outline" className="border-amber-500 text-amber-600 text-xs">
+            <Badge
+              variant="outline"
+              className="border-amber-500 text-amber-600 text-xs"
+            >
               Batch capped at 250
             </Badge>
           )}
@@ -152,12 +166,18 @@ export function BulkAttendanceBar({
               <div className="space-y-2 text-sm text-muted-foreground">
                 <p>
                   Are you sure you want to mark{" "}
-                  <strong className="text-foreground">{effectiveCount} staff members</strong>{" "}
-                  as <strong className="text-foreground font-semibold">{confirmStatus}</strong>{" "}
+                  <strong className="text-foreground">
+                    {effectiveCount} staff members
+                  </strong>{" "}
+                  as{" "}
+                  <strong className="text-foreground font-semibold">
+                    {confirmStatus}
+                  </strong>{" "}
                   for <strong className="text-foreground">{targetDate}</strong>?
                 </p>
                 <p className="text-xs">
-                  This will override any existing punch or unmarked status for these employees.
+                  This will override any existing punch or unmarked status for
+                  these employees.
                 </p>
               </div>
             </AlertDialogDescription>

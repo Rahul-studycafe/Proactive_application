@@ -3,17 +3,15 @@
  */
 export async function downloadAttendanceCsv(
   month: string | number,
-  year: string | number
+  year: string | number,
 ): Promise<void> {
   const baseUrl =
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
   const token =
-    typeof window !== "undefined"
-      ? localStorage.getItem("accessToken")
-      : null;
+    typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
 
   const url = `${baseUrl}/attendance/export?month=${encodeURIComponent(
-    String(month)
+    String(month),
   )}&year=${encodeURIComponent(String(year))}`;
 
   const headers: Record<string, string> = {};

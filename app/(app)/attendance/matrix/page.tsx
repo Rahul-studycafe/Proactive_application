@@ -22,7 +22,8 @@ export default function MonthlyMatrixPage() {
           Monthly Attendance Matrix
         </h1>
         <p className="text-sm text-muted-foreground">
-          31-day operational calendar view, statutory holiday tracking, and payable days audit.
+          31-day operational calendar view, statutory holiday tracking, and
+          payable days audit.
         </p>
       </div>
 

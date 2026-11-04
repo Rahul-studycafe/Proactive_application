@@ -65,12 +65,14 @@ export default function DocumentRequestsHubPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [shareDialogRequest, setShareDialogRequest] = useState<DocumentRequest | null>(null);
+  const [shareDialogRequest, setShareDialogRequest] =
+    useState<DocumentRequest | null>(null);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
   const [resendEmail] = useResendDocumentRequestMutation();
   const [cancelRequest] = useCancelDocumentRequestMutation();
-  const [triggerScan, { isLoading: isScanning }] = useTriggerExpiredRequestsScanMutation();
+  const [triggerScan, { isLoading: isScanning }] =
+    useTriggerExpiredRequestsScanMutation();
 
   const queryParams = useMemo(() => {
     return {
@@ -100,7 +102,7 @@ export default function DocumentRequestsHubPage() {
     try {
       const res = await triggerScan().unwrap();
       toast.success(
-        `Scanned ${res.scannedCount} requests. ${res.expiredCount} marked expired.`
+        `Scanned ${res.scannedCount} requests. ${res.expiredCount} marked expired.`,
       );
       refetch();
     } catch (err: any) {
@@ -114,7 +116,7 @@ export default function DocumentRequestsHubPage() {
       toast.success(
         res.emailDispatched
           ? "Reminder email dispatched to client!"
-          : "Magic link ready (no client email registered)."
+          : "Magic link ready (no client email registered).",
       );
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to resend reminder");
@@ -122,7 +124,11 @@ export default function DocumentRequestsHubPage() {
   };
 
   const handleCancel = async (req: DocumentRequest) => {
-    if (!confirm(`Cancel request #${req.requestNo}? The client magic link will be invalidated.`)) {
+    if (
+      !confirm(
+        `Cancel request #${req.requestNo}? The client magic link will be invalidated.`,
+      )
+    ) {
       return;
     }
     try {
@@ -150,7 +156,8 @@ export default function DocumentRequestsHubPage() {
             Document Requests Hub
           </h1>
           <p className="text-sm text-muted-foreground">
-            Collect checklists of required files from clients via passwordless mobile-friendly magic links.
+            Collect checklists of required files from clients via passwordless
+            mobile-friendly magic links.
           </p>
         </div>
 
@@ -163,7 +170,9 @@ export default function DocumentRequestsHubPage() {
             title="Scan for expired magic links"
             id="scan-expired-links-btn"
           >
-            <Radar className={`h-4 w-4 mr-1.5 ${isScanning ? "animate-spin text-primary" : ""}`} />
+            <Radar
+              className={`h-4 w-4 mr-1.5 ${isScanning ? "animate-spin text-primary" : ""}`}
+            />
             {isScanning ? "Scanning..." : "Scan Expired"}
           </Button>
 
@@ -189,7 +198,9 @@ export default function DocumentRequestsHubPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{summary.totalRequests}</div>
-            <p className="text-xs text-muted-foreground mt-1">Generated upload links</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Generated upload links
+            </p>
           </CardContent>
         </Card>
 
@@ -204,7 +215,9 @@ export default function DocumentRequestsHubPage() {
             <div className="text-2xl font-bold text-amber-700 dark:text-amber-400">
               {summary.pending}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Awaiting client files</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Awaiting client files
+            </p>
           </CardContent>
         </Card>
 
@@ -219,7 +232,9 @@ export default function DocumentRequestsHubPage() {
             <div className="text-2xl font-bold text-blue-700 dark:text-blue-400">
               {summary.partiallyUploaded}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Some files received</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Some files received
+            </p>
           </CardContent>
         </Card>
 
@@ -234,7 +249,9 @@ export default function DocumentRequestsHubPage() {
             <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">
               {summary.completed}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">100% files collected</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              100% files collected
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -260,7 +277,9 @@ export default function DocumentRequestsHubPage() {
             <SelectContent>
               <SelectItem value="all">All Statuses</SelectItem>
               <SelectItem value="Pending">Pending</SelectItem>
-              <SelectItem value="Partially Uploaded">Partially Uploaded</SelectItem>
+              <SelectItem value="Partially Uploaded">
+                Partially Uploaded
+              </SelectItem>
               <SelectItem value="Completed">Completed</SelectItem>
               <SelectItem value="Expired">Expired</SelectItem>
               <SelectItem value="Cancelled">Cancelled</SelectItem>
@@ -288,7 +307,9 @@ export default function DocumentRequestsHubPage() {
           disabled={isFetching}
           title="Refresh requests"
         >
-          <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+          <RefreshCw
+            className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
+          />
         </Button>
       </div>
 
@@ -298,7 +319,9 @@ export default function DocumentRequestsHubPage() {
           <TableHeader className="bg-muted/40">
             <TableRow>
               <TableHead className="w-[120px]">Request No</TableHead>
-              <TableHead className="min-w-[200px]">Title & Instructions</TableHead>
+              <TableHead className="min-w-[200px]">
+                Title & Instructions
+              </TableHead>
               <TableHead className="min-w-[160px]">Client</TableHead>
               <TableHead className="min-w-[150px]">Upload Progress</TableHead>
               <TableHead className="min-w-[120px]">Expires</TableHead>
@@ -317,10 +340,15 @@ export default function DocumentRequestsHubPage() {
               ))
             ) : requests.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                <TableCell
+                  colSpan={7}
+                  className="text-center py-12 text-muted-foreground"
+                >
                   <div className="flex flex-col items-center justify-center gap-2">
                     <FileUp className="h-10 w-10 text-muted-foreground/30" />
-                    <div className="font-medium text-foreground">No document requests found</div>
+                    <div className="font-medium text-foreground">
+                      No document requests found
+                    </div>
                     <p className="text-xs max-w-sm">
                       {hasActiveFilters
                         ? "Try clearing or adjusting your search filters."
@@ -341,15 +369,19 @@ export default function DocumentRequestsHubPage() {
               </TableRow>
             ) : (
               requests.map((req) => {
-                const client = typeof req.clientId === "object" ? req.clientId : null;
-                const totalFiles = req.progress?.totalFiles ?? req.items?.length ?? 0;
+                const client =
+                  typeof req.clientId === "object" ? req.clientId : null;
+                const totalFiles =
+                  req.progress?.totalFiles ?? req.items?.length ?? 0;
                 const uploadedFiles =
                   req.progress?.uploadedFiles ??
                   req.items?.filter((it) => it.status === "Uploaded").length ??
                   0;
                 const progressPct =
                   req.progress?.progressPercentage ??
-                  (totalFiles > 0 ? Math.round((uploadedFiles / totalFiles) * 100) : 0);
+                  (totalFiles > 0
+                    ? Math.round((uploadedFiles / totalFiles) * 100)
+                    : 0);
 
                 const isCompleted = req.status === "Completed";
                 const isExpired = req.status === "Expired";
@@ -364,7 +396,10 @@ export default function DocumentRequestsHubPage() {
                     : `/public/upload/${req.token}`);
 
                 return (
-                  <TableRow key={req._id} className="hover:bg-muted/40 transition-colors">
+                  <TableRow
+                    key={req._id}
+                    className="hover:bg-muted/40 transition-colors"
+                  >
                     {/* Request No */}
                     <TableCell>
                       <span className="font-mono text-xs font-bold text-primary">
@@ -463,13 +498,19 @@ export default function DocumentRequestsHubPage() {
                         </Badge>
                       )}
                       {isExpired && (
-                        <Badge variant="destructive" className="flex items-center gap-1 w-fit">
+                        <Badge
+                          variant="destructive"
+                          className="flex items-center gap-1 w-fit"
+                        >
                           <AlertTriangle className="h-3 w-3" />
                           <span>Expired</span>
                         </Badge>
                       )}
                       {isCancelled && (
-                        <Badge variant="secondary" className="flex items-center gap-1 w-fit text-muted-foreground">
+                        <Badge
+                          variant="secondary"
+                          className="flex items-center gap-1 w-fit text-muted-foreground"
+                        >
                           <Ban className="h-3 w-3" />
                           <span>Cancelled</span>
                         </Badge>
@@ -480,7 +521,11 @@ export default function DocumentRequestsHubPage() {
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
                             <MoreVertical className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>

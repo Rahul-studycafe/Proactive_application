@@ -150,12 +150,13 @@ export function ClientLedgerTab({ clientId }: { clientId: string }) {
                 {ledger.openingBalance > 0
                   ? "(Dr)"
                   : ledger.openingBalance < 0
-                  ? "(Cr)"
-                  : ""}
+                    ? "(Cr)"
+                    : ""}
               </span>
             </div>
             <p className="mt-1 text-[11px] text-muted-foreground">
-              Balance before {fromDate ? formatDate(fromDate) : "all transactions"}
+              Balance before{" "}
+              {fromDate ? formatDate(fromDate) : "all transactions"}
             </p>
           </CardContent>
         </Card>
@@ -199,8 +200,8 @@ export function ClientLedgerTab({ clientId }: { clientId: string }) {
             isNetDue
               ? "border-l-destructive bg-destructive/5"
               : isNetCredit
-              ? "border-l-emerald-500 bg-emerald-500/5"
-              : "border-l-border"
+                ? "border-l-emerald-500 bg-emerald-500/5"
+                : "border-l-border"
           }`}
         >
           <CardContent className="p-4">
@@ -212,13 +213,17 @@ export function ClientLedgerTab({ clientId }: { clientId: string }) {
                 isNetDue
                   ? "text-destructive"
                   : isNetCredit
-                  ? "text-emerald-600 dark:text-emerald-400"
-                  : "text-foreground"
+                    ? "text-emerald-600 dark:text-emerald-400"
+                    : "text-foreground"
               }`}
             >
               {formatCurrency(ledger.closingBalance)}
               <span className="ml-1 text-xs font-normal">
-                {isNetDue ? "Dr (Due)" : isNetCredit ? "Cr (Advance)" : "Settled"}
+                {isNetDue
+                  ? "Dr (Due)"
+                  : isNetCredit
+                    ? "Cr (Advance)"
+                    : "Settled"}
               </span>
             </div>
             <p className="mt-1 text-[11px] text-muted-foreground">
@@ -232,13 +237,17 @@ export function ClientLedgerTab({ clientId }: { clientId: string }) {
       <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
         <div className="p-4 border-b flex items-center justify-between bg-muted/20">
           <div>
-            <h3 className="text-sm font-semibold tracking-tight">Statement of Account</h3>
+            <h3 className="text-sm font-semibold tracking-tight">
+              Statement of Account
+            </h3>
             <p className="text-xs text-muted-foreground">
-              Complete chronological audit trail with server-side running balance
+              Complete chronological audit trail with server-side running
+              balance
             </p>
           </div>
           <Badge variant="outline" className="text-xs font-mono">
-            {ledger.entries.length} Transaction{ledger.entries.length === 1 ? "" : "s"}
+            {ledger.entries.length} Transaction
+            {ledger.entries.length === 1 ? "" : "s"}
           </Badge>
         </div>
 
@@ -251,7 +260,9 @@ export function ClientLedgerTab({ clientId }: { clientId: string }) {
               <TableHead>Particulars</TableHead>
               <TableHead className="w-[120px] text-right">Debit (₹)</TableHead>
               <TableHead className="w-[120px] text-right">Credit (₹)</TableHead>
-              <TableHead className="w-[140px] text-right">Running Balance (₹)</TableHead>
+              <TableHead className="w-[140px] text-right">
+                Running Balance (₹)
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -261,27 +272,43 @@ export function ClientLedgerTab({ clientId }: { clientId: string }) {
                 {fromDate ? formatDate(fromDate) : "Beginning"}
               </TableCell>
               <TableCell>
-                <Badge variant="outline" className="text-[10px] uppercase tracking-wide">
+                <Badge
+                  variant="outline"
+                  className="text-[10px] uppercase tracking-wide"
+                >
                   Initial
                 </Badge>
               </TableCell>
-              <TableCell className="font-mono text-muted-foreground">-</TableCell>
+              <TableCell className="font-mono text-muted-foreground">
+                -
+              </TableCell>
               <TableCell className="font-medium text-muted-foreground">
                 Opening Balance Brought Forward
               </TableCell>
-              <TableCell className="text-right text-muted-foreground">-</TableCell>
-              <TableCell className="text-right text-muted-foreground">-</TableCell>
+              <TableCell className="text-right text-muted-foreground">
+                -
+              </TableCell>
+              <TableCell className="text-right text-muted-foreground">
+                -
+              </TableCell>
               <TableCell className="text-right font-bold">
                 {formatCurrency(ledger.openingBalance)}
                 <span className="ml-1 text-[10px] text-muted-foreground">
-                  {ledger.openingBalance > 0 ? "Dr" : ledger.openingBalance < 0 ? "Cr" : ""}
+                  {ledger.openingBalance > 0
+                    ? "Dr"
+                    : ledger.openingBalance < 0
+                      ? "Cr"
+                      : ""}
                 </span>
               </TableCell>
             </TableRow>
 
             {ledger.entries.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
+                <TableCell
+                  colSpan={7}
+                  className="h-32 text-center text-muted-foreground"
+                >
                   No invoice or receipt activity recorded during this period.
                 </TableCell>
               </TableRow>
@@ -293,7 +320,10 @@ export function ClientLedgerTab({ clientId }: { clientId: string }) {
                 const isNegativeBal = (entry.balance || 0) < 0;
 
                 return (
-                  <TableRow key={`${entry.referenceNo}-${index}`} className="hover:bg-muted/20">
+                  <TableRow
+                    key={`${entry.referenceNo}-${index}`}
+                    className="hover:bg-muted/20"
+                  >
                     <TableCell className="text-xs font-mono">
                       {formatDate(entry.date)}
                     </TableCell>
@@ -343,7 +373,9 @@ export function ClientLedgerTab({ clientId }: { clientId: string }) {
                       )}
                     </TableCell>
                     <TableCell className="text-xs">
-                      <div className="font-medium text-foreground">{entry.particulars}</div>
+                      <div className="font-medium text-foreground">
+                        {entry.particulars}
+                      </div>
                       {entry.referenceNumber && (
                         <div className="text-[11px] text-muted-foreground">
                           Ref: {entry.referenceNumber}
@@ -373,8 +405,8 @@ export function ClientLedgerTab({ clientId }: { clientId: string }) {
                         isPositiveBal
                           ? "text-destructive"
                           : isNegativeBal
-                          ? "text-emerald-600 dark:text-emerald-400"
-                          : "text-muted-foreground"
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : "text-muted-foreground"
                       }`}
                     >
                       {formatCurrency(entry.balance || 0)}
@@ -389,7 +421,10 @@ export function ClientLedgerTab({ clientId }: { clientId: string }) {
 
             {/* Closing Balance Row */}
             <TableRow className="bg-muted/30 font-semibold text-xs border-t-2">
-              <TableCell colSpan={4} className="text-right uppercase tracking-wider text-muted-foreground">
+              <TableCell
+                colSpan={4}
+                className="text-right uppercase tracking-wider text-muted-foreground"
+              >
                 Period Totals & Closing Balance:
               </TableCell>
               <TableCell className="text-right font-mono font-bold">
@@ -403,8 +438,8 @@ export function ClientLedgerTab({ clientId }: { clientId: string }) {
                   isNetDue
                     ? "text-destructive"
                     : isNetCredit
-                    ? "text-emerald-600 dark:text-emerald-400"
-                    : "text-foreground"
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-foreground"
                 }`}
               >
                 {formatCurrency(ledger.closingBalance)}

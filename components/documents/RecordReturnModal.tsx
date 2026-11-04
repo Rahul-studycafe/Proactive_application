@@ -41,10 +41,10 @@ export function RecordReturnModal({
     if (document) {
       setActualReturnedDate(todayStr);
       const clientName =
-        typeof document.clientId === "object"
-          ? document.clientId.name
-          : "";
-      setReturnedToPersonName(document.receivedByPersonName || clientName || "");
+        typeof document.clientId === "object" ? document.clientId.name : "";
+      setReturnedToPersonName(
+        document.receivedByPersonName || clientName || "",
+      );
       setReturnedNotes("");
     }
   }, [document, open]);
@@ -72,7 +72,9 @@ export function RecordReturnModal({
       onOpenChange(false);
     } catch (err: any) {
       const msg =
-        err?.data?.message || err?.message || "Failed to record document return";
+        err?.data?.message ||
+        err?.message ||
+        "Failed to record document return";
       toast.error(msg);
     }
   };
@@ -86,7 +88,9 @@ export function RecordReturnModal({
               <CheckCircle2 className="h-5 w-5" />
             </div>
             <div>
-              <DialogTitle className="text-lg">Record Document Return</DialogTitle>
+              <DialogTitle className="text-lg">
+                Record Document Return
+              </DialogTitle>
               <DialogDescription>
                 Acknowledge and archive the handover of original client asset.
               </DialogDescription>
@@ -101,7 +105,9 @@ export function RecordReturnModal({
             {document.documentName}
           </div>
           <div className="text-xs text-muted-foreground flex items-center gap-2">
-            <span>Client: <strong className="text-foreground">{clientName}</strong></span>
+            <span>
+              Client: <strong className="text-foreground">{clientName}</strong>
+            </span>
             <span>•</span>
             <span className="flex items-center gap-1">
               <MapPin className="h-3 w-3" />
@@ -110,10 +116,11 @@ export function RecordReturnModal({
           </div>
           {document.returnDate && (
             <div className="text-xs text-amber-700 dark:text-amber-400 font-medium">
-              Due Date: {new Date(document.returnDate).toLocaleDateString("en-IN", {
+              Due Date:{" "}
+              {new Date(document.returnDate).toLocaleDateString("en-IN", {
                 day: "numeric",
                 month: "short",
-                year: "numeric"
+                year: "numeric",
               })}
             </div>
           )}
@@ -135,7 +142,10 @@ export function RecordReturnModal({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="return-person" className="flex items-center gap-1.5">
+            <Label
+              htmlFor="return-person"
+              className="flex items-center gap-1.5"
+            >
               <User className="h-3.5 w-3.5 text-muted-foreground" />
               Handed Back To (Full Name)
             </Label>

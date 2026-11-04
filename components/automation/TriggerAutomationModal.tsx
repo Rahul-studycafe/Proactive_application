@@ -57,7 +57,8 @@ export function TriggerAutomationModal({
 
   const clientMap = useMemo(() => {
     const map = new Map<string, string>();
-    const list = clientsRes?.clients || (Array.isArray(clientsRes) ? clientsRes : []);
+    const list =
+      clientsRes?.clients || (Array.isArray(clientsRes) ? clientsRes : []);
     list.forEach((c: any) => {
       if (c._id) map.set(String(c._id), c.name);
     });
@@ -103,17 +104,20 @@ export function TriggerAutomationModal({
 
       if (res.errors > 0) {
         toast.warning(
-          `Automation completed with warnings: ${res.tasksCreated} created, ${res.errors} errors.`
+          `Automation completed with warnings: ${res.tasksCreated} created, ${res.errors} errors.`,
         );
       } else {
         toast.success(
           `Automation executed: ${res.tasksCreated} task${
             res.tasksCreated === 1 ? "" : "s"
-          } created (${res.tasksSkipped} skipped).`
+          } created (${res.tasksSkipped} skipped).`,
         );
       }
     } catch (err: any) {
-      const msg = err?.data?.message || err?.message || "Failed to trigger automation engine";
+      const msg =
+        err?.data?.message ||
+        err?.message ||
+        "Failed to trigger automation engine";
       toast.error(msg);
     }
   };
@@ -180,15 +184,15 @@ export function TriggerAutomationModal({
                   </>
                 ) : (
                   <>
-                    This scans all active client package and service subscriptions
-                    for the current period.
+                    This scans all active client package and service
+                    subscriptions for the current period.
                   </>
                 )}
               </p>
               <p>
-                The engine uses idempotent deduplication logic — already existing
-                tasks for the current billing cadence will be automatically
-                skipped.
+                The engine uses idempotent deduplication logic — already
+                existing tasks for the current billing cadence will be
+                automatically skipped.
               </p>
             </div>
           )}
@@ -200,9 +204,12 @@ export function TriggerAutomationModal({
                 <Zap className="h-4 w-4 text-amber-500 absolute" />
               </div>
               <div className="text-center">
-                <p className="font-medium text-sm">Running automation scan...</p>
+                <p className="font-medium text-sm">
+                  Running automation scan...
+                </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Scanning subscriptions · Elapsed: {(elapsedMs / 1000).toFixed(1)}s
+                  Scanning subscriptions · Elapsed:{" "}
+                  {(elapsedMs / 1000).toFixed(1)}s
                 </p>
               </div>
             </div>
@@ -217,7 +224,9 @@ export function TriggerAutomationModal({
                   ) : (
                     <AlertTriangle className="h-5 w-5 text-amber-500" />
                   )}
-                  <span className="font-medium text-sm">Execution Completed</span>
+                  <span className="font-medium text-sm">
+                    Execution Completed
+                  </span>
                 </div>
                 <Badge variant="outline" className="text-xs font-mono">
                   <Clock className="mr-1 h-3 w-3" />
@@ -254,7 +263,9 @@ export function TriggerAutomationModal({
                   }`}
                 >
                   <div className="text-xs">Errors</div>
-                  <div className="text-lg font-bold mt-0.5">{result.errors}</div>
+                  <div className="text-lg font-bold mt-0.5">
+                    {result.errors}
+                  </div>
                 </div>
               </div>
 
@@ -266,13 +277,17 @@ export function TriggerAutomationModal({
                   <div className="max-h-40 overflow-y-auto rounded-lg border bg-muted/20 divide-y text-xs">
                     {result.details.map((d: any, i: number) => {
                       const clientName =
-                        (typeof d.clientId === "object" ? d.clientId?.name : null) ||
+                        (typeof d.clientId === "object"
+                          ? d.clientId?.name
+                          : null) ||
                         (d.clientName as string) ||
                         clientMap.get(String(d.clientId)) ||
                         "Client";
 
                       const serviceName =
-                        (typeof d.serviceId === "object" ? d.serviceId?.name : null) ||
+                        (typeof d.serviceId === "object"
+                          ? d.serviceId?.name
+                          : null) ||
                         (d.serviceName as string) ||
                         serviceMap.get(String(d.serviceId)) ||
                         "Service";
@@ -299,8 +314,8 @@ export function TriggerAutomationModal({
                               d.status === "Created"
                                 ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 text-[10px]"
                                 : d.status === "Failed"
-                                ? "border-rose-500/30 bg-rose-500/10 text-rose-600 text-[10px]"
-                                : "border-slate-500/30 bg-slate-500/10 text-slate-500 text-[10px]"
+                                  ? "border-rose-500/30 bg-rose-500/10 text-rose-600 text-[10px]"
+                                  : "border-slate-500/30 bg-slate-500/10 text-slate-500 text-[10px]"
                             }
                           >
                             {d.status}

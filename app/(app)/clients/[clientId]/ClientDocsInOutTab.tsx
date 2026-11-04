@@ -56,6 +56,8 @@ import {
 import { PhysicalDocument } from "@/lib/types/physical-document";
 import { InOutEntryModal } from "@/components/documents/InOutEntryModal";
 import { RecordReturnModal } from "@/components/documents/RecordReturnModal";
+import { MovementHistoryModal } from "@/components/documents/MovementHistoryModal";
+import { History as HistoryIcon } from "lucide-react";
 
 interface ClientDocsInOutTabProps {
   clientId: string;
@@ -71,6 +73,9 @@ export function ClientDocsInOutTab({ clientId }: ClientDocsInOutTabProps) {
 
   const [returnDoc, setReturnDoc] = useState<PhysicalDocument | null>(null);
   const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
+
+  const [historyDocId, setHistoryDocId] = useState<string | null>(null);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
 
   const [deleteDoc] = useDeletePhysicalDocMutation();
 
@@ -109,7 +114,11 @@ export function ClientDocsInOutTab({ clientId }: ClientDocsInOutTabProps) {
   }, [documents]);
 
   const handleDelete = async (doc: PhysicalDocument) => {
-    if (!confirm(`Are you sure you want to delete the record for "${doc.documentName}"?`)) {
+    if (
+      !confirm(
+        `Are you sure you want to delete the record for "${doc.documentName}"?`,
+      )
+    ) {
       return;
     }
     try {
@@ -120,7 +129,8 @@ export function ClientDocsInOutTab({ clientId }: ClientDocsInOutTabProps) {
     }
   };
 
-  const hasActiveFilters = search.trim() !== "" || categoryFilter !== "all" || statusFilter !== "all";
+  const hasActiveFilters =
+    search.trim() !== "" || categoryFilter !== "all" || statusFilter !== "all";
 
   return (
     <div className="space-y-6 pt-2">
@@ -135,7 +145,9 @@ export function ClientDocsInOutTab({ clientId }: ClientDocsInOutTabProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.total}</div>
-            <p className="text-xs text-muted-foreground mt-0.5">Physical items</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Physical items
+            </p>
           </CardContent>
         </Card>
 
@@ -150,7 +162,9 @@ export function ClientDocsInOutTab({ clientId }: ClientDocsInOutTabProps) {
             <div className="text-2xl font-bold text-blue-700 dark:text-blue-400">
               {stats.inCustody}
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5">In filing unit</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              In filing unit
+            </p>
           </CardContent>
         </Card>
 
@@ -165,7 +179,9 @@ export function ClientDocsInOutTab({ clientId }: ClientDocsInOutTabProps) {
             <div className="text-2xl font-bold text-amber-700 dark:text-amber-400">
               {stats.overdue}
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5">Action required</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Action required
+            </p>
           </CardContent>
         </Card>
 
@@ -247,7 +263,9 @@ export function ClientDocsInOutTab({ clientId }: ClientDocsInOutTabProps) {
             disabled={isFetching}
             title="Refresh"
           >
-            <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
+            />
           </Button>
 
           <Button
@@ -289,10 +307,15 @@ export function ClientDocsInOutTab({ clientId }: ClientDocsInOutTabProps) {
               ))
             ) : documents.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                <TableCell
+                  colSpan={6}
+                  className="text-center py-12 text-muted-foreground"
+                >
                   <div className="flex flex-col items-center justify-center gap-2">
                     <Archive className="h-10 w-10 text-muted-foreground/30" />
-                    <div className="font-medium text-foreground">No documents in register</div>
+                    <div className="font-medium text-foreground">
+                      No documents in register
+                    </div>
                     <p className="text-xs max-w-sm">
                       {hasActiveFilters
                         ? "No document records match the active search and filter criteria."
@@ -321,7 +344,10 @@ export function ClientDocsInOutTab({ clientId }: ClientDocsInOutTabProps) {
                 const isReturned = doc.status === "Returned";
 
                 return (
-                  <TableRow key={doc._id} className="hover:bg-muted/40 transition-colors">
+                  <TableRow
+                    key={doc._id}
+                    className="hover:bg-muted/40 transition-colors"
+                  >
                     {/* Category */}
                     <TableCell>
                       {doc.category === "Received" ? (
@@ -349,9 +375,14 @@ export function ClientDocsInOutTab({ clientId }: ClientDocsInOutTabProps) {
                         {doc.documentName}
                       </div>
                       <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
-                        <span className="font-semibold text-primary/80">{doc.documentType}</span>
+                        <span className="font-semibold text-primary/80">
+                          {doc.documentType}
+                        </span>
                         {doc.isReturnable && (
-                          <Badge variant="secondary" className="text-[10px] py-0 px-1">
+                          <Badge
+                            variant="secondary"
+                            className="text-[10px] py-0 px-1"
+                          >
                             Returnable
                           </Badge>
                         )}
@@ -362,7 +393,10 @@ export function ClientDocsInOutTab({ clientId }: ClientDocsInOutTabProps) {
                     <TableCell>
                       <div className="flex items-center gap-1 text-xs text-foreground font-medium">
                         <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
-                        <span className="truncate max-w-[140px]" title={doc.location}>
+                        <span
+                          className="truncate max-w-[140px]"
+                          title={doc.location}
+                        >
                           {doc.location}
                         </span>
                       </div>
@@ -381,16 +415,23 @@ export function ClientDocsInOutTab({ clientId }: ClientDocsInOutTabProps) {
                     <TableCell>
                       {isOverdue && (
                         <div>
-                          <Badge variant="destructive" className="flex items-center gap-1 w-fit text-xs">
+                          <Badge
+                            variant="destructive"
+                            className="flex items-center gap-1 w-fit text-xs"
+                          >
                             <AlertTriangle className="h-3 w-3" />
                             Overdue
                           </Badge>
                           {doc.returnDate && (
                             <div className="text-[11px] text-destructive font-medium mt-0.5">
-                              Due {new Date(doc.returnDate).toLocaleDateString("en-IN", {
-                                day: "numeric",
-                                month: "short",
-                              })}
+                              Due{" "}
+                              {new Date(doc.returnDate).toLocaleDateString(
+                                "en-IN",
+                                {
+                                  day: "numeric",
+                                  month: "short",
+                                },
+                              )}
                             </div>
                           )}
                         </div>
@@ -406,10 +447,14 @@ export function ClientDocsInOutTab({ clientId }: ClientDocsInOutTabProps) {
                           </Badge>
                           {doc.returnDate && (
                             <div className="text-[11px] text-muted-foreground mt-0.5">
-                              Due {new Date(doc.returnDate).toLocaleDateString("en-IN", {
-                                day: "numeric",
-                                month: "short",
-                              })}
+                              Due{" "}
+                              {new Date(doc.returnDate).toLocaleDateString(
+                                "en-IN",
+                                {
+                                  day: "numeric",
+                                  month: "short",
+                                },
+                              )}
                             </div>
                           )}
                         </div>
@@ -426,7 +471,10 @@ export function ClientDocsInOutTab({ clientId }: ClientDocsInOutTabProps) {
                           </Badge>
                           {doc.actualReturnedDate && (
                             <div className="text-[11px] text-muted-foreground mt-0.5">
-                              on {new Date(doc.actualReturnedDate).toLocaleDateString("en-IN", {
+                              on{" "}
+                              {new Date(
+                                doc.actualReturnedDate,
+                              ).toLocaleDateString("en-IN", {
                                 day: "numeric",
                                 month: "short",
                               })}
@@ -440,7 +488,11 @@ export function ClientDocsInOutTab({ clientId }: ClientDocsInOutTabProps) {
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
                             <MoreVertical className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
@@ -457,6 +509,16 @@ export function ClientDocsInOutTab({ clientId }: ClientDocsInOutTabProps) {
                               Record Return
                             </DropdownMenuItem>
                           )}
+
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setHistoryDocId(doc._id);
+                              setIsHistoryModalOpen(true);
+                            }}
+                          >
+                            <HistoryIcon className="h-4 w-4 mr-2" />
+                            Movement History
+                          </DropdownMenuItem>
 
                           <DropdownMenuItem asChild>
                             <Link
@@ -511,6 +573,13 @@ export function ClientDocsInOutTab({ clientId }: ClientDocsInOutTabProps) {
         open={isReturnModalOpen}
         onOpenChange={setIsReturnModalOpen}
         document={returnDoc}
+      />
+
+      {/* Movement History Modal */}
+      <MovementHistoryModal
+        open={isHistoryModalOpen}
+        onOpenChange={setIsHistoryModalOpen}
+        documentId={historyDocId}
       />
     </div>
   );

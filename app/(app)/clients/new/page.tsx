@@ -428,7 +428,11 @@ export default function NewClientPage() {
       router.push("/clients");
     } catch (error: any) {
       const msg = error?.data?.message || error?.message || "";
-      if (error?.status === 403 && (msg.toLowerCase().includes("limit reached") || msg.toLowerCase().includes("quota"))) {
+      if (
+        error?.status === 403 &&
+        (msg.toLowerCase().includes("limit reached") ||
+          msg.toLowerCase().includes("quota"))
+      ) {
         setShowQuotaModal(true);
       } else {
         toast.error(msg || "Failed to create client");

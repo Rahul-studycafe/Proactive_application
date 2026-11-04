@@ -37,12 +37,7 @@ export function PasswordAuditDrawer({
   passwordId,
   portalName,
 }: PasswordAuditDrawerProps) {
-  const {
-    data,
-    isLoading,
-    isFetching,
-    refetch,
-  } = useGetPasswordAuditLogsQuery(
+  const { data, isLoading, isFetching, refetch } = useGetPasswordAuditLogsQuery(
     {
       clientId: clientId || undefined,
       passwordId: passwordId || undefined,
@@ -50,7 +45,7 @@ export function PasswordAuditDrawer({
     },
     {
       skip: !open,
-    }
+    },
   );
 
   const logs = data?.logs || [];
@@ -91,7 +86,9 @@ export function PasswordAuditDrawer({
               className="h-8 w-8 text-muted-foreground hover:text-foreground"
               title="Refresh logs"
             >
-              <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+              <RefreshCw
+                className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
+              />
             </Button>
           </div>
         </div>
@@ -119,9 +116,12 @@ export function PasswordAuditDrawer({
               <div className="h-12 w-12 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground mb-3">
                 <KeyRound className="h-6 w-6" />
               </div>
-              <h4 className="font-semibold text-sm text-foreground">No Access Logs Recorded</h4>
+              <h4 className="font-semibold text-sm text-foreground">
+                No Access Logs Recorded
+              </h4>
               <p className="text-xs text-muted-foreground mt-1 max-w-xs">
-                No staff members have revealed or decrypted credentials for this client yet.
+                No staff members have revealed or decrypted credentials for this
+                client yet.
               </p>
             </div>
           ) : (
@@ -149,7 +149,9 @@ export function PasswordAuditDrawer({
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2">
                           <div className="h-7 w-7 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
-                            {log.accessedByUserId?.name ? log.accessedByUserId.name[0].toUpperCase() : "U"}
+                            {log.accessedByUserId?.name
+                              ? log.accessedByUserId.name[0].toUpperCase()
+                              : "U"}
                           </div>
                           <div>
                             <p className="text-xs font-bold text-foreground">
@@ -196,7 +198,9 @@ export function PasswordAuditDrawer({
                       {log.purpose && (
                         <div className="text-xs flex items-start gap-1.5 text-muted-foreground">
                           <FileText className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                          <span className="text-foreground font-medium">Reason:</span>
+                          <span className="text-foreground font-medium">
+                            Reason:
+                          </span>
                           <span className="italic">{log.purpose}</span>
                         </div>
                       )}
@@ -205,11 +209,22 @@ export function PasswordAuditDrawer({
                       <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-border/40 text-[10px] text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Globe className="h-3 w-3" />
-                          IP: <code className="font-mono">{log.ipAddress || "Unknown"}</code>
+                          IP:{" "}
+                          <code className="font-mono">
+                            {log.ipAddress || "Unknown"}
+                          </code>
                         </span>
                         {log.userAgent && (
-                          <span className="truncate max-w-[240px]" title={log.userAgent}>
-                            • {log.userAgent.includes("Chrome") ? "Chrome" : log.userAgent.includes("Firefox") ? "Firefox" : "Browser"}
+                          <span
+                            className="truncate max-w-[240px]"
+                            title={log.userAgent}
+                          >
+                            •{" "}
+                            {log.userAgent.includes("Chrome")
+                              ? "Chrome"
+                              : log.userAgent.includes("Firefox")
+                                ? "Firefox"
+                                : "Browser"}
                           </span>
                         )}
                       </div>

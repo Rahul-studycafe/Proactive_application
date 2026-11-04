@@ -227,14 +227,28 @@ export default function InvoicesReportPage() {
             <Table>
               <TableHeader className="bg-muted/40 text-xs">
                 <TableRow>
-                  <TableHead className="w-[14%] min-w-[130px]">Invoice #</TableHead>
+                  <TableHead className="w-[14%] min-w-[130px]">
+                    Invoice #
+                  </TableHead>
                   <TableHead className="w-[12%] min-w-[100px]">Date</TableHead>
-                  <TableHead className="w-[22%] min-w-[180px]">Client & GSTIN</TableHead>
-                  <TableHead className="w-[12%] min-w-[100px] text-right">Taxable (₹)</TableHead>
-                  <TableHead className="w-[10%] min-w-[85px] text-right">GST (₹)</TableHead>
-                  <TableHead className="w-[12%] min-w-[100px] text-right">Grand Total</TableHead>
-                  <TableHead className="w-[10%] min-w-[90px] text-right">Due (₹)</TableHead>
-                  <TableHead className="w-[8%] min-w-[80px] text-center">Status</TableHead>
+                  <TableHead className="w-[22%] min-w-[180px]">
+                    Client & GSTIN
+                  </TableHead>
+                  <TableHead className="w-[12%] min-w-[100px] text-right">
+                    Taxable (₹)
+                  </TableHead>
+                  <TableHead className="w-[10%] min-w-[85px] text-right">
+                    GST (₹)
+                  </TableHead>
+                  <TableHead className="w-[12%] min-w-[100px] text-right">
+                    Grand Total
+                  </TableHead>
+                  <TableHead className="w-[10%] min-w-[90px] text-right">
+                    Due (₹)
+                  </TableHead>
+                  <TableHead className="w-[8%] min-w-[80px] text-center">
+                    Status
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody className="text-xs">
@@ -257,7 +271,8 @@ export default function InvoicesReportPage() {
                           No Invoices Match Filters
                         </h4>
                         <p className="text-xs text-muted-foreground">
-                          Try adjusting your date range or payment status parameters.
+                          Try adjusting your date range or payment status
+                          parameters.
                         </p>
                       </div>
                     </TableCell>
@@ -322,10 +337,10 @@ export default function InvoicesReportPage() {
                             inv.status === "Paid"
                               ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
                               : inv.status === "Partially Paid"
-                              ? "border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-300"
-                              : inv.status === "Unpaid"
-                              ? "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300"
-                              : "border-slate-300 bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-300"
+                                ? "border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-300"
+                                : inv.status === "Unpaid"
+                                  ? "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300"
+                                  : "border-slate-300 bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-300"
                           }`}
                         >
                           {inv.status}
@@ -365,7 +380,9 @@ export default function InvoicesReportPage() {
                   variant="outline"
                   size="sm"
                   disabled={page >= pagination.totalPages}
-                  onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
+                  onClick={() =>
+                    setPage((p) => Math.min(pagination.totalPages, p + 1))
+                  }
                   className="h-7 text-xs"
                 >
                   Next

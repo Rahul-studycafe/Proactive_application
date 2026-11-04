@@ -3,7 +3,18 @@
 import { use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Printer, ShieldCheck, Building2, MapPin, Calendar, User, Phone, CheckCircle2, FileText } from "lucide-react";
+import {
+  ArrowLeft,
+  Printer,
+  ShieldCheck,
+  Building2,
+  MapPin,
+  Calendar,
+  User,
+  Phone,
+  CheckCircle2,
+  FileText,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -31,8 +42,12 @@ export default function DocumentHandoverSlipPage({ params }: SlipPageProps) {
   if (error || !slipData) {
     return (
       <div className="max-w-xl mx-auto p-12 text-center space-y-4">
-        <div className="text-destructive font-semibold">Failed to load handover slip</div>
-        <p className="text-sm text-muted-foreground">The document record could not be found or you do not have permission.</p>
+        <div className="text-destructive font-semibold">
+          Failed to load handover slip
+        </div>
+        <p className="text-sm text-muted-foreground">
+          The document record could not be found or you do not have permission.
+        </p>
         <Button variant="outline" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4 mr-1.5" />
           Go Back
@@ -48,7 +63,10 @@ export default function DocumentHandoverSlipPage({ params }: SlipPageProps) {
       {/* Top action toolbar (Hidden in Print) */}
       <div className="flex items-center justify-between gap-4 print:hidden">
         <Button variant="ghost" size="sm" asChild>
-          <Link href="/documents/in-out" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground">
+          <Link
+            href="/documents/in-out"
+            className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
+          >
             <ArrowLeft className="h-4 w-4" />
             <span>Back to In-Out Register</span>
           </Link>
@@ -89,10 +107,14 @@ export default function DocumentHandoverSlipPage({ params }: SlipPageProps) {
               {organization?.name || "Chartered Accountants & Legal Advisors"}
             </div>
             <div className="text-xs text-muted-foreground max-w-xs mt-0.5">
-              {organization?.address || "Head Office, Practice Management Suite"}
+              {organization?.address ||
+                "Head Office, Practice Management Suite"}
             </div>
             <div className="text-xs text-muted-foreground mt-1">
-              Date: <strong className="text-foreground">{slipDate || new Date().toLocaleDateString("en-IN")}</strong>
+              Date:{" "}
+              <strong className="text-foreground">
+                {slipDate || new Date().toLocaleDateString("en-IN")}
+              </strong>
             </div>
           </div>
         </div>
@@ -122,8 +144,14 @@ export default function DocumentHandoverSlipPage({ params }: SlipPageProps) {
               {doc?.location || "Office Storage"}
             </div>
             <div className="text-xs text-muted-foreground space-y-1">
-              <div>Custodian Staff: {doc?.custodianName || "Authorized Practice Staff"}</div>
-              <div>Action: <strong className="text-foreground">{doc?.category}</strong></div>
+              <div>
+                Custodian Staff:{" "}
+                {doc?.custodianName || "Authorized Practice Staff"}
+              </div>
+              <div>
+                Action:{" "}
+                <strong className="text-foreground">{doc?.category}</strong>
+              </div>
             </div>
           </div>
         </div>
@@ -150,12 +178,13 @@ export default function DocumentHandoverSlipPage({ params }: SlipPageProps) {
                     </div>
                   )}
                 </td>
-                <td className="py-4 px-4 text-muted-foreground">
-                  {doc?.type}
-                </td>
+                <td className="py-4 px-4 text-muted-foreground">{doc?.type}</td>
                 <td className="py-4 px-4">
                   {doc?.isReturnable ? (
-                    <Badge variant="outline" className="bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border-sky-300 text-xs">
+                    <Badge
+                      variant="outline"
+                      className="bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border-sky-300 text-xs"
+                    >
                       Yes
                     </Badge>
                   ) : (
@@ -169,18 +198,21 @@ export default function DocumentHandoverSlipPage({ params }: SlipPageProps) {
                 </td>
                 <td className="py-4 px-4 text-right font-medium text-foreground">
                   {doc?.actualReturnedDate
-                    ? new Date(doc.actualReturnedDate).toLocaleDateString("en-IN", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })
+                    ? new Date(doc.actualReturnedDate).toLocaleDateString(
+                        "en-IN",
+                        {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        },
+                      )
                     : doc?.returnDate
-                    ? new Date(doc.returnDate).toLocaleDateString("en-IN", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })
-                    : "—"}
+                      ? new Date(doc.returnDate).toLocaleDateString("en-IN", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })
+                      : "—"}
                 </td>
               </tr>
             </tbody>
@@ -189,15 +221,23 @@ export default function DocumentHandoverSlipPage({ params }: SlipPageProps) {
 
         {/* Legal Acknowledgment Clause */}
         <div className="rounded-xl border bg-muted/30 p-4 text-xs text-muted-foreground leading-relaxed my-6">
-          <strong className="text-foreground">Official Custody Undertaking: </strong>
-          This document formally certifies that the aforementioned original/physical documents, deeds, or instruments have been logged into the custody register of the firm. Both parties acknowledge verification of physical condition, seal integrity, and page count at the time of handover.
+          <strong className="text-foreground">
+            Official Custody Undertaking:{" "}
+          </strong>
+          This document formally certifies that the aforementioned
+          original/physical documents, deeds, or instruments have been logged
+          into the custody register of the firm. Both parties acknowledge
+          verification of physical condition, seal integrity, and page count at
+          the time of handover.
         </div>
 
         {/* Signature & Stamp Boxes */}
         <div className="grid grid-cols-2 gap-8 pt-8 border-t mt-8">
           <div className="text-center space-y-16">
             <div className="h-16 flex items-end justify-center">
-              <span className="text-xs text-muted-foreground/60 italic">[ Client Signature / Stamp ]</span>
+              <span className="text-xs text-muted-foreground/60 italic">
+                [ Client Signature / Stamp ]
+              </span>
             </div>
             <div className="border-t pt-2">
               <div className="text-xs font-bold text-foreground">
@@ -211,7 +251,9 @@ export default function DocumentHandoverSlipPage({ params }: SlipPageProps) {
 
           <div className="text-center space-y-16">
             <div className="h-16 flex items-end justify-center">
-              <span className="text-xs text-muted-foreground/60 italic">[ Firm Seal & Signature ]</span>
+              <span className="text-xs text-muted-foreground/60 italic">
+                [ Firm Seal & Signature ]
+              </span>
             </div>
             <div className="border-t pt-2">
               <div className="text-xs font-bold text-foreground">

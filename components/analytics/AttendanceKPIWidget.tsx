@@ -2,7 +2,13 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,10 +36,8 @@ export function AttendanceKPIWidget({
   data: propData,
   isLoading: propLoading,
 }: AttendanceKPIWidgetProps) {
-  const { data: fetchedData, isLoading: queryLoading } = useGetAttendanceOverviewQuery(
-    undefined,
-    { skip: !!propData }
-  );
+  const { data: fetchedData, isLoading: queryLoading } =
+    useGetAttendanceOverviewQuery(undefined, { skip: !!propData });
 
   const overview = propData || fetchedData;
   const isLoading = propLoading !== undefined ? propLoading : queryLoading;
@@ -112,8 +116,8 @@ export function AttendanceKPIWidget({
                       rate >= 80
                         ? "#10B981"
                         : rate >= 60
-                        ? "#F59E0B"
-                        : "#EF4444"
+                          ? "#F59E0B"
+                          : "#EF4444"
                     }
                     fill="transparent"
                     strokeWidth={stroke}
@@ -144,7 +148,10 @@ export function AttendanceKPIWidget({
                   <span>Total Headcount</span>
                 </div>
                 <div className="text-2xl font-bold tracking-tight text-foreground">
-                  {totalStaff} <span className="text-xs font-normal text-muted-foreground">Staff</span>
+                  {totalStaff}{" "}
+                  <span className="text-xs font-normal text-muted-foreground">
+                    Staff
+                  </span>
                 </div>
                 <p className="text-[11px] text-muted-foreground">
                   {overview.presentToday} checked in today

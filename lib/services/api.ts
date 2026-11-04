@@ -95,7 +95,11 @@ const baseQueryWithReauth: BaseQueryFn<
   }
 
   // Normalize backend error structure so error.data.message is always populated
-  if (result.error && result.error.data && typeof result.error.data === "object") {
+  if (
+    result.error &&
+    result.error.data &&
+    typeof result.error.data === "object"
+  ) {
     const errData = result.error.data as any;
     if (errData.error?.message && !errData.message) {
       errData.message = errData.error.message;
@@ -154,6 +158,8 @@ import type {
   UpdatePhysicalDocPayload,
   ReturnPhysicalDocPayload,
   StorageLocationSummary,
+  CreateStorageLocationPayload,
+  UpdateStorageLocationPayload,
   OverdueScanSummary,
   GetPhysicalDocListParams,
   GetPhysicalDocListResponse,
@@ -217,6 +223,7 @@ export const applicationApi = createApi({
     "Tag",
     "Service",
     "User",
+    "Role",
     "Package",
     "Invoice",
     "Receipt",
@@ -530,6 +537,14 @@ export const applicationApi = createApi({
       providesTags: (_result, _error, id) => [{ type: "Service", id }],
       transformResponse: (response: { data: any }) => response.data,
     }),
+    getServiceClients: builder.query<any[], string>({
+      query: (id: string) => `/services/${id}/clients`,
+      providesTags: (_result, _error, id) => [
+        { type: "Service", id },
+        "Client",
+      ],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
     createService: builder.mutation({
       query: (body) => ({
         url: "/services",
@@ -666,7 +681,7 @@ export const applicationApi = createApi({
       transformResponse: (response: { data: any }) => response.data,
     }),
     updateInvoice: builder.mutation({
-      query: ({ id, ...body }: { id: string;[key: string]: any }) => ({
+      query: ({ id, ...body }: { id: string; [key: string]: any }) => ({
         url: `/invoices/${id}`,
         method: "PUT",
         body,
@@ -765,8 +780,16 @@ export const applicationApi = createApi({
     // Dashboard
     getDashboardOverview: builder.query<DashboardOverviewData, void>({
       query: () => ({ url: "/dashboard/overview" }),
-      providesTags: ["Dashboard", "Task", "Client", "Invoice", "Receipt", "Attendance"],
-      transformResponse: (response: { data: DashboardOverviewData }) => response.data,
+      providesTags: [
+        "Dashboard",
+        "Task",
+        "Client",
+        "Invoice",
+        "Receipt",
+        "Attendance",
+      ],
+      transformResponse: (response: { data: DashboardOverviewData }) =>
+        response.data,
     }),
     getClientSummary: builder.query({
       query: (clientId: string) => ({
@@ -776,10 +799,62 @@ export const applicationApi = createApi({
       transformResponse: (response: { data: any }) => response.data,
     }),
 
+    // Roles
+    getRoles: builder.query({
+      query: () => "/roles",
+      providesTags: ["Role"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+
     // Users
     getUsers: builder.query({
-      query: (params) => ({ url: "/users", params }),
+      query: (params?: any) => ({ url: "/users", params }),
       providesTags: ["User"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    createUser: builder.mutation({
+      query: (body: any) => ({
+        url: "/users",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["User", "Role"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    updateUser: builder.mutation({
+      query: ({ id, ...body }: { id: string; [key: string]: any }) => ({
+        url: `/users/${id}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["User", "Role"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    deleteUser: builder.mutation({
+      query: (id: string) => ({
+        url: `/users/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["User", "Role"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    verifyInvite: builder.query({
+      query: (token: string) => ({
+        url: "/auth/verify-invite",
+        params: { token },
+      }),
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    activateInvite: builder.mutation({
+      query: (body: {
+        token: string;
+        password: string;
+        confirmPassword: string;
+      }) => ({
+        url: "/auth/activate-invite",
+        method: "POST",
+        body,
+      }),
       transformResponse: (response: { data: any }) => response.data,
     }),
 
@@ -794,7 +869,12 @@ export const applicationApi = createApi({
     }),
 
     createHoliday: builder.mutation({
-      query: (body: { name: string; date: string; type: string; description?: string }) => ({
+      query: (body: {
+        name: string;
+        date: string;
+        type: string;
+        description?: string;
+      }) => ({
         url: "/holidays",
         method: "POST",
         body,
@@ -804,7 +884,16 @@ export const applicationApi = createApi({
     }),
 
     updateHoliday: builder.mutation({
-      query: ({ id, ...body }: { id: string; name?: string; date?: string; type?: string; description?: string }) => ({
+      query: ({
+        id,
+        ...body
+      }: {
+        id: string;
+        name?: string;
+        date?: string;
+        type?: string;
+        description?: string;
+      }) => ({
         url: `/holidays/${id}`,
         method: "PUT",
         body,
@@ -839,7 +928,8 @@ export const applicationApi = createApi({
     getWorkingDays: builder.query<WorkingDaysConfig, void>({
       query: () => "/tenant-settings/work-days",
       providesTags: ["WorkingDays"],
-      transformResponse: (response: { data: WorkingDaysConfig }) => response.data,
+      transformResponse: (response: { data: WorkingDaysConfig }) =>
+        response.data,
     }),
 
     updateWorkingDays: builder.mutation<
@@ -857,23 +947,29 @@ export const applicationApi = createApi({
         body,
       }),
       invalidatesTags: ["WorkingDays"],
-      transformResponse: (response: { data: WorkingDaysConfig }) => response.data,
+      transformResponse: (response: { data: WorkingDaysConfig }) =>
+        response.data,
     }),
 
     getMyIp: builder.query<{ ip: string; normalizedIp: string }, void>({
       query: () => "/tenant-settings/my-ip",
-      transformResponse: (response: { data: { ip: string; normalizedIp: string } }) =>
-        response.data,
+      transformResponse: (response: {
+        data: { ip: string; normalizedIp: string };
+      }) => response.data,
     }),
 
     // Part 11: Attendance Endpoints
-    getTodayAttendance: builder.query<IAttendance | null, { date?: string } | void>({
+    getTodayAttendance: builder.query<
+      IAttendance | null,
+      { date?: string } | void
+    >({
       query: (params) => ({
         url: "/attendance/today",
         params: params?.date ? { date: params.date } : undefined,
       }),
       providesTags: ["Attendance"],
-      transformResponse: (response: { data: IAttendance | null }) => response.data,
+      transformResponse: (response: { data: IAttendance | null }) =>
+        response.data,
     }),
 
     checkIn: builder.mutation<IAttendance, CheckInPayload | void>({
@@ -896,13 +992,17 @@ export const applicationApi = createApi({
       transformResponse: (response: { data: IAttendance }) => response.data,
     }),
 
-    getDailyAttendance: builder.query<DailyRosterResult, { date?: string } | void>({
+    getDailyAttendance: builder.query<
+      DailyRosterResult,
+      { date?: string } | void
+    >({
       query: (params) => ({
         url: "/attendance/daily",
         params: params?.date ? { date: params.date } : undefined,
       }),
       providesTags: ["Attendance"],
-      transformResponse: (response: { data: DailyRosterResult }) => response.data,
+      transformResponse: (response: { data: DailyRosterResult }) =>
+        response.data,
     }),
 
     markAttendance: builder.mutation<IAttendance, MarkAttendancePayload>({
@@ -915,7 +1015,10 @@ export const applicationApi = createApi({
       transformResponse: (response: { data: IAttendance }) => response.data,
     }),
 
-    bulkMarkAttendance: builder.mutation<{ count: number }, BulkMarkAttendancePayload>({
+    bulkMarkAttendance: builder.mutation<
+      { count: number },
+      BulkMarkAttendancePayload
+    >({
       query: (body) => ({
         url: "/attendance/bulk",
         method: "POST",
@@ -946,7 +1049,8 @@ export const applicationApi = createApi({
         },
       }),
       providesTags: ["Attendance"],
-      transformResponse: (response: { data: MonthlyMatrixResult }) => response.data,
+      transformResponse: (response: { data: MonthlyMatrixResult }) =>
+        response.data,
     }),
 
     getStaffAttendanceSummary: builder.query<
@@ -965,7 +1069,8 @@ export const applicationApi = createApi({
         },
       }),
       providesTags: ["Attendance"],
-      transformResponse: (response: { data: StaffAttendanceSummary }) => response.data,
+      transformResponse: (response: { data: StaffAttendanceSummary }) =>
+        response.data,
     }),
 
     // Part 13: Automation & Recurring Tasks Endpoints
@@ -1001,7 +1106,8 @@ export const applicationApi = createApi({
 
     getQueueHealth: builder.query<QueueHealthMetrics, void>({
       query: () => "/health",
-      transformResponse: (response: { data: QueueHealthMetrics }) => response.data,
+      transformResponse: (response: { data: QueueHealthMetrics }) =>
+        response.data,
     }),
 
     // Part 14: Dynamic Visual Analytics & BI Dashboards
@@ -1049,7 +1155,8 @@ export const applicationApi = createApi({
         params: params || {},
       }),
       providesTags: ["DSC"],
-      transformResponse: (response: { data: GetDscListResponse }) => response.data,
+      transformResponse: (response: { data: GetDscListResponse }) =>
+        response.data,
     }),
     getDscKpi: builder.query<DSCKpiSummary, void>({
       query: () => ({
@@ -1074,7 +1181,10 @@ export const applicationApi = createApi({
       invalidatesTags: ["DSC"],
       transformResponse: (response: { data: DSCItem }) => response.data,
     }),
-    updateDsc: builder.mutation<DSCItem, { id: string; data: UpdateDscPayload }>({
+    updateDsc: builder.mutation<
+      DSCItem,
+      { id: string; data: UpdateDscPayload }
+    >({
       query: ({ id, data }) => ({
         url: `/dsc/${id}`,
         method: "PUT",
@@ -1093,17 +1203,22 @@ export const applicationApi = createApi({
         body: data,
       }),
       invalidatesTags: ["DSC"],
-      transformResponse: (response: { data: { log: DscHandoverLogItem; dsc: DSCItem } }) =>
-        response.data,
+      transformResponse: (response: {
+        data: { log: DscHandoverLogItem; dsc: DSCItem };
+      }) => response.data,
     }),
     getDscHistory: builder.query<DscHandoverLogItem[], string>({
       query: (id) => ({
         url: `/dsc/${id}/history`,
       }),
       providesTags: ["DSC"],
-      transformResponse: (response: { data: DscHandoverLogItem[] }) => response.data,
+      transformResponse: (response: { data: DscHandoverLogItem[] }) =>
+        response.data,
     }),
-    triggerDscScan: builder.mutation<DscScanSummary, { referenceDate?: string } | void>({
+    triggerDscScan: builder.mutation<
+      DscScanSummary,
+      { referenceDate?: string } | void
+    >({
       query: (body) => ({
         url: "/dsc/trigger-scan",
         method: "POST",
@@ -1112,13 +1227,17 @@ export const applicationApi = createApi({
       invalidatesTags: ["DSC", "Task"],
       transformResponse: (response: { data: DscScanSummary }) => response.data,
     }),
-    getCreditNotes: builder.query<GetCreditNoteListResponse, GetCreditNoteListParams | void>({
+    getCreditNotes: builder.query<
+      GetCreditNoteListResponse,
+      GetCreditNoteListParams | void
+    >({
       query: (params) => ({
         url: "/credit-notes",
         params: params || {},
       }),
       providesTags: ["CreditNote"],
-      transformResponse: (response: { data: GetCreditNoteListResponse }) => response.data,
+      transformResponse: (response: { data: GetCreditNoteListResponse }) =>
+        response.data,
     }),
     getCreditNoteById: builder.query<CreditNote, string>({
       query: (id) => ({
@@ -1146,8 +1265,9 @@ export const applicationApi = createApi({
         body: data,
       }),
       invalidatesTags: ["CreditNote", "Invoice", "Ledger"],
-      transformResponse: (response: { data: { creditNote: CreditNote; targetInvoice: any } }) =>
-        response.data,
+      transformResponse: (response: {
+        data: { creditNote: CreditNote; targetInvoice: any };
+      }) => response.data,
     }),
     refundCreditNote: builder.mutation<
       { creditNote: CreditNote; refundRecord: any },
@@ -1159,17 +1279,23 @@ export const applicationApi = createApi({
         body: data,
       }),
       invalidatesTags: ["CreditNote", "Ledger"],
-      transformResponse: (response: { data: { creditNote: CreditNote; refundRecord: any } }) =>
-        response.data,
+      transformResponse: (response: {
+        data: { creditNote: CreditNote; refundRecord: any };
+      }) => response.data,
     }),
-    getPhysicalDocs: builder.query<GetPhysicalDocListResponse, GetPhysicalDocListParams | void>({
+    getPhysicalDocs: builder.query<
+      GetPhysicalDocListResponse,
+      GetPhysicalDocListParams | void
+    >({
       query: (params) => {
         const queryParams = new URLSearchParams();
         if (params?.clientId) queryParams.append("clientId", params.clientId);
         if (params?.category) queryParams.append("category", params.category);
         if (params?.status) queryParams.append("status", params.status);
-        if (params?.documentType) queryParams.append("documentType", params.documentType);
-        if (params?.isReturnable !== undefined) queryParams.append("isReturnable", String(params.isReturnable));
+        if (params?.documentType)
+          queryParams.append("documentType", params.documentType);
+        if (params?.isReturnable !== undefined)
+          queryParams.append("isReturnable", String(params.isReturnable));
         if (params?.location) queryParams.append("location", params.location);
         if (params?.search) queryParams.append("search", params.search);
         if (params?.from) queryParams.append("from", params.from);
@@ -1186,8 +1312,18 @@ export const applicationApi = createApi({
         data: {
           data?: PhysicalDocument[];
           documents?: PhysicalDocument[];
-          meta?: { total: number; page: number; limit: number; totalPages: number };
-          summary?: { inCustody: number; overdue: number; returned: number; totalRegistered: number };
+          meta?: {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+          };
+          summary?: {
+            inCustody: number;
+            overdue: number;
+            returned: number;
+            totalRegistered: number;
+          };
           total?: number;
           page?: number;
           limit?: number;
@@ -1215,25 +1351,34 @@ export const applicationApi = createApi({
     getPhysicalDocById: builder.query<PhysicalDocument, string>({
       query: (id) => `/docs-in-out/${id}`,
       providesTags: ["DocsInOut"],
-      transformResponse: (response: { data: PhysicalDocument }) => response.data,
+      transformResponse: (response: { data: PhysicalDocument }) =>
+        response.data,
     }),
-    createPhysicalDoc: builder.mutation<PhysicalDocument, CreatePhysicalDocPayload>({
+    createPhysicalDoc: builder.mutation<
+      PhysicalDocument,
+      CreatePhysicalDocPayload
+    >({
       query: (data) => ({
         url: "/docs-in-out",
         method: "POST",
         body: data,
       }),
       invalidatesTags: ["DocsInOut"],
-      transformResponse: (response: { data: PhysicalDocument }) => response.data,
+      transformResponse: (response: { data: PhysicalDocument }) =>
+        response.data,
     }),
-    updatePhysicalDoc: builder.mutation<PhysicalDocument, { id: string; data: UpdatePhysicalDocPayload }>({
+    updatePhysicalDoc: builder.mutation<
+      PhysicalDocument,
+      { id: string; data: UpdatePhysicalDocPayload }
+    >({
       query: ({ id, data }) => ({
         url: `/docs-in-out/${id}`,
         method: "PUT",
         body: data,
       }),
       invalidatesTags: ["DocsInOut"],
-      transformResponse: (response: { data: PhysicalDocument }) => response.data,
+      transformResponse: (response: { data: PhysicalDocument }) =>
+        response.data,
     }),
     deletePhysicalDoc: builder.mutation<void, string>({
       query: (id) => ({
@@ -1242,34 +1387,104 @@ export const applicationApi = createApi({
       }),
       invalidatesTags: ["DocsInOut"],
     }),
-    returnPhysicalDoc: builder.mutation<PhysicalDocument, { id: string; data: ReturnPhysicalDocPayload }>({
+    returnPhysicalDoc: builder.mutation<
+      PhysicalDocument,
+      { id: string; data: ReturnPhysicalDocPayload }
+    >({
       query: ({ id, data }) => ({
         url: `/docs-in-out/${id}/return`,
         method: "POST",
         body: data,
       }),
       invalidatesTags: ["DocsInOut"],
-      transformResponse: (response: { data: PhysicalDocument }) => response.data,
+      transformResponse: (response: { data: PhysicalDocument }) =>
+        response.data,
     }),
     getStorageLocations: builder.query<StorageLocationSummary[], void>({
       query: () => "/docs-in-out/locations",
       providesTags: ["DocsInOut"],
-      transformResponse: (response: { data: StorageLocationSummary[] }) => response.data,
+      transformResponse: (response: { data: StorageLocationSummary[] }) =>
+        response.data,
     }),
-    triggerOverdueDocsScan: builder.mutation<OverdueScanSummary, { referenceDate?: string } | void>({
+    createStorageLocation: builder.mutation<
+      StorageLocationSummary,
+      CreateStorageLocationPayload
+    >({
+      query: (data) => ({
+        url: "/docs-in-out/locations",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["DocsInOut"],
+      transformResponse: (response: { data: StorageLocationSummary }) =>
+        response.data,
+    }),
+    updateStorageLocation: builder.mutation<
+      StorageLocationSummary,
+      { id: string; data: UpdateStorageLocationPayload }
+    >({
+      query: ({ id, data }) => ({
+        url: `/docs-in-out/locations/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["DocsInOut"],
+      transformResponse: (response: { data: StorageLocationSummary }) =>
+        response.data,
+    }),
+    deleteStorageLocation: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/docs-in-out/locations/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["DocsInOut"],
+    }),
+    triggerOverdueDocsScan: builder.mutation<
+      OverdueScanSummary,
+      { referenceDate?: string } | void
+    >({
       query: (body) => ({
         url: "/docs-in-out/trigger-scan",
         method: "POST",
         body: body || {},
       }),
       invalidatesTags: ["DocsInOut"],
-      transformResponse: (response: { data: OverdueScanSummary }) => response.data,
+      transformResponse: (response: { data: OverdueScanSummary }) =>
+        response.data,
     }),
-    getHandoverSlip: builder.query<{ html: string; document: PhysicalDocument; tenant: any }, string>({
+    getHandoverSlip: builder.query<
+      { html: string; document: PhysicalDocument; tenant: any },
+      string
+    >({
       query: (id) => `/docs-in-out/${id}/handover-slip`,
-      transformResponse: (response: { data: { html: string; document: PhysicalDocument; tenant: any } }) => response.data,
+      transformResponse: (response: {
+        data: { html: string; document: PhysicalDocument; tenant: any };
+      }) => response.data,
     }),
-    getDocumentRequests: builder.query<GetDocumentRequestListResponse, GetDocumentRequestListParams | void>({
+    getAvailablePhysicalDocsForMovement: builder.query<
+      PhysicalDocument[],
+      { clientId: string; category?: string }
+    >({
+      query: ({ clientId, category = "Given" }) =>
+        `/docs-in-out/available-for-movement?clientId=${encodeURIComponent(clientId)}&category=${encodeURIComponent(category)}`,
+      providesTags: ["DocsInOut"],
+      transformResponse: (response: { data: PhysicalDocument[] }) =>
+        response.data,
+    }),
+    getDocumentMovementHistory: builder.query<
+      { document: PhysicalDocument; movements: any[] },
+      string
+    >({
+      query: (id) => `/docs-in-out/${id}/history`,
+      providesTags: ["DocsInOut"],
+      transformResponse: (response: {
+        data: { document: PhysicalDocument; movements: any[] };
+      }) => response.data,
+    }),
+    getDocumentRequests: builder.query<
+      GetDocumentRequestListResponse,
+      GetDocumentRequestListParams | void
+    >({
       query: (params) => {
         const queryParams = new URLSearchParams();
         if (params?.clientId) queryParams.append("clientId", params.clientId);
@@ -1288,8 +1503,19 @@ export const applicationApi = createApi({
         data: {
           data?: DocumentRequest[];
           requests?: DocumentRequest[];
-          meta?: { total: number; page: number; limit: number; totalPages: number };
-          summary?: { pending: number; partiallyUploaded: number; completed: number; expired: number; totalRequests: number };
+          meta?: {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+          };
+          summary?: {
+            pending: number;
+            partiallyUploaded: number;
+            completed: number;
+            expired: number;
+            totalRequests: number;
+          };
           total?: number;
           page?: number;
           limit?: number;
@@ -1375,7 +1601,8 @@ export const applicationApi = createApi({
     }),
     getPublicDocumentRequest: builder.query<PublicDocumentRequest, string>({
       query: (token) => `/public/document-requests/${token}`,
-      transformResponse: (response: { data: PublicDocumentRequest }) => response.data,
+      transformResponse: (response: { data: PublicDocumentRequest }) =>
+        response.data,
     }),
     uploadPublicDocumentFile: builder.mutation<
       UploadPublicFileResponse,
@@ -1391,7 +1618,8 @@ export const applicationApi = createApi({
           body: formData,
         };
       },
-      transformResponse: (response: { data: UploadPublicFileResponse }) => response.data,
+      transformResponse: (response: { data: UploadPublicFileResponse }) =>
+        response.data,
     }),
     // Password Vault Endpoints (Part 20)
     getPortals: builder.query<PortalMaster[], void>({
@@ -1404,7 +1632,8 @@ export const applicationApi = createApi({
         params,
       }),
       providesTags: ["PasswordVault"],
-      transformResponse: (response: { data: GetPasswordsResponse }) => response.data,
+      transformResponse: (response: { data: GetPasswordsResponse }) =>
+        response.data,
     }),
     getPasswordById: builder.query<ClientPassword, string>({
       query: (id) => `/passwords/${id}`,
@@ -1449,7 +1678,8 @@ export const applicationApi = createApi({
         body: { purpose },
       }),
       invalidatesTags: ["PasswordAudit"],
-      transformResponse: (response: { data: RevealPasswordResponse }) => response.data,
+      transformResponse: (response: { data: RevealPasswordResponse }) =>
+        response.data,
     }),
     getPasswordAuditLogs: builder.query<
       GetPasswordAuditLogsResponse,
@@ -1460,7 +1690,8 @@ export const applicationApi = createApi({
         params,
       }),
       providesTags: ["PasswordAudit"],
-      transformResponse: (response: { data: GetPasswordAuditLogsResponse }) => response.data,
+      transformResponse: (response: { data: GetPasswordAuditLogsResponse }) =>
+        response.data,
     }),
     bulkImportPasswords: builder.mutation<
       BulkImportPasswordsResponse,
@@ -1472,7 +1703,8 @@ export const applicationApi = createApi({
         body: formData,
       }),
       invalidatesTags: ["PasswordVault"],
-      transformResponse: (response: { data: BulkImportPasswordsResponse }) => response.data,
+      transformResponse: (response: { data: BulkImportPasswordsResponse }) =>
+        response.data,
     }),
     // Reimbursable Client Expenses (Part 21)
     getExpenses: builder.query<GetExpensesResponse, GetExpensesParams>({
@@ -1481,7 +1713,8 @@ export const applicationApi = createApi({
         params,
       }),
       providesTags: ["Expense"],
-      transformResponse: (response: { data: GetExpensesResponse }) => response.data,
+      transformResponse: (response: { data: GetExpensesResponse }) =>
+        response.data,
     }),
     getExpenseById: builder.query<ClientExpense, string>({
       query: (id) => `/expenses/${id}`,
@@ -1491,7 +1724,8 @@ export const applicationApi = createApi({
     getUnbilledExpenses: builder.query<UnbilledExpensesResponse, string>({
       query: (clientId) => `/expenses/unbilled/${clientId}`,
       providesTags: ["Expense"],
-      transformResponse: (response: { data: UnbilledExpensesResponse }) => response.data,
+      transformResponse: (response: { data: UnbilledExpensesResponse }) =>
+        response.data,
     }),
     getExpenseAnalytics: builder.query<
       ExpenseAnalyticsResponse,
@@ -1502,11 +1736,13 @@ export const applicationApi = createApi({
         params: params || undefined,
       }),
       providesTags: ["Expense"],
-      transformResponse: (response: { data: ExpenseAnalyticsResponse }) => response.data,
+      transformResponse: (response: { data: ExpenseAnalyticsResponse }) =>
+        response.data,
     }),
     getExpenseCategories: builder.query<ExpenseCategoryItem[], void>({
       query: () => "/masters/expense-categories",
-      transformResponse: (response: { data: ExpenseCategoryItem[] }) => response.data,
+      transformResponse: (response: { data: ExpenseCategoryItem[] }) =>
+        response.data,
     }),
     createExpense: builder.mutation<ClientExpense, FormData>({
       query: (formData) => ({
@@ -1537,13 +1773,17 @@ export const applicationApi = createApi({
       invalidatesTags: ["Expense", "Invoice"],
     }),
     // Pre-Sales Quotations & CRM Engine (Part 22)
-    getQuotations: builder.query<GetQuotationsResponse, GetQuotationsParams | void>({
+    getQuotations: builder.query<
+      GetQuotationsResponse,
+      GetQuotationsParams | void
+    >({
       query: (params) => ({
         url: "/quotations",
         params: params || undefined,
       }),
       providesTags: ["Quotation"],
-      transformResponse: (response: { data: GetQuotationsResponse }) => response.data,
+      transformResponse: (response: { data: GetQuotationsResponse }) =>
+        response.data,
     }),
     getQuotationById: builder.query<Quotation, string>({
       query: (id) => `/quotations/${id}`,
@@ -1600,7 +1840,9 @@ export const applicationApi = createApi({
         body: { email },
       }),
       invalidatesTags: ["Quotation"],
-      transformResponse: (response: { data: { sent: boolean; sentAt: string; email: string } }) => response.data,
+      transformResponse: (response: {
+        data: { sent: boolean; sentAt: string; email: string };
+      }) => response.data,
     }),
     convertToInvoice: builder.mutation<
       ConvertQuotationResponse,
@@ -1612,12 +1854,14 @@ export const applicationApi = createApi({
         body: { status },
       }),
       invalidatesTags: ["Quotation", "Invoice"],
-      transformResponse: (response: { data: ConvertQuotationResponse }) => response.data,
+      transformResponse: (response: { data: ConvertQuotationResponse }) =>
+        response.data,
     }),
     getQuotationPrint: builder.query<QuotationPrintLayout, string>({
       query: (id) => `/quotations/${id}/print`,
       providesTags: ["Quotation"],
-      transformResponse: (response: { data: QuotationPrintLayout }) => response.data,
+      transformResponse: (response: { data: QuotationPrintLayout }) =>
+        response.data,
     }),
     getQuotationPipelineAnalytics: builder.query<
       QuotationPipelineAnalytics,
@@ -1628,7 +1872,8 @@ export const applicationApi = createApi({
         params: params || undefined,
       }),
       providesTags: ["Quotation"],
-      transformResponse: (response: { data: QuotationPipelineAnalytics }) => response.data,
+      transformResponse: (response: { data: QuotationPipelineAnalytics }) =>
+        response.data,
     }),
     getTasksReport: builder.query<TaskReportResponse, TaskReportQuery | void>({
       query: (params) => ({
@@ -1636,39 +1881,56 @@ export const applicationApi = createApi({
         params: params || undefined,
       }),
       providesTags: ["Report", "Task"],
-      transformResponse: (response: { data: TaskReportResponse }) => response.data,
+      transformResponse: (response: { data: TaskReportResponse }) =>
+        response.data,
     }),
-    getServicesReport: builder.query<ServiceReportResponse, Record<string, any> | void>({
+    getServicesReport: builder.query<
+      ServiceReportResponse,
+      Record<string, any> | void
+    >({
       query: (params) => ({
         url: "/reports/services",
         params: params || undefined,
       }),
       providesTags: ["Report", "Service"],
-      transformResponse: (response: { data: ServiceReportResponse }) => response.data,
+      transformResponse: (response: { data: ServiceReportResponse }) =>
+        response.data,
     }),
-    getDscRenewalsReport: builder.query<DscReportResponse, DscReportQuery | void>({
+    getDscRenewalsReport: builder.query<
+      DscReportResponse,
+      DscReportQuery | void
+    >({
       query: (params) => ({
         url: "/reports/dsc-renewals",
         params: params || undefined,
       }),
       providesTags: ["Report", "DSC"],
-      transformResponse: (response: { data: DscReportResponse }) => response.data,
+      transformResponse: (response: { data: DscReportResponse }) =>
+        response.data,
     }),
-    getInvoicesReport: builder.query<InvoiceReportResponse, InvoiceReportQuery | void>({
+    getInvoicesReport: builder.query<
+      InvoiceReportResponse,
+      InvoiceReportQuery | void
+    >({
       query: (params) => ({
         url: "/reports/invoices",
         params: params || undefined,
       }),
       providesTags: ["Report", "Invoice"],
-      transformResponse: (response: { data: InvoiceReportResponse }) => response.data,
+      transformResponse: (response: { data: InvoiceReportResponse }) =>
+        response.data,
     }),
-    getDebtorsAgingReport: builder.query<DebtorsAgingReportResponse, DebtorsAgingQuery | void>({
+    getDebtorsAgingReport: builder.query<
+      DebtorsAgingReportResponse,
+      DebtorsAgingQuery | void
+    >({
       query: (params) => ({
         url: "/reports/debtors-aging",
         params: params || undefined,
       }),
       providesTags: ["Report", "Invoice"],
-      transformResponse: (response: { data: DebtorsAgingReportResponse }) => response.data,
+      transformResponse: (response: { data: DebtorsAgingReportResponse }) =>
+        response.data,
     }),
 
     // ─── Client Portal Authentication & Profile Endpoints ───────────
@@ -1742,10 +2004,15 @@ export const applicationApi = createApi({
     }),
 
     // ─── Staff: Client Portal Users & Access Management ─────────────
-    getClientPortalUsers: builder.query<{ allowLogin: boolean; users: any[] }, string>({
+    getClientPortalUsers: builder.query<
+      { allowLogin: boolean; users: any[] },
+      string
+    >({
       query: (clientId: string) => `/clients/${clientId}/portal-users`,
       providesTags: ["ClientPortalUser"],
-      transformResponse: (response: { data: { allowLogin: boolean; users: any[] } }) => response.data,
+      transformResponse: (response: {
+        data: { allowLogin: boolean; users: any[] };
+      }) => response.data,
     }),
     createClientPortalUser: builder.mutation({
       query: ({ clientId, ...body }) => ({
@@ -1816,7 +2083,10 @@ export const applicationApi = createApi({
     }),
 
     // ─── Part 26: Client Self-Service Hub Endpoints ────────────────
-    getComplianceCalendar: builder.query<any[], { year?: number; month?: number; status?: string } | void>({
+    getComplianceCalendar: builder.query<
+      any[],
+      { year?: number; month?: number; status?: string } | void
+    >({
       query: (params) => ({
         url: "/portal/compliance-calendar",
         params: params || undefined,
@@ -1824,7 +2094,10 @@ export const applicationApi = createApi({
       providesTags: ["PortalCompliance"],
       transformResponse: (response: { data: any[] }) => response.data,
     }),
-    getPortalDocuments: builder.query<any[], { folder?: string; search?: string; from?: string; to?: string } | void>({
+    getPortalDocuments: builder.query<
+      any[],
+      { folder?: string; search?: string; from?: string; to?: string } | void
+    >({
       query: (params) => ({
         url: "/portal/documents",
         params: params || undefined,
@@ -1855,7 +2128,10 @@ export const applicationApi = createApi({
       providesTags: ["PortalDocRequests"],
       transformResponse: (response: { data: any[] }) => response.data,
     }),
-    fulfillPortalDocumentRequest: builder.mutation<any, { requestId: string; formData: FormData }>({
+    fulfillPortalDocumentRequest: builder.mutation<
+      any,
+      { requestId: string; formData: FormData }
+    >({
       query: ({ requestId, formData }) => ({
         url: `/portal/requests/${requestId}/fulfill`,
         method: "POST",
@@ -1869,7 +2145,10 @@ export const applicationApi = createApi({
       providesTags: ["PortalQueries"],
       transformResponse: (response: { data: any[] }) => response.data,
     }),
-    createPortalQueryTicket: builder.mutation<any, { type: string; subject: string; message: string; attachments?: string[] }>({
+    createPortalQueryTicket: builder.mutation<
+      any,
+      { type: string; subject: string; message: string; attachments?: string[] }
+    >({
       query: (body) => ({
         url: "/portal/queries",
         method: "POST",
@@ -1894,18 +2173,39 @@ export const applicationApi = createApi({
       invalidatesTags: ["GatewayConfig"],
       transformResponse: (response: { data: any }) => response.data,
     }),
-    getInvoiceUpiQr: builder.query<{ npciUri: string; qrDataUrl: string; upiId: string; amount: number; invoiceNo: string }, string>({
+    getInvoiceUpiQr: builder.query<
+      {
+        npciUri: string;
+        qrDataUrl: string;
+        upiId: string;
+        amount: number;
+        invoiceNo: string;
+      },
+      string
+    >({
       query: (invoiceId) => `/invoices/${invoiceId}/upi-qr`,
       transformResponse: (response: { data: any }) => response.data,
     }),
-    createInvoicePaymentLink: builder.mutation<{ paymentLinkId: string; shortUrl: string }, string>({
+    createInvoicePaymentLink: builder.mutation<
+      { paymentLinkId: string; shortUrl: string },
+      string
+    >({
       query: (invoiceId) => ({
         url: `/invoices/${invoiceId}/payment-link`,
         method: "POST",
       }),
       transformResponse: (response: { data: any }) => response.data,
     }),
-    getPaymentTransactions: builder.query<{ transactions: any[]; total: number }, { status?: string; from?: string; to?: string; clientId?: string; invoiceId?: string } | void>({
+    getPaymentTransactions: builder.query<
+      { transactions: any[]; total: number },
+      {
+        status?: string;
+        from?: string;
+        to?: string;
+        clientId?: string;
+        invoiceId?: string;
+      } | void
+    >({
       query: (params) => ({
         url: "/client-payments/transactions",
         params: params || undefined,
@@ -1929,7 +2229,10 @@ export const applicationApi = createApi({
       invalidatesTags: ["BillingEntity"],
       transformResponse: (response: { data: any }) => response.data,
     }),
-    updateBillingEntity: builder.mutation<any, { id: string; [key: string]: any }>({
+    updateBillingEntity: builder.mutation<
+      any,
+      { id: string; [key: string]: any }
+    >({
       query: ({ id, ...body }) => ({
         url: `/tenant-settings/billing-entities/${id}`,
         method: "PUT",
@@ -2001,6 +2304,7 @@ export const {
   useUploadClientPhotoMutation,
   useGetServicesQuery,
   useGetServiceByIdQuery,
+  useGetServiceClientsQuery,
   useCreateServiceMutation,
   useUpdateServiceMutation,
   useDeleteServiceMutation,
@@ -2027,7 +2331,13 @@ export const {
   useGetLedgerQuery,
   useGetDashboardOverviewQuery,
   useGetClientSummaryQuery,
+  useGetRolesQuery,
   useGetUsersQuery,
+  useCreateUserMutation,
+  useUpdateUserMutation,
+  useDeleteUserMutation,
+  useVerifyInviteQuery,
+  useActivateInviteMutation,
   useGetHolidaysQuery,
   useCreateHolidayMutation,
   useUpdateHolidayMutation,
@@ -2070,8 +2380,13 @@ export const {
   useDeletePhysicalDocMutation,
   useReturnPhysicalDocMutation,
   useGetStorageLocationsQuery,
+  useCreateStorageLocationMutation,
+  useUpdateStorageLocationMutation,
+  useDeleteStorageLocationMutation,
   useTriggerOverdueDocsScanMutation,
   useGetHandoverSlipQuery,
+  useGetAvailablePhysicalDocsForMovementQuery,
+  useGetDocumentMovementHistoryQuery,
   useGetDocumentRequestsQuery,
   useGetDocumentRequestByIdQuery,
   useCreateDocumentRequestMutation,
@@ -2152,5 +2467,3 @@ export const {
   useGetTenantSubscriptionQuery,
   useUpdateTenantSubscriptionMutation,
 } = applicationApi;
-
-

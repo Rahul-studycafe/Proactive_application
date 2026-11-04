@@ -57,19 +57,22 @@ export function AddPasswordModal({
 }: AddPasswordModalProps) {
   const isEditing = !!credentialToEdit;
 
-  const { data: portals = [], isLoading: isLoadingPortals } = useGetPortalsQuery(undefined, {
-    skip: !open,
-  });
+  const { data: portals = [], isLoading: isLoadingPortals } =
+    useGetPortalsQuery(undefined, {
+      skip: !open,
+    });
 
   const { data: clientsData } = useGetClientsQuery(
     { limit: 100 },
-    { skip: !open || !!clientId }
+    { skip: !open || !!clientId },
   );
   const clients = clientsData?.clients || [];
   const [selectedClientId, setSelectedClientId] = useState<string>("");
 
-  const [createPassword, { isLoading: isCreating }] = useCreatePasswordMutation();
-  const [updatePassword, { isLoading: isUpdating }] = useUpdatePasswordMutation();
+  const [createPassword, { isLoading: isCreating }] =
+    useCreatePasswordMutation();
+  const [updatePassword, { isLoading: isUpdating }] =
+    useUpdatePasswordMutation();
   const isSubmitting = isCreating || isUpdating;
 
   const [selectedPortalMode, setSelectedPortalMode] = useState<string>("");
@@ -94,13 +97,17 @@ export function AddPasswordModal({
         setNotes(credentialToEdit.notes || "");
         setLastVerifiedDate(
           credentialToEdit.lastVerifiedDate
-            ? new Date(credentialToEdit.lastVerifiedDate).toISOString().split("T")[0]
-            : ""
+            ? new Date(credentialToEdit.lastVerifiedDate)
+                .toISOString()
+                .split("T")[0]
+            : "",
         );
 
         // Check if matches an existing master
         const matched = portals.find(
-          (p) => p.name.toLowerCase() === (credentialToEdit.portalName || "").toLowerCase()
+          (p) =>
+            p.name.toLowerCase() ===
+            (credentialToEdit.portalName || "").toLowerCase(),
         );
         if (matched) {
           setSelectedPortalMode(matched._id);
@@ -199,7 +206,8 @@ export function AddPasswordModal({
 
       onOpenChange(false);
     } catch (err: any) {
-      const msg = err?.data?.message || err?.message || "Failed to save credential";
+      const msg =
+        err?.data?.message || err?.message || "Failed to save credential";
       toast.error(msg);
     }
   };
@@ -266,7 +274,9 @@ export function AddPasswordModal({
           {/* Portal Selection */}
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-foreground flex items-center justify-between">
-              <span>Portal / Authority <span className="text-destructive">*</span></span>
+              <span>
+                Portal / Authority <span className="text-destructive">*</span>
+              </span>
               {portalUrl && (
                 <a
                   href={portalUrl}
@@ -291,7 +301,9 @@ export function AddPasswordModal({
                   <SelectItem key={p._id} value={p._id}>
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{p.name}</span>
-                      <span className="text-xs text-muted-foreground">({p.category})</span>
+                      <span className="text-xs text-muted-foreground">
+                        ({p.category})
+                      </span>
                     </div>
                   </SelectItem>
                 ))}
@@ -354,7 +366,8 @@ export function AddPasswordModal({
               <Label className="text-xs font-semibold text-foreground flex items-center justify-between">
                 <span className="flex items-center gap-1.5">
                   <Lock className="h-3.5 w-3.5 text-muted-foreground" />
-                  Password {!isEditing && <span className="text-destructive">*</span>}
+                  Password{" "}
+                  {!isEditing && <span className="text-destructive">*</span>}
                 </span>
                 {isEditing && (
                   <span className="text-[10px] text-muted-foreground font-normal">
@@ -367,7 +380,9 @@ export function AddPasswordModal({
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder={isEditing ? "•••••••• (unchanged)" : "Enter login password"}
+                  placeholder={
+                    isEditing ? "•••••••• (unchanged)" : "Enter login password"
+                  }
                   className="h-9 pr-9 font-mono text-sm"
                   required={!isEditing}
                 />

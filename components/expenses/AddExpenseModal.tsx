@@ -70,9 +70,12 @@ export function AddExpenseModal({
 }: AddExpenseModalProps) {
   const isEditing = !!expenseToEdit;
 
-  const { data: serverCategories = [] } = useGetExpenseCategoriesQuery(undefined, {
-    skip: !open,
-  });
+  const { data: serverCategories = [] } = useGetExpenseCategoriesQuery(
+    undefined,
+    {
+      skip: !open,
+    },
+  );
 
   const categories =
     serverCategories.length > 0 ? serverCategories : DEFAULT_CATEGORIES;
@@ -80,7 +83,7 @@ export function AddExpenseModal({
   // If no defaultClientId, fetch clients list for selection
   const { data: clientsData } = useGetClientsQuery(
     { limit: 200 },
-    { skip: !open || !!defaultClientId }
+    { skip: !open || !!defaultClientId },
   );
   const clients = clientsData?.clients || [];
 
@@ -93,14 +96,19 @@ export function AddExpenseModal({
   const [categoryId, setCategoryId] = useState("");
   const [categoryName, setCategoryName] = useState("");
   const [amount, setAmount] = useState("");
-  const [paymentMode, setPaymentMode] = useState<ExpensePaymentMode>("Bank Transfer");
+  const [paymentMode, setPaymentMode] =
+    useState<ExpensePaymentMode>("Bank Transfer");
   const [paidFromAccount, setPaidFromAccount] = useState("");
   const [date, setDate] = useState("");
   const [taskId, setTaskId] = useState<string>("");
   const [notes, setNotes] = useState("");
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
-  const [existingReceiptUrl, setExistingReceiptUrl] = useState<string | undefined>(undefined);
-  const [existingReceiptName, setExistingReceiptName] = useState<string | undefined>(undefined);
+  const [existingReceiptUrl, setExistingReceiptUrl] = useState<
+    string | undefined
+  >(undefined);
+  const [existingReceiptName, setExistingReceiptName] = useState<
+    string | undefined
+  >(undefined);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -108,7 +116,7 @@ export function AddExpenseModal({
   const activeClientId = clientId || defaultClientId || "";
   const { data: tasksData } = useGetTasksQuery(
     { clientId: activeClientId, limit: 100 },
-    { skip: !activeClientId || !open }
+    { skip: !activeClientId || !open },
   );
   const clientTasks = tasksData?.tasks || [];
 
@@ -135,7 +143,7 @@ export function AddExpenseModal({
         setDate(
           expenseToEdit.date
             ? new Date(expenseToEdit.date).toISOString().split("T")[0]
-            : new Date().toISOString().split("T")[0]
+            : new Date().toISOString().split("T")[0],
         );
 
         const tId =
@@ -176,7 +184,12 @@ export function AddExpenseModal({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      const validTypes = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
+      const validTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "application/pdf",
+      ];
       if (!validTypes.includes(file.type)) {
         toast.error("Please upload an image (JPG, PNG) or PDF document");
         return;
@@ -215,7 +228,8 @@ export function AddExpenseModal({
     if (categoryName) formData.append("categoryName", categoryName);
     formData.append("amount", String(numAmount));
     formData.append("paymentMode", paymentMode);
-    if (paidFromAccount) formData.append("paidFromAccount", paidFromAccount.trim());
+    if (paidFromAccount)
+      formData.append("paidFromAccount", paidFromAccount.trim());
     if (date) formData.append("date", date);
     if (taskId && taskId !== "none") formData.append("taskId", taskId);
     if (notes) formData.append("notes", notes.trim());
@@ -227,14 +241,17 @@ export function AddExpenseModal({
     try {
       if (isEditing && expenseToEdit) {
         await updateExpense({ id: expenseToEdit._id, formData }).unwrap();
-        toast.success(`Expense ${expenseToEdit.expenseNo} updated successfully`);
+        toast.success(
+          `Expense ${expenseToEdit.expenseNo} updated successfully`,
+        );
       } else {
         await createExpense(formData).unwrap();
         toast.success("Client outlay recorded and added to unbilled ledger");
       }
       onOpenChange(false);
     } catch (err: any) {
-      const msg = err?.data?.message || err?.message || "Failed to record expense";
+      const msg =
+        err?.data?.message || err?.message || "Failed to record expense";
       toast.error(msg);
     }
   };
@@ -250,7 +267,9 @@ export function AddExpenseModal({
             </div>
             <div>
               <DialogTitle className="text-base font-bold flex items-center gap-2">
-                {isEditing ? `Edit Expense (${expenseToEdit?.expenseNo})` : "Log Reimbursable Outlay"}
+                {isEditing
+                  ? `Edit Expense (${expenseToEdit?.expenseNo})`
+                  : "Log Reimbursable Outlay"}
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground mt-0.5">
                 {defaultClientName
@@ -261,7 +280,10 @@ export function AddExpenseModal({
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4 overflow-y-auto flex-1">
+        <form
+          onSubmit={handleSubmit}
+          className="px-6 py-5 space-y-4 overflow-y-auto flex-1"
+        >
           {/* Client Selector (if not scoped to a specific client) */}
           {!defaultClientId && (
             <div className="space-y-1.5">
@@ -269,7 +291,11 @@ export function AddExpenseModal({
                 <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
                 Client <span className="text-destructive">*</span>
               </Label>
-              <Select value={clientId} onValueChange={setClientId} disabled={isEditing}>
+              <Select
+                value={clientId}
+                onValueChange={setClientId}
+                disabled={isEditing}
+              >
                 <SelectTrigger className="h-9 text-xs">
                   <SelectValue placeholder="Select client entity" />
                 </SelectTrigger>
@@ -277,7 +303,11 @@ export function AddExpenseModal({
                   {clients.map((c: any) => (
                     <SelectItem key={c._id} value={c._id}>
                       <span className="font-medium">{c.name}</span>{" "}
-                      {c.fileNo && <span className="text-xs text-muted-foreground">({c.fileNo})</span>}
+                      {c.fileNo && (
+                        <span className="text-xs text-muted-foreground">
+                          ({c.fileNo})
+                        </span>
+                      )}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -358,7 +388,9 @@ export function AddExpenseModal({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Bank Transfer">Bank Transfer (NEFT/RTGS)</SelectItem>
+                  <SelectItem value="Bank Transfer">
+                    Bank Transfer (NEFT/RTGS)
+                  </SelectItem>
                   <SelectItem value="UPI">UPI / QR</SelectItem>
                   <SelectItem value="Cash">Cash / Petty Cash</SelectItem>
                   <SelectItem value="Credit Card">Credit Card</SelectItem>
@@ -423,7 +455,9 @@ export function AddExpenseModal({
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-foreground flex items-center justify-between">
               <span>Receipt Voucher / Challan Attachment</span>
-              <span className="text-[10px] text-muted-foreground font-normal">PNG, JPG, PDF up to 10MB</span>
+              <span className="text-[10px] text-muted-foreground font-normal">
+                PNG, JPG, PDF up to 10MB
+              </span>
             </Label>
 
             <input
@@ -438,7 +472,9 @@ export function AddExpenseModal({
               <div className="flex items-center justify-between p-2.5 rounded-lg border border-emerald-500/40 bg-emerald-500/5 text-xs">
                 <div className="flex items-center gap-2 truncate">
                   <FileCheck className="h-4 w-4 text-emerald-600 shrink-0" />
-                  <span className="font-medium text-foreground truncate">{receiptFile.name}</span>
+                  <span className="font-medium text-foreground truncate">
+                    {receiptFile.name}
+                  </span>
                   <span className="text-muted-foreground text-[10px]">
                     ({(receiptFile.size / 1024).toFixed(0)} KB)
                   </span>

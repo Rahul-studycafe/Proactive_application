@@ -49,10 +49,16 @@ export function WebPunchModal({ open, onOpenChange }: WebPunchModalProps) {
   const [checkIn, { isLoading: isCheckingIn }] = useCheckInMutation();
   const [checkOut, { isLoading: isCheckingOut }] = useCheckOutMutation();
 
-  const isIpWhitelistActive = Boolean(workDaysConfig?.officePerimeter?.enableIpWhitelist);
+  const isIpWhitelistActive = Boolean(
+    workDaysConfig?.officePerimeter?.enableIpWhitelist,
+  );
 
-  const { coordinates, loading: isGeoLoading, isInsideGeofence, error: geoError } =
-    useGeolocation();
+  const {
+    coordinates,
+    loading: isGeoLoading,
+    isInsideGeofence,
+    error: geoError,
+  } = useGeolocation();
 
   // Live seconds clock
   useEffect(() => {
@@ -91,7 +97,9 @@ export function WebPunchModal({ open, onOpenChange }: WebPunchModalProps) {
       onOpenChange(false);
     } catch (err: any) {
       toast.error(
-        err?.data?.error?.message || err?.data?.message || "Failed to record punch in"
+        err?.data?.error?.message ||
+          err?.data?.message ||
+          "Failed to record punch in",
       );
     }
   };
@@ -110,7 +118,9 @@ export function WebPunchModal({ open, onOpenChange }: WebPunchModalProps) {
       onOpenChange(false);
     } catch (err: any) {
       toast.error(
-        err?.data?.error?.message || err?.data?.message || "Failed to record punch out"
+        err?.data?.error?.message ||
+          err?.data?.message ||
+          "Failed to record punch out",
       );
     }
   };
@@ -124,7 +134,8 @@ export function WebPunchModal({ open, onOpenChange }: WebPunchModalProps) {
             Attendance Web Punch
           </DialogTitle>
           <DialogDescription>
-            Record your daily office check-in and check-out with GPS verification.
+            Record your daily office check-in and check-out with GPS
+            verification.
           </DialogDescription>
         </DialogHeader>
 
@@ -186,11 +197,13 @@ export function WebPunchModal({ open, onOpenChange }: WebPunchModalProps) {
                     {todayAttendance.verifiedVia === "office_ip"
                       ? "Verified via Office Wi-Fi / Static IP"
                       : todayAttendance.verifiedVia === "gps"
-                      ? "Verified via GPS Geofence"
-                      : "Verified"}
+                        ? "Verified via GPS Geofence"
+                        : "Verified"}
                   </span>
                 ) : isGeoLoading ? (
-                  <span className="text-muted-foreground ml-1.5">Acquiring GPS / Network...</span>
+                  <span className="text-muted-foreground ml-1.5">
+                    Acquiring GPS / Network...
+                  </span>
                 ) : isInsideGeofence ? (
                   <span className="text-emerald-600 dark:text-emerald-400 font-medium ml-1.5">
                     Within Office Perimeter

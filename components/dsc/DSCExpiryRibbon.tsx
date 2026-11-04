@@ -37,11 +37,11 @@ export function DSCExpiryRibbon({
     try {
       const summary = await triggerScan().unwrap();
       toast.success(
-        `Renewal scan completed: ${summary.tasksCreated} renewal task(s) auto-generated, ${summary.emailsDispatched} client alert(s) dispatched.`
+        `Renewal scan completed: ${summary.tasksCreated} renewal task(s) auto-generated, ${summary.emailsDispatched} client alert(s) dispatched.`,
       );
     } catch (err: any) {
       toast.error(
-        err?.data?.message || err?.message || "Failed to execute expiry scan"
+        err?.data?.message || err?.message || "Failed to execute expiry scan",
       );
     }
   };
@@ -61,7 +61,8 @@ export function DSCExpiryRibbon({
       status: undefined,
       expiringWithinDays: 7,
       icon: AlertTriangle,
-      color: "bg-rose-500/10 text-rose-700 border-rose-500/30 dark:text-rose-400",
+      color:
+        "bg-rose-500/10 text-rose-700 border-rose-500/30 dark:text-rose-400",
     },
     {
       id: "exp-15",
@@ -69,7 +70,8 @@ export function DSCExpiryRibbon({
       status: undefined,
       expiringWithinDays: 15,
       icon: Clock,
-      color: "bg-amber-500/10 text-amber-700 border-amber-500/30 dark:text-amber-400",
+      color:
+        "bg-amber-500/10 text-amber-700 border-amber-500/30 dark:text-amber-400",
     },
     {
       id: "exp-30",
@@ -78,7 +80,8 @@ export function DSCExpiryRibbon({
       expiringWithinDays: 30,
       count: kpiData?.expiringIn30Days,
       icon: Clock,
-      color: "bg-yellow-500/10 text-yellow-700 border-yellow-500/30 dark:text-yellow-400",
+      color:
+        "bg-yellow-500/10 text-yellow-700 border-yellow-500/30 dark:text-yellow-400",
     },
     {
       id: "in-office",
@@ -87,7 +90,8 @@ export function DSCExpiryRibbon({
       expiringWithinDays: undefined,
       count: kpiData?.inOffice,
       icon: CheckCircle2,
-      color: "bg-emerald-500/10 text-emerald-700 border-emerald-500/30 dark:text-emerald-400",
+      color:
+        "bg-emerald-500/10 text-emerald-700 border-emerald-500/30 dark:text-emerald-400",
     },
     {
       id: "with-client",
@@ -96,7 +100,8 @@ export function DSCExpiryRibbon({
       expiringWithinDays: undefined,
       count: kpiData?.withClient,
       icon: Building2,
-      color: "bg-blue-500/10 text-blue-700 border-blue-500/30 dark:text-blue-400",
+      color:
+        "bg-blue-500/10 text-blue-700 border-blue-500/30 dark:text-blue-400",
     },
     {
       id: "expired",
@@ -105,7 +110,8 @@ export function DSCExpiryRibbon({
       expiringWithinDays: undefined,
       count: kpiData?.expired,
       icon: ShieldAlert,
-      color: "bg-rose-500/10 text-rose-700 border-rose-500/30 dark:text-rose-400",
+      color:
+        "bg-rose-500/10 text-rose-700 border-rose-500/30 dark:text-rose-400",
     },
   ];
 

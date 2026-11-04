@@ -76,8 +76,8 @@ export function DSCHandoverModal({
         action === "Handed to Client"
           ? "DSC handed over to client; custody status updated"
           : action === "Received from Client"
-          ? "DSC received back; status updated to In Office"
-          : "Internal custody transfer logged"
+            ? "DSC received back; status updated to In Office"
+            : "Internal custody transfer logged",
       );
 
       // Reset & close
@@ -89,24 +89,25 @@ export function DSCHandoverModal({
       onOpenChange(false);
     } catch (err: any) {
       toast.error(
-        err?.data?.message || err?.message || "Failed to log custody movement"
+        err?.data?.message || err?.message || "Failed to log custody movement",
       );
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
-        <form onSubmit={handleSubmit}>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <DialogHeader>
             <DialogTitle>Log Physical Custody Movement</DialogTitle>
             <DialogDescription>
-              Record chain-of-custody for <strong>{dsc?.certificateName}</strong>{" "}
-              (Dongle #{dsc?.tokenSerialNumber || "N/A"}).
+              Record chain-of-custody for{" "}
+              <strong>{dsc?.certificateName}</strong> (Dongle #
+              {dsc?.tokenSerialNumber || "N/A"}).
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4 py-4">
+          <div className="space-y-3.5 py-2">
             {/* Movement Action */}
             <div className="space-y-1.5">
               <Label htmlFor="action">Custody Action</Label>
@@ -117,7 +118,7 @@ export function DSCHandoverModal({
                     val as
                       | "Handed to Client"
                       | "Received from Client"
-                      | "Internal Transfer"
+                      | "Internal Transfer",
                   )
                 }
               >
@@ -144,8 +145,8 @@ export function DSCHandoverModal({
                 {action === "Handed to Client"
                   ? "Recipient / Client Rep Name"
                   : action === "Received from Client"
-                  ? "Delivered by Person Name"
-                  : "Assigned Staff Member Name"}{" "}
+                    ? "Delivered by Person Name"
+                    : "Assigned Staff Member Name"}{" "}
                 <span className="text-destructive">*</span>
               </Label>
               <Input
@@ -209,7 +210,7 @@ export function DSCHandoverModal({
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="gap-2 pt-3 sticky bottom-0 bg-background/95 backdrop-blur border-t mt-4 pb-1">
             <Button
               type="button"
               variant="outline"

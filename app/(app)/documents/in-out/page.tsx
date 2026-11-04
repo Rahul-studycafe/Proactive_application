@@ -67,9 +67,13 @@ import {
 import { InOutEntryModal } from "@/components/documents/InOutEntryModal";
 import { RecordReturnModal } from "@/components/documents/RecordReturnModal";
 import { StorageLocationsView } from "@/components/documents/StorageLocationsView";
+import { MovementHistoryModal } from "@/components/documents/MovementHistoryModal";
+import { History as HistoryIcon } from "lucide-react";
 
 export default function DocsInOutPage() {
-  const [activeView, setActiveView] = useState<"register" | "storage">("register");
+  const [activeView, setActiveView] = useState<"register" | "storage">(
+    "register",
+  );
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -82,8 +86,12 @@ export default function DocsInOutPage() {
   const [returnDoc, setReturnDoc] = useState<PhysicalDocument | null>(null);
   const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
 
+  const [historyDocId, setHistoryDocId] = useState<string | null>(null);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+
   const [deleteDoc] = useDeletePhysicalDocMutation();
-  const [triggerScan, { isLoading: isScanning }] = useTriggerOverdueDocsScanMutation();
+  const [triggerScan, { isLoading: isScanning }] =
+    useTriggerOverdueDocsScanMutation();
 
   const queryParams = useMemo(() => {
     return {
@@ -126,7 +134,7 @@ export default function DocsInOutPage() {
     try {
       const res = await triggerScan().unwrap();
       toast.success(
-        `Scanned ${res.scannedCount} documents. ${res.overdueMarkedCount} marked overdue.`
+        `Scanned ${res.scannedCount} documents. ${res.overdueMarkedCount} marked overdue.`,
       );
       refetch();
     } catch (err: any) {
@@ -135,14 +143,21 @@ export default function DocsInOutPage() {
   };
 
   const handleExportCsv = () => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("accessToken")
+        : null;
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
     const exportUrl = `${baseUrl}/api/v1/docs-in-out/export${token ? `?token=${encodeURIComponent(token)}` : ""}`;
     window.open(exportUrl, "_blank");
   };
 
   const handleDelete = async (doc: PhysicalDocument) => {
-    if (!confirm(`Are you sure you want to delete the record for "${doc.documentName}"?`)) {
+    if (
+      !confirm(
+        `Are you sure you want to delete the record for "${doc.documentName}"?`,
+      )
+    ) {
       return;
     }
     try {
@@ -178,7 +193,8 @@ export default function DocsInOutPage() {
             Documents In-Out Register
           </h1>
           <p className="text-sm text-muted-foreground">
-            Track custody of client original deeds, passbooks, physical cheque books, and company seals.
+            Track custody of client original deeds, passbooks, physical cheque
+            books, and company seals.
           </p>
         </div>
 
@@ -191,7 +207,9 @@ export default function DocsInOutPage() {
             title="Scan for overdue returnable documents"
             id="scan-overdues-btn"
           >
-            <Radar className={`h-4 w-4 mr-1.5 ${isScanning ? "animate-spin text-primary" : ""}`} />
+            <Radar
+              className={`h-4 w-4 mr-1.5 ${isScanning ? "animate-spin text-primary" : ""}`}
+            />
             {isScanning ? "Scanning..." : "Scan Overdues"}
           </Button>
 
@@ -228,10 +246,12 @@ export default function DocsInOutPage() {
             </div>
             <div>
               <div className="font-semibold text-sm">
-                {overdueCount} Returnable Document{overdueCount > 1 ? "s" : ""} Overdue
+                {overdueCount} Returnable Document{overdueCount > 1 ? "s" : ""}{" "}
+                Overdue
               </div>
               <div className="text-xs text-amber-700 dark:text-amber-300">
-                Original client assets have passed their agreed return date and are still pending handover.
+                Original client assets have passed their agreed return date and
+                are still pending handover.
               </div>
             </div>
           </div>
@@ -326,11 +346,19 @@ export default function DocsInOutPage() {
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3">
           <TabsList>
-            <TabsTrigger value="register" className="flex items-center gap-1.5" id="tab-register-desk">
+            <TabsTrigger
+              value="register"
+              className="flex items-center gap-1.5"
+              id="tab-register-desk"
+            >
               <ListFilter className="h-4 w-4" />
               <span>Register Desk</span>
             </TabsTrigger>
-            <TabsTrigger value="storage" className="flex items-center gap-1.5" id="tab-storage-locations">
+            <TabsTrigger
+              value="storage"
+              className="flex items-center gap-1.5"
+              id="tab-storage-locations"
+            >
               <Grid className="h-4 w-4" />
               <span>Office Storage Units</span>
             </TabsTrigger>
@@ -338,7 +366,9 @@ export default function DocsInOutPage() {
 
           {selectedLocation && (
             <div className="flex items-center gap-2 text-xs bg-primary/10 text-primary px-2.5 py-1 rounded-full">
-              <span>Location filter: <strong>{selectedLocation}</strong></span>
+              <span>
+                Location filter: <strong>{selectedLocation}</strong>
+              </span>
               <button
                 onClick={() => setSelectedLocation(null)}
                 className="hover:bg-primary/20 rounded p-0.5"
@@ -420,7 +450,9 @@ export default function DocsInOutPage() {
                   <SelectItem value="Cheque Book">Cheque Book</SelectItem>
                   <SelectItem value="Original Deeds">Original Deeds</SelectItem>
                   <SelectItem value="PAN Card">PAN Card</SelectItem>
-                  <SelectItem value="Registration Certificate">Registration Cert.</SelectItem>
+                  <SelectItem value="Registration Certificate">
+                    Registration Cert.
+                  </SelectItem>
                   <SelectItem value="Company Seal">Company Seal</SelectItem>
                   <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
@@ -434,7 +466,9 @@ export default function DocsInOutPage() {
                 disabled={isFetching}
                 title="Refresh"
               >
-                <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+                <RefreshCw
+                  className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
+                />
               </Button>
             </div>
           </div>
@@ -445,9 +479,13 @@ export default function DocsInOutPage() {
               <TableHeader className="bg-muted/40">
                 <TableRow>
                   <TableHead className="w-[110px]">Category</TableHead>
-                  <TableHead className="min-w-[200px]">Document & Type</TableHead>
+                  <TableHead className="min-w-[200px]">
+                    Document & Type
+                  </TableHead>
                   <TableHead className="min-w-[160px]">Client</TableHead>
-                  <TableHead className="min-w-[140px]">Storage Location</TableHead>
+                  <TableHead className="min-w-[140px]">
+                    Storage Location
+                  </TableHead>
                   <TableHead className="min-w-[110px]">Date</TableHead>
                   <TableHead className="min-w-[130px]">Status / Due</TableHead>
                   <TableHead className="w-[80px] text-right">Actions</TableHead>
@@ -464,10 +502,15 @@ export default function DocsInOutPage() {
                   ))
                 ) : documents.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                    <TableCell
+                      colSpan={7}
+                      className="text-center py-12 text-muted-foreground"
+                    >
                       <div className="flex flex-col items-center justify-center gap-2">
                         <Archive className="h-10 w-10 text-muted-foreground/30" />
-                        <div className="font-medium text-foreground">No documents found</div>
+                        <div className="font-medium text-foreground">
+                          No documents found
+                        </div>
                         <p className="text-xs max-w-sm">
                           {hasActiveFilters
                             ? "Try adjusting your search filters to find what you are looking for."
@@ -492,13 +535,17 @@ export default function DocsInOutPage() {
                   </TableRow>
                 ) : (
                   documents.map((doc) => {
-                    const client = typeof doc.clientId === "object" ? doc.clientId : null;
+                    const client =
+                      typeof doc.clientId === "object" ? doc.clientId : null;
                     const isOverdue = doc.status === "Overdue";
                     const isInCustody = doc.status === "In Custody";
                     const isReturned = doc.status === "Returned";
 
                     return (
-                      <TableRow key={doc._id} className="hover:bg-muted/40 transition-colors">
+                      <TableRow
+                        key={doc._id}
+                        className="hover:bg-muted/40 transition-colors"
+                      >
                         {/* Category */}
                         <TableCell>
                           {doc.category === "Received" ? (
@@ -526,9 +573,14 @@ export default function DocsInOutPage() {
                             {doc.documentName}
                           </div>
                           <div className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
-                            <span className="font-semibold text-primary/80">{doc.documentType}</span>
+                            <span className="font-semibold text-primary/80">
+                              {doc.documentType}
+                            </span>
                             {doc.isReturnable && (
-                              <Badge variant="secondary" className="text-[10px] py-0 px-1.5">
+                              <Badge
+                                variant="secondary"
+                                className="text-[10px] py-0 px-1.5"
+                              >
                                 Returnable
                               </Badge>
                             )}
@@ -552,7 +604,9 @@ export default function DocsInOutPage() {
                               )}
                             </div>
                           ) : (
-                            <span className="text-muted-foreground text-xs">—</span>
+                            <span className="text-muted-foreground text-xs">
+                              —
+                            </span>
                           )}
                         </TableCell>
 
@@ -560,7 +614,10 @@ export default function DocsInOutPage() {
                         <TableCell>
                           <div className="flex items-center gap-1.5 text-xs text-foreground font-medium">
                             <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
-                            <span className="truncate max-w-[150px]" title={doc.location}>
+                            <span
+                              className="truncate max-w-[150px]"
+                              title={doc.location}
+                            >
                               {doc.location}
                             </span>
                           </div>
@@ -579,16 +636,23 @@ export default function DocsInOutPage() {
                         <TableCell>
                           {isOverdue && (
                             <div>
-                              <Badge variant="destructive" className="flex items-center gap-1 w-fit">
+                              <Badge
+                                variant="destructive"
+                                className="flex items-center gap-1 w-fit"
+                              >
                                 <AlertTriangle className="h-3 w-3" />
                                 Overdue
                               </Badge>
                               {doc.returnDate && (
                                 <div className="text-[11px] text-destructive font-medium mt-0.5">
-                                  Due {new Date(doc.returnDate).toLocaleDateString("en-IN", {
-                                    day: "numeric",
-                                    month: "short"
-                                  })}
+                                  Due{" "}
+                                  {new Date(doc.returnDate).toLocaleDateString(
+                                    "en-IN",
+                                    {
+                                      day: "numeric",
+                                      month: "short",
+                                    },
+                                  )}
                                 </div>
                               )}
                             </div>
@@ -604,10 +668,14 @@ export default function DocsInOutPage() {
                               </Badge>
                               {doc.returnDate && (
                                 <div className="text-[11px] text-muted-foreground mt-0.5">
-                                  Due {new Date(doc.returnDate).toLocaleDateString("en-IN", {
-                                    day: "numeric",
-                                    month: "short"
-                                  })}
+                                  Due{" "}
+                                  {new Date(doc.returnDate).toLocaleDateString(
+                                    "en-IN",
+                                    {
+                                      day: "numeric",
+                                      month: "short",
+                                    },
+                                  )}
                                 </div>
                               )}
                             </div>
@@ -624,9 +692,12 @@ export default function DocsInOutPage() {
                               </Badge>
                               {doc.actualReturnedDate && (
                                 <div className="text-[11px] text-muted-foreground mt-0.5">
-                                  on {new Date(doc.actualReturnedDate).toLocaleDateString("en-IN", {
+                                  on{" "}
+                                  {new Date(
+                                    doc.actualReturnedDate,
+                                  ).toLocaleDateString("en-IN", {
                                     day: "numeric",
-                                    month: "short"
+                                    month: "short",
                                   })}
                                 </div>
                               )}
@@ -638,7 +709,11 @@ export default function DocsInOutPage() {
                         <TableCell className="text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                              >
                                 <MoreVertical className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
@@ -655,6 +730,16 @@ export default function DocsInOutPage() {
                                   Record Return
                                 </DropdownMenuItem>
                               )}
+
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setHistoryDocId(doc._id);
+                                  setIsHistoryModalOpen(true);
+                                }}
+                              >
+                                <HistoryIcon className="h-4 w-4 mr-2" />
+                                Movement History
+                              </DropdownMenuItem>
 
                               <DropdownMenuItem asChild>
                                 <Link
@@ -720,6 +805,13 @@ export default function DocsInOutPage() {
         open={isReturnModalOpen}
         onOpenChange={setIsReturnModalOpen}
         document={returnDoc}
+      />
+
+      {/* Movement History Modal */}
+      <MovementHistoryModal
+        open={isHistoryModalOpen}
+        onOpenChange={setIsHistoryModalOpen}
+        documentId={historyDocId}
       />
     </div>
   );

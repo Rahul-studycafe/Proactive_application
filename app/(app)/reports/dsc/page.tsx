@@ -31,7 +31,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useGetDscRenewalsReportQuery, useGetClientsQuery } from "@/lib/services/api";
+import {
+  useGetDscRenewalsReportQuery,
+  useGetClientsQuery,
+} from "@/lib/services/api";
 import { ReportLayout } from "@/components/reports";
 
 export default function DscRenewalsReportPage() {
@@ -102,7 +105,12 @@ export default function DscRenewalsReportPage() {
             />
             Refresh
           </Button>
-          <Button asChild variant="outline" size="sm" className="h-8 text-xs gap-1">
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs gap-1"
+          >
             <Link href="/dsc">
               DSC Register <ExternalLink className="h-3 w-3" />
             </Link>
@@ -132,8 +140,7 @@ export default function DscRenewalsReportPage() {
           <Card className="border border-rose-500/30 bg-rose-500/5 shadow-sm">
             <CardContent className="p-4">
               <span className="text-xs font-semibold uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                <AlertTriangle className="h-3.5 w-3.5" />
-                ≤ 30 Days
+                <AlertTriangle className="h-3.5 w-3.5" />≤ 30 Days
               </span>
               <h3 className="text-2xl font-bold tracking-tight text-rose-700 dark:text-rose-300 mt-1 font-mono">
                 {summary.expiringIn30Days}
@@ -260,7 +267,9 @@ export default function DscRenewalsReportPage() {
             </div>
           </div>
 
-          {(daysHorizon !== "all" || selectedClientId !== "all" || selectedStatus !== "all") && (
+          {(daysHorizon !== "all" ||
+            selectedClientId !== "all" ||
+            selectedStatus !== "all") && (
             <Button
               variant="ghost"
               size="sm"
@@ -283,11 +292,21 @@ export default function DscRenewalsReportPage() {
             <Table>
               <TableHeader className="bg-muted/40 text-xs">
                 <TableRow>
-                  <TableHead className="w-[30%] min-w-[200px]">Token Holder & Client</TableHead>
-                  <TableHead className="w-[20%] min-w-[150px]">Current Location / Custody</TableHead>
-                  <TableHead className="w-[18%] min-w-[120px]">Expiry Date</TableHead>
-                  <TableHead className="w-[18%] min-w-[120px] text-center">Days Remaining</TableHead>
-                  <TableHead className="w-[14%] min-w-[100px] text-center">Status</TableHead>
+                  <TableHead className="w-[30%] min-w-[200px]">
+                    Token Holder & Client
+                  </TableHead>
+                  <TableHead className="w-[20%] min-w-[150px]">
+                    Current Location / Custody
+                  </TableHead>
+                  <TableHead className="w-[18%] min-w-[120px]">
+                    Expiry Date
+                  </TableHead>
+                  <TableHead className="w-[18%] min-w-[120px] text-center">
+                    Days Remaining
+                  </TableHead>
+                  <TableHead className="w-[14%] min-w-[100px] text-center">
+                    Status
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody className="text-xs">
@@ -310,7 +329,8 @@ export default function DscRenewalsReportPage() {
                           No DSC Tokens Found
                         </h4>
                         <p className="text-xs text-muted-foreground">
-                          No digital signature tokens match the selected horizon criteria.
+                          No digital signature tokens match the selected horizon
+                          criteria.
                         </p>
                       </div>
                     </TableCell>
@@ -318,10 +338,14 @@ export default function DscRenewalsReportPage() {
                 ) : (
                   tokens.map((tok) => {
                     const isExp = tok.daysRemaining <= 0;
-                    const isUrgent = tok.daysRemaining > 0 && tok.daysRemaining <= 30;
+                    const isUrgent =
+                      tok.daysRemaining > 0 && tok.daysRemaining <= 30;
 
                     return (
-                      <TableRow key={tok._id} className="hover:bg-muted/30 transition-colors">
+                      <TableRow
+                        key={tok._id}
+                        className="hover:bg-muted/30 transition-colors"
+                      >
                         <TableCell>
                           <div className="flex flex-col">
                             <span className="font-semibold text-foreground">
@@ -345,15 +369,24 @@ export default function DscRenewalsReportPage() {
 
                         <TableCell className="text-center font-mono">
                           {isExp ? (
-                            <Badge variant="outline" className="border-destructive/40 bg-destructive/10 text-destructive text-[10px] font-bold">
+                            <Badge
+                              variant="outline"
+                              className="border-destructive/40 bg-destructive/10 text-destructive text-[10px] font-bold"
+                            >
                               Expired
                             </Badge>
                           ) : isUrgent ? (
-                            <Badge variant="outline" className="border-rose-400 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300 text-[10px] font-bold">
+                            <Badge
+                              variant="outline"
+                              className="border-rose-400 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300 text-[10px] font-bold"
+                            >
                               {tok.daysRemaining} days left
                             </Badge>
                           ) : tok.daysRemaining <= 60 ? (
-                            <Badge variant="outline" className="border-amber-400 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300 text-[10px]">
+                            <Badge
+                              variant="outline"
+                              className="border-amber-400 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300 text-[10px]"
+                            >
                               {tok.daysRemaining} days left
                             </Badge>
                           ) : (
@@ -386,8 +419,14 @@ export default function DscRenewalsReportPage() {
           {pagination.totalPages > 1 && (
             <div className="flex items-center justify-between p-3.5 border-t border-border/80 text-xs text-muted-foreground">
               <div>
-                Showing page <span className="font-semibold text-foreground">{pagination.page}</span> of{" "}
-                <span className="font-semibold text-foreground">{pagination.totalPages}</span>
+                Showing page{" "}
+                <span className="font-semibold text-foreground">
+                  {pagination.page}
+                </span>{" "}
+                of{" "}
+                <span className="font-semibold text-foreground">
+                  {pagination.totalPages}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -403,7 +442,9 @@ export default function DscRenewalsReportPage() {
                   variant="outline"
                   size="sm"
                   disabled={page >= pagination.totalPages}
-                  onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
+                  onClick={() =>
+                    setPage((p) => Math.min(pagination.totalPages, p + 1))
+                  }
                   className="h-7 text-xs"
                 >
                   Next

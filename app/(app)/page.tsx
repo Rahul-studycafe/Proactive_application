@@ -22,7 +22,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useGetDashboardOverviewQuery, useGetExpenseAnalyticsQuery } from "@/lib/services/api";
+import {
+  useGetDashboardOverviewQuery,
+  useGetExpenseAnalyticsQuery,
+} from "@/lib/services/api";
 import { ClientEntityDonutChart } from "@/components/analytics/ClientEntityDonutChart";
 import { StaffLeaderboardWidget } from "@/components/analytics/StaffLeaderboardWidget";
 import { AttendanceKPIWidget } from "@/components/analytics/AttendanceKPIWidget";
@@ -85,7 +88,10 @@ export default function DashboardPage() {
       label: "Pending Tasks",
       value: quickStats.pendingTasks.toString(),
       icon: CheckSquare,
-      delta: quickStats.pendingTasks > 0 ? "In progress & review" : "All tasks clear",
+      delta:
+        quickStats.pendingTasks > 0
+          ? "In progress & review"
+          : "All tasks clear",
       tone: "text-amber-500",
       href: "/tasks",
     },
@@ -93,7 +99,10 @@ export default function DashboardPage() {
       label: "Total Receivables",
       value: formatCurrency(quickStats.totalReceivables),
       icon: TrendingUp,
-      delta: quickStats.overdueInvoices > 0 ? `${quickStats.overdueInvoices} overdue bills` : "Collections healthy",
+      delta:
+        quickStats.overdueInvoices > 0
+          ? `${quickStats.overdueInvoices} overdue bills`
+          : "Collections healthy",
       tone: "text-emerald-500",
       href: "/receipts",
     },
@@ -101,7 +110,9 @@ export default function DashboardPage() {
       label: "Team Attendance",
       value: `${attendanceOverview?.presenceRate ?? 0}%`,
       icon: CalendarCheck,
-      delta: attendanceOverview ? `${attendanceOverview.presentToday}/${attendanceOverview.totalStaff} present` : "Live presence rate",
+      delta: attendanceOverview
+        ? `${attendanceOverview.presentToday}/${attendanceOverview.totalStaff} present`
+        : "Live presence rate",
       tone: "text-teal-500",
       href: "/attendance",
     },
@@ -112,9 +123,12 @@ export default function DashboardPage() {
       {/* Top Header Command Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Executive Dashboard</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Executive Dashboard
+          </h1>
           <p className="text-sm text-muted-foreground">
-            Unified practice management, attendance operations & business intelligence.
+            Unified practice management, attendance operations & business
+            intelligence.
           </p>
         </div>
 
@@ -206,13 +220,17 @@ export default function DashboardPage() {
               <h3 className="text-sm font-semibold tracking-tight text-foreground flex items-center gap-2">
                 <span>Practice Outlays & Reimbursables</span>
                 {expOverview.count > 0 && (
-                  <Badge variant="secondary" className="text-[10px] py-0 px-1.5 h-4">
+                  <Badge
+                    variant="secondary"
+                    className="text-[10px] py-0 px-1.5 h-4"
+                  >
                     {expOverview.count} records
                   </Badge>
                 )}
               </h3>
               <p className="text-[11px] text-muted-foreground">
-                Government challans, court stampings, and client-reimbursable expenses
+                Government challans, court stampings, and client-reimbursable
+                expenses
               </p>
             </div>
           </div>
@@ -284,168 +302,176 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* 2. Middle Row Grid: Unified Activity Feed (60%) + Attendance KPI Ring (40%) */}
+      {/* 2. Main Executive Grid: Left Column (Activity & Client Mix) + Right Column (Attendance & Staff Leaderboard) */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 items-start">
-        {/* Unified Practice Activity Feed (7 Columns / ~60%) */}
-        <div className="rounded-xl border bg-card shadow-sm lg:col-span-7 flex flex-col">
-          <Tabs defaultValue="invoices" className="w-full">
-            <div className="flex items-center justify-between border-b px-5 py-3">
-              <TabsList className="bg-muted/50 p-1">
-                <TabsTrigger value="invoices" className="text-xs">
-                  Invoices ({recentActivity.invoices.length})
-                </TabsTrigger>
-                <TabsTrigger value="receipts" className="text-xs">
-                  Receipts ({recentActivity.receipts.length})
-                </TabsTrigger>
-                <TabsTrigger value="tasks" className="text-xs">
-                  Completed Tasks ({recentActivity.completedTasks.length})
-                </TabsTrigger>
-              </TabsList>
+        {/* Left Column (7 Columns / ~58%) */}
+        <div className="lg:col-span-6 space-y-6">
+          {/* Unified Practice Activity Feed */}
+          <div className="rounded-xl border bg-card shadow-sm flex flex-col">
+            <Tabs defaultValue="invoices" className="w-full">
+              <div className="flex items-center justify-between border-b px-5 py-3">
+                <TabsList className="bg-muted/50 p-1">
+                  <TabsTrigger value="invoices" className="text-xs">
+                    Invoices ({recentActivity.invoices.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="receipts" className="text-xs">
+                    Receipts ({recentActivity.receipts.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="tasks" className="text-xs">
+                    Completed Tasks ({recentActivity.completedTasks.length})
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+
+              {/* Invoices Tab */}
+              <TabsContent value="invoices" className="m-0 divide-y">
+                {recentActivity.invoices.length === 0 ? (
+                  <div className="p-8 text-center text-xs text-muted-foreground">
+                    No recent invoices recorded.
+                  </div>
+                ) : (
+                  recentActivity.invoices.map((inv: any) => (
+                    <div
+                      key={inv._id}
+                      className="flex items-center justify-between px-5 py-3 hover:bg-muted/10 transition-colors"
+                    >
+                      <div className="min-w-0 pr-2">
+                        <Link
+                          href={`/view-invoice/${inv._id}`}
+                          className="font-mono text-xs font-semibold hover:underline text-foreground block truncate"
+                        >
+                          {inv.invoiceNo}
+                        </Link>
+                        <div className="text-[11px] text-muted-foreground truncate">
+                          {inv.clientId?.name || "Client"} ·{" "}
+                          {formatDate(inv.date)}
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="font-mono text-xs font-semibold">
+                          {formatCurrency(inv.totals?.grandTotal || 0)}
+                        </div>
+                        <Badge
+                          variant="outline"
+                          className={`text-[10px] mt-0.5 ${
+                            inv.status === "Paid"
+                              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600"
+                              : inv.status === "Partially Paid"
+                                ? "border-blue-500/30 bg-blue-500/10 text-blue-600"
+                                : "border-amber-500/30 bg-amber-500/10 text-amber-600"
+                          }`}
+                        >
+                          {inv.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </TabsContent>
+
+              {/* Receipts Tab */}
+              <TabsContent value="receipts" className="m-0 divide-y">
+                {recentActivity.receipts.length === 0 ? (
+                  <div className="p-8 text-center text-xs text-muted-foreground">
+                    No payment receipts recorded yet.
+                  </div>
+                ) : (
+                  recentActivity.receipts.map((rct: any) => (
+                    <div
+                      key={rct._id}
+                      className="flex items-center justify-between px-5 py-3 hover:bg-muted/10 transition-colors"
+                    >
+                      <div className="min-w-0 pr-2">
+                        <div className="font-mono text-xs font-semibold text-foreground truncate">
+                          {rct.receiptNo}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground truncate">
+                          {rct.clientId?.name || "Client"} ·{" "}
+                          {formatDate(rct.date)}
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                          +{formatCurrency(rct.totalAmount)}
+                        </div>
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] mt-0.5 font-normal"
+                        >
+                          {rct.paymentMode}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </TabsContent>
+
+              {/* Completed Tasks Tab */}
+              <TabsContent value="tasks" className="m-0 divide-y">
+                {recentActivity.completedTasks.length === 0 ? (
+                  <div className="p-8 text-center text-xs text-muted-foreground">
+                    No recently completed tasks.
+                  </div>
+                ) : (
+                  recentActivity.completedTasks.map((t: any) => (
+                    <div
+                      key={t._id}
+                      className="flex items-center justify-between px-5 py-3 hover:bg-muted/10 transition-colors"
+                    >
+                      <div className="min-w-0 pr-2">
+                        <div className="text-xs font-medium text-foreground truncate">
+                          {t.title}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground truncate">
+                          {t.clientId?.name || "Client"}
+                        </div>
+                      </div>
+                      {t.billingAmount ? (
+                        <div className="text-right font-mono text-xs font-medium text-muted-foreground shrink-0">
+                          {formatCurrency(t.billingAmount)}
+                        </div>
+                      ) : null}
+                    </div>
+                  ))
+                )}
+              </TabsContent>
+            </Tabs>
+
+            <div className="p-3 border-t bg-muted/20 flex items-center justify-between text-xs">
+              <span className="text-muted-foreground text-[11px]">
+                Showing latest 5 entries per stream
+              </span>
+              <Link
+                href="/invoices"
+                className="font-medium text-primary hover:underline flex items-center gap-1"
+              >
+                <span>View Invoices & Receipts</span>
+                <ArrowRight className="h-3 w-3" />
+              </Link>
             </div>
-
-            {/* Invoices Tab */}
-            <TabsContent value="invoices" className="m-0 divide-y">
-              {recentActivity.invoices.length === 0 ? (
-                <div className="p-8 text-center text-xs text-muted-foreground">
-                  No recent invoices recorded.
-                </div>
-              ) : (
-                recentActivity.invoices.map((inv: any) => (
-                  <div
-                    key={inv._id}
-                    className="flex items-center justify-between px-5 py-3 hover:bg-muted/10 transition-colors"
-                  >
-                    <div className="min-w-0 pr-2">
-                      <Link
-                        href={`/view-invoice/${inv._id}`}
-                        className="font-mono text-xs font-semibold hover:underline text-foreground block truncate"
-                      >
-                        {inv.invoiceNo}
-                      </Link>
-                      <div className="text-[11px] text-muted-foreground truncate">
-                        {inv.clientId?.name || "Client"} · {formatDate(inv.date)}
-                      </div>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <div className="font-mono text-xs font-semibold">
-                        {formatCurrency(inv.totals?.grandTotal || 0)}
-                      </div>
-                      <Badge
-                        variant="outline"
-                        className={`text-[10px] mt-0.5 ${
-                          inv.status === "Paid"
-                            ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600"
-                            : inv.status === "Partially Paid"
-                            ? "border-blue-500/30 bg-blue-500/10 text-blue-600"
-                            : "border-amber-500/30 bg-amber-500/10 text-amber-600"
-                        }`}
-                      >
-                        {inv.status}
-                      </Badge>
-                    </div>
-                  </div>
-                ))
-              )}
-            </TabsContent>
-
-            {/* Receipts Tab */}
-            <TabsContent value="receipts" className="m-0 divide-y">
-              {recentActivity.receipts.length === 0 ? (
-                <div className="p-8 text-center text-xs text-muted-foreground">
-                  No payment receipts recorded yet.
-                </div>
-              ) : (
-                recentActivity.receipts.map((rct: any) => (
-                  <div
-                    key={rct._id}
-                    className="flex items-center justify-between px-5 py-3 hover:bg-muted/10 transition-colors"
-                  >
-                    <div className="min-w-0 pr-2">
-                      <div className="font-mono text-xs font-semibold text-foreground truncate">
-                        {rct.receiptNo}
-                      </div>
-                      <div className="text-[11px] text-muted-foreground truncate">
-                        {rct.clientId?.name || "Client"} · {formatDate(rct.date)}
-                      </div>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <div className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                        +{formatCurrency(rct.totalAmount)}
-                      </div>
-                      <Badge variant="outline" className="text-[10px] mt-0.5 font-normal">
-                        {rct.paymentMode}
-                      </Badge>
-                    </div>
-                  </div>
-                ))
-              )}
-            </TabsContent>
-
-            {/* Completed Tasks Tab */}
-            <TabsContent value="tasks" className="m-0 divide-y">
-              {recentActivity.completedTasks.length === 0 ? (
-                <div className="p-8 text-center text-xs text-muted-foreground">
-                  No recently completed tasks.
-                </div>
-              ) : (
-                recentActivity.completedTasks.map((t: any) => (
-                  <div
-                    key={t._id}
-                    className="flex items-center justify-between px-5 py-3 hover:bg-muted/10 transition-colors"
-                  >
-                    <div className="min-w-0 pr-2">
-                      <div className="text-xs font-medium text-foreground truncate">
-                        {t.title}
-                      </div>
-                      <div className="text-[11px] text-muted-foreground truncate">
-                        {t.clientId?.name || "Client"}
-                      </div>
-                    </div>
-                    {t.billingAmount ? (
-                      <div className="text-right font-mono text-xs font-medium text-muted-foreground shrink-0">
-                        {formatCurrency(t.billingAmount)}
-                      </div>
-                    ) : null}
-                  </div>
-                ))
-              )}
-            </TabsContent>
-          </Tabs>
-
-          <div className="p-3 border-t bg-muted/20 flex items-center justify-between text-xs">
-            <span className="text-muted-foreground text-[11px]">
-              Showing latest 5 entries per stream
-            </span>
-            <Link
-              href="/invoices"
-              className="font-medium text-primary hover:underline flex items-center gap-1"
-            >
-              <span>View Invoices & Receipts</span>
-              <ArrowRight className="h-3 w-3" />
-            </Link>
           </div>
+
+          {/* Client Portfolio Distribution */}
+          <ClientEntityDonutChart
+            data={data?.clientDistribution}
+            isLoading={isLoading}
+          />
         </div>
 
-        {/* Attendance KPI Widget (5 Columns / ~40%) */}
-        <div className="lg:col-span-5">
+        {/* Right Column (5 Columns / ~42%) */}
+        <div className="lg:col-span-6 space-y-6">
+          {/* Firm Attendance Today */}
           <AttendanceKPIWidget
             data={attendanceOverview}
             isLoading={isLoading}
           />
+
+          {/* Staff Performance Leaderboard */}
+          <StaffLeaderboardWidget
+            data={data?.staffLeaderboard}
+            isLoading={isLoading}
+          />
         </div>
-      </div>
-
-      {/* 3. Bottom Row Grid: Client Entity Donut (50%) + Staff Leaderboard (50%) */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 items-start">
-        <ClientEntityDonutChart
-          data={data?.clientDistribution}
-          isLoading={isLoading}
-        />
-
-        <StaffLeaderboardWidget
-          data={data?.staffLeaderboard}
-          isLoading={isLoading}
-        />
       </div>
     </div>
   );

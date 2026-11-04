@@ -30,7 +30,9 @@ import {
 interface MagicLinkShareDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  request: (DocumentRequest & { uploadUrl?: string; emailDispatched?: boolean }) | null;
+  request:
+    | (DocumentRequest & { uploadUrl?: string; emailDispatched?: boolean })
+    | null;
 }
 
 export function MagicLinkShareDialog({
@@ -39,7 +41,8 @@ export function MagicLinkShareDialog({
   request,
 }: MagicLinkShareDialogProps) {
   const [copied, setCopied] = useState(false);
-  const [resendEmail, { isLoading: isResending }] = useResendDocumentRequestMutation();
+  const [resendEmail, { isLoading: isResending }] =
+    useResendDocumentRequestMutation();
 
   if (!request) return null;
 
@@ -75,7 +78,7 @@ export function MagicLinkShareDialog({
       toast.success(
         res.emailDispatched
           ? "Reminder email sent to client with secure magic link!"
-          : "Magic link ready (client email address not registered)."
+          : "Magic link ready (client email address not registered).",
       );
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to dispatch email reminder");
@@ -84,10 +87,15 @@ export function MagicLinkShareDialog({
 
   const handleWhatsApp = () => {
     const text = encodeURIComponent(
-      `Hello ${clientName},\n\nPlease upload the requested documents for "${request.title}" using our secure client upload portal:\n\n${uploadUrl}\n\nThank you!`
+      `Hello ${clientName},\n\nPlease upload the requested documents for "${request.title}" using our secure client upload portal:\n\n${uploadUrl}\n\nThank you!`,
     );
-    const phoneParam = clientPhone ? `&phone=${encodeURIComponent(clientPhone.replace(/\D/g, ""))}` : "";
-    window.open(`https://api.whatsapp.com/send?text=${text}${phoneParam}`, "_blank");
+    const phoneParam = clientPhone
+      ? `&phone=${encodeURIComponent(clientPhone.replace(/\D/g, ""))}`
+      : "";
+    window.open(
+      `https://api.whatsapp.com/send?text=${text}${phoneParam}`,
+      "_blank",
+    );
   };
 
   return (
@@ -99,7 +107,9 @@ export function MagicLinkShareDialog({
               <ShieldCheck className="h-5 w-5" />
             </div>
             <div>
-              <DialogTitle className="text-lg">Share Document Upload Portal</DialogTitle>
+              <DialogTitle className="text-lg">
+                Share Document Upload Portal
+              </DialogTitle>
               <DialogDescription>
                 Zero-friction passwordless upload link for your client.
               </DialogDescription>
@@ -122,11 +132,15 @@ export function MagicLinkShareDialog({
               {request.title}
             </div>
             <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-3">
-              <span>Client: <strong className="text-foreground">{clientName}</strong></span>
+              <span>
+                Client:{" "}
+                <strong className="text-foreground">{clientName}</strong>
+              </span>
               <span>•</span>
               <span className="flex items-center gap-1">
                 <Calendar className="h-3 w-3" />
-                Expires {new Date(request.expiresAt).toLocaleDateString("en-IN", {
+                Expires{" "}
+                {new Date(request.expiresAt).toLocaleDateString("en-IN", {
                   day: "numeric",
                   month: "short",
                 })}
@@ -190,22 +204,35 @@ export function MagicLinkShareDialog({
               disabled={isResending}
               className="flex items-center justify-center gap-1.5 h-9 text-xs"
             >
-              <Send className={`h-3.5 w-3.5 text-primary ${isResending ? "animate-pulse" : ""}`} />
-              {isResending ? "Dispatching..." : clientEmail ? "Email Client Link" : "Email Link"}
+              <Send
+                className={`h-3.5 w-3.5 text-primary ${isResending ? "animate-pulse" : ""}`}
+              />
+              {isResending
+                ? "Dispatching..."
+                : clientEmail
+                  ? "Email Client Link"
+                  : "Email Link"}
             </Button>
           </div>
 
           {/* Checklist Items Preview */}
           <div className="space-y-1.5 pt-1">
             <div className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
-              <span>Requested Files Checklist ({request.items?.length || 0})</span>
+              <span>
+                Requested Files Checklist ({request.items?.length || 0})
+              </span>
             </div>
             <div className="rounded-lg border divide-y max-h-36 overflow-y-auto text-xs">
               {request.items?.map((it, idx) => (
-                <div key={idx} className="p-2 flex items-center justify-between gap-2">
+                <div
+                  key={idx}
+                  className="p-2 flex items-center justify-between gap-2"
+                >
                   <div className="flex items-center gap-2">
                     <FileCheck2 className="h-3.5 w-3.5 text-primary shrink-0" />
-                    <span className="font-medium text-foreground line-clamp-1">{it.name}</span>
+                    <span className="font-medium text-foreground line-clamp-1">
+                      {it.name}
+                    </span>
                   </div>
                   <Badge
                     variant="outline"

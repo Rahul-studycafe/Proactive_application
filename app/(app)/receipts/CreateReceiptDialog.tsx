@@ -73,7 +73,7 @@ export function CreateReceiptDialog({
 }: CreateReceiptDialogProps) {
   const [clientId, setClientId] = useState<string>(defaultClientId || "");
   const [date, setDate] = useState<string>(
-    new Date().toISOString().split("T")[0]
+    new Date().toISOString().split("T")[0],
   );
   const [paymentMode, setPaymentMode] = useState<string>("Bank Transfer");
   const [referenceNumber, setReferenceNumber] = useState<string>("");
@@ -83,11 +83,15 @@ export function CreateReceiptDialog({
   const [notes, setNotes] = useState<string>("");
 
   // Map of invoiceId -> settledAmount
-  const [settlementMap, setSettlementMap] = useState<Record<string, number>>({});
+  const [settlementMap, setSettlementMap] = useState<Record<string, number>>(
+    {},
+  );
 
-  const { data: clientsData, isLoading: isLoadingClients } = useGetClientsQuery({
-    limit: 100,
-  });
+  const { data: clientsData, isLoading: isLoadingClients } = useGetClientsQuery(
+    {
+      limit: 100,
+    },
+  );
   const clients = clientsData?.clients || [];
 
   const {
@@ -98,7 +102,8 @@ export function CreateReceiptDialog({
     skip: !clientId,
   });
 
-  const [createReceipt, { isLoading: isSubmitting }] = useCreateReceiptMutation();
+  const [createReceipt, { isLoading: isSubmitting }] =
+    useCreateReceiptMutation();
 
   // Reset when dialog opens/closes
   useEffect(() => {
@@ -157,15 +162,21 @@ export function CreateReceiptDialog({
     toast.success(
       `Auto-allocated ${formatCurrency(totalCapacity - pool)} across ${
         Object.keys(newMap).length
-      } invoice(s)`
+      } invoice(s)`,
     );
   };
 
-  const handleSettlementChange = (invoiceId: string, value: string, maxDue: number) => {
+  const handleSettlementChange = (
+    invoiceId: string,
+    value: string,
+    maxDue: number,
+  ) => {
     const val = value === "" ? 0 : parseFloat(value);
     if (isNaN(val) || val < 0) return;
     if (val > maxDue) {
-      toast.warning(`Cannot settle more than the due amount (${formatCurrency(maxDue)})`);
+      toast.warning(
+        `Cannot settle more than the due amount (${formatCurrency(maxDue)})`,
+      );
       setSettlementMap((prev) => ({ ...prev, [invoiceId]: maxDue }));
       return;
     }
@@ -180,14 +191,16 @@ export function CreateReceiptDialog({
       return;
     }
     if (!numTotal || numTotal <= 0) {
-      toast.error("Please enter a valid received payment amount greater than 0.");
+      toast.error(
+        "Please enter a valid received payment amount greater than 0.",
+      );
       return;
     }
     if (isOverAllocated) {
       toast.error(
         `Total allocated settlements (${formatCurrency(
-          totalSettled
-        )}) exceed total payment capacity (${formatCurrency(totalCapacity)}).`
+          totalSettled,
+        )}) exceed total payment capacity (${formatCurrency(totalCapacity)}).`,
       );
       return;
     }
@@ -229,9 +242,12 @@ export function CreateReceiptDialog({
               <Receipt className="h-5 w-5" />
             </div>
             <div>
-              <DialogTitle className="text-xl">Record Payment Receipt</DialogTitle>
+              <DialogTitle className="text-xl">
+                Record Payment Receipt
+              </DialogTitle>
               <DialogDescription className="text-xs">
-                Record payments received from clients and settle outstanding invoices atomically.
+                Record payments received from clients and settle outstanding
+                invoices atomically.
               </DialogDescription>
             </div>
           </div>
@@ -288,7 +304,9 @@ export function CreateReceiptDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Bank Transfer">Bank Transfer (NEFT / RTGS / IMPS)</SelectItem>
+                  <SelectItem value="Bank Transfer">
+                    Bank Transfer (NEFT / RTGS / IMPS)
+                  </SelectItem>
                   <SelectItem value="UPI">UPI / QR Code</SelectItem>
                   <SelectItem value="Cheque">Cheque</SelectItem>
                   <SelectItem value="Cash">Cash</SelectItem>
@@ -314,7 +332,10 @@ export function CreateReceiptDialog({
           {/* Row 3: Financial Amounts (Total Amount, TDS, Discount) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 rounded-xl border bg-muted/20 p-4">
             <div className="space-y-1.5">
-              <Label htmlFor="totalAmount" className="text-xs font-semibold text-foreground">
+              <Label
+                htmlFor="totalAmount"
+                className="text-xs font-semibold text-foreground"
+              >
                 Amount Received (₹) <span className="text-destructive">*</span>
               </Label>
               <div className="relative">
@@ -327,7 +348,9 @@ export function CreateReceiptDialog({
                   placeholder="0.00"
                   value={totalAmount}
                   onChange={(e) =>
-                    setTotalAmount(e.target.value === "" ? "" : parseFloat(e.target.value))
+                    setTotalAmount(
+                      e.target.value === "" ? "" : parseFloat(e.target.value),
+                    )
                   }
                   className="pl-8 h-9 font-mono font-semibold"
                   required
@@ -336,7 +359,10 @@ export function CreateReceiptDialog({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="tdsAmount" className="text-xs font-medium text-muted-foreground">
+              <Label
+                htmlFor="tdsAmount"
+                className="text-xs font-medium text-muted-foreground"
+              >
                 TDS Deducted (Sec 194J/C)
               </Label>
               <div className="relative">
@@ -349,7 +375,9 @@ export function CreateReceiptDialog({
                   placeholder="0.00"
                   value={tdsAmount}
                   onChange={(e) =>
-                    setTdsAmount(e.target.value === "" ? "" : parseFloat(e.target.value))
+                    setTdsAmount(
+                      e.target.value === "" ? "" : parseFloat(e.target.value),
+                    )
                   }
                   className="pl-8 h-9 font-mono"
                 />
@@ -357,7 +385,10 @@ export function CreateReceiptDialog({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="discountAmount" className="text-xs font-medium text-muted-foreground">
+              <Label
+                htmlFor="discountAmount"
+                className="text-xs font-medium text-muted-foreground"
+              >
                 Settlement Discount
               </Label>
               <div className="relative">
@@ -370,7 +401,9 @@ export function CreateReceiptDialog({
                   placeholder="0.00"
                   value={discountAmount}
                   onChange={(e) =>
-                    setDiscountAmount(e.target.value === "" ? "" : parseFloat(e.target.value))
+                    setDiscountAmount(
+                      e.target.value === "" ? "" : parseFloat(e.target.value),
+                    )
                   }
                   className="pl-8 h-9 font-mono"
                 />
@@ -386,7 +419,8 @@ export function CreateReceiptDialog({
                   Invoice Allocation & Settlement
                 </h4>
                 <p className="text-xs text-muted-foreground">
-                  Allocate this payment across outstanding invoices or save as advance.
+                  Allocate this payment across outstanding invoices or save as
+                  advance.
                 </p>
               </div>
 
@@ -398,7 +432,8 @@ export function CreateReceiptDialog({
                   onClick={handleAutoSettle}
                   className="gap-1.5 text-xs h-8"
                 >
-                  <Sparkles className="h-3.5 w-3.5 text-amber-500" /> Auto-Settle (FIFO)
+                  <Sparkles className="h-3.5 w-3.5 text-amber-500" />{" "}
+                  Auto-Settle (FIFO)
                 </Button>
               )}
             </div>
@@ -415,10 +450,12 @@ export function CreateReceiptDialog({
               <div className="rounded-xl border bg-emerald-500/10 border-emerald-500/30 p-4 text-emerald-800 dark:text-emerald-300 text-xs flex items-start gap-2.5">
                 <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold">No outstanding invoices for this client.</p>
+                  <p className="font-semibold">
+                    No outstanding invoices for this client.
+                  </p>
                   <p className="mt-0.5">
-                    Any payment amount recorded will be safely credited as an Advance balance in
-                    the client's ledger.
+                    Any payment amount recorded will be safely credited as an
+                    Advance balance in the client's ledger.
                   </p>
                 </div>
               </div>
@@ -429,10 +466,18 @@ export function CreateReceiptDialog({
                     <TableRow className="bg-muted/30">
                       <TableHead className="text-xs">Invoice #</TableHead>
                       <TableHead className="text-xs">Date</TableHead>
-                      <TableHead className="text-xs text-right">Grand Total</TableHead>
-                      <TableHead className="text-xs text-right">Current Due</TableHead>
-                      <TableHead className="text-xs text-right w-36">Settling Now (₹)</TableHead>
-                      <TableHead className="text-xs text-center w-28">New Status</TableHead>
+                      <TableHead className="text-xs text-right">
+                        Grand Total
+                      </TableHead>
+                      <TableHead className="text-xs text-right">
+                        Current Due
+                      </TableHead>
+                      <TableHead className="text-xs text-right w-36">
+                        Settling Now (₹)
+                      </TableHead>
+                      <TableHead className="text-xs text-center w-28">
+                        New Status
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -465,7 +510,11 @@ export function CreateReceiptDialog({
                               value={settlementMap[inv._id] ?? ""}
                               placeholder="0.00"
                               onChange={(e) =>
-                                handleSettlementChange(inv._id, e.target.value, due)
+                                handleSettlementChange(
+                                  inv._id,
+                                  e.target.value,
+                                  due,
+                                )
                               }
                               className="h-8 text-right font-mono text-xs font-semibold"
                             />
@@ -482,7 +531,9 @@ export function CreateReceiptDialog({
                                 </Badge>
                               )
                             ) : (
-                              <span className="text-[11px] text-muted-foreground">Unchanged</span>
+                              <span className="text-[11px] text-muted-foreground">
+                                Unchanged
+                              </span>
                             )}
                           </TableCell>
                         </TableRow>
@@ -503,11 +554,17 @@ export function CreateReceiptDialog({
                 }`}
               >
                 <div>
-                  <span className="text-muted-foreground">Total Capacity: </span>
-                  <span className="font-semibold font-mono">{formatCurrency(totalCapacity)}</span>
+                  <span className="text-muted-foreground">
+                    Total Capacity:{" "}
+                  </span>
+                  <span className="font-semibold font-mono">
+                    {formatCurrency(totalCapacity)}
+                  </span>
                   <span className="mx-2 text-muted-foreground">|</span>
                   <span className="text-muted-foreground">Allocated: </span>
-                  <span className="font-semibold font-mono">{formatCurrency(totalSettled)}</span>
+                  <span className="font-semibold font-mono">
+                    {formatCurrency(totalSettled)}
+                  </span>
                 </div>
                 <div>
                   {isOverAllocated ? (
@@ -521,7 +578,8 @@ export function CreateReceiptDialog({
                     </span>
                   ) : (
                     <span className="text-success font-semibold flex items-center gap-1">
-                      <CheckCircle2 className="h-3.5 w-3.5" /> 100% Fully Settled
+                      <CheckCircle2 className="h-3.5 w-3.5" /> 100% Fully
+                      Settled
                     </span>
                   )}
                 </div>
@@ -531,7 +589,10 @@ export function CreateReceiptDialog({
 
           {/* Notes */}
           <div className="space-y-1.5">
-            <Label htmlFor="notes" className="text-xs font-medium text-muted-foreground">
+            <Label
+              htmlFor="notes"
+              className="text-xs font-medium text-muted-foreground"
+            >
               Internal Notes / Remarks
             </Label>
             <Textarea

@@ -26,10 +26,7 @@ export function DebtorsAgingCard({
   const pct0_30 = Math.round((summary.totalCurrent0_30 / total) * 100);
   const pct31_60 = Math.round((summary.totalOverdue31_60 / total) * 100);
   const pct61_90 = Math.round((summary.totalCritical61_90 / total) * 100);
-  const pct90Plus = Math.max(
-    0,
-    100 - pct0_30 - pct31_60 - pct61_90
-  );
+  const pct90Plus = Math.max(0, 100 - pct0_30 - pct31_60 - pct61_90);
 
   const formatCurrency = (val: number) => {
     return `₹${(val || 0).toLocaleString("en-IN", {

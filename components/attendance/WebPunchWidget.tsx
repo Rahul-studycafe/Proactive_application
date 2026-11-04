@@ -2,11 +2,25 @@
 
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { Clock, LogIn, LogOut, CheckCircle2, ShieldCheck, ShieldAlert, Sparkles } from "lucide-react";
+import {
+  Clock,
+  LogIn,
+  LogOut,
+  CheckCircle2,
+  ShieldCheck,
+  ShieldAlert,
+  Sparkles,
+} from "lucide-react";
 import { useGetTodayAttendanceQuery } from "@/lib/services/api";
 import { useGeolocation } from "@/lib/hooks/useGeolocation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { WebPunchModal } from "./WebPunchModal";
 
@@ -96,11 +110,17 @@ export function WebPunchWidget({
               Today's Attendance Desk
             </CardTitle>
             {isInsideGeofence ? (
-              <Badge variant="outline" className="text-emerald-600 border-emerald-500/30 bg-emerald-500/10 text-xs">
+              <Badge
+                variant="outline"
+                className="text-emerald-600 border-emerald-500/30 bg-emerald-500/10 text-xs"
+              >
                 <ShieldCheck className="mr-1 h-3 w-3" /> Geofence Verified
               </Badge>
             ) : (
-              <Badge variant="outline" className="text-amber-600 border-amber-500/30 bg-amber-500/10 text-xs">
+              <Badge
+                variant="outline"
+                className="text-amber-600 border-amber-500/30 bg-amber-500/10 text-xs"
+              >
                 <ShieldAlert className="mr-1 h-3 w-3" /> Remote Perimeter
               </Badge>
             )}
@@ -115,17 +135,21 @@ export function WebPunchWidget({
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between rounded-lg border bg-muted/30 p-3">
             <div>
-              <span className="text-xs text-muted-foreground block">Current Status</span>
+              <span className="text-xs text-muted-foreground block">
+                Current Status
+              </span>
               <span className="text-sm font-semibold">
                 {hasCheckedOut
                   ? "Checked Out"
                   : hasCheckedIn
-                  ? "Checked In"
-                  : "Not Punched In"}
+                    ? "Checked In"
+                    : "Not Punched In"}
               </span>
             </div>
             <div className="text-right">
-              <span className="text-xs text-muted-foreground block">Duration</span>
+              <span className="text-xs text-muted-foreground block">
+                Duration
+              </span>
               <span className="font-mono text-sm font-bold text-foreground">
                 {hasCheckedIn ? getElapsedString() : "-- : -- : --"}
               </span>

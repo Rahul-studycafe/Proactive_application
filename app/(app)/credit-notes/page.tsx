@@ -161,7 +161,8 @@ export default function CreditNotesDirectoryPage() {
               Financial Credit Notes
             </h1>
             <p className="text-sm text-muted-foreground">
-              Statutory invoice adjustments, multi-document ACID reconciliations & unallocated balances.
+              Statutory invoice adjustments, multi-document ACID reconciliations
+              & unallocated balances.
             </p>
           </div>
         </div>
@@ -218,7 +219,10 @@ export default function CreditNotesDirectoryPage() {
               <IndianRupee className="h-4 w-4 text-purple-600" />
             </div>
             <div className="mt-2 text-2xl font-bold text-foreground font-mono">
-              ₹{metrics.totalCredited.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+              ₹
+              {metrics.totalCredited.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+              })}
             </div>
             <p className="mt-0.5 text-xs text-muted-foreground">
               Deducted from invoices
@@ -235,7 +239,10 @@ export default function CreditNotesDirectoryPage() {
               <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
             </div>
             <div className="mt-2 text-2xl font-bold text-amber-700 dark:text-amber-400 font-mono">
-              ₹{metrics.totalUnallocated.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+              ₹
+              {metrics.totalUnallocated.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+              })}
             </div>
             <p className="mt-0.5 text-xs text-muted-foreground">
               Available for future billing
@@ -341,8 +348,12 @@ export default function CreditNotesDirectoryPage() {
               <TableHead className="w-[200px]">Client</TableHead>
               <TableHead className="w-[130px]">Original Invoice</TableHead>
               <TableHead className="w-[180px]">Reason</TableHead>
-              <TableHead className="w-[130px] text-right">Credited Total</TableHead>
-              <TableHead className="w-[130px] text-right">Unallocated</TableHead>
+              <TableHead className="w-[130px] text-right">
+                Credited Total
+              </TableHead>
+              <TableHead className="w-[130px] text-right">
+                Unallocated
+              </TableHead>
               <TableHead className="w-[110px]">Status</TableHead>
               <TableHead className="w-[60px] text-right">Actions</TableHead>
             </TableRow>
@@ -389,14 +400,19 @@ export default function CreditNotesDirectoryPage() {
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-500/10 text-purple-600">
                       <FileMinus className="h-6 w-6" />
                     </div>
-                    <p className="text-base font-medium">No credit notes found</p>
+                    <p className="text-base font-medium">
+                      No credit notes found
+                    </p>
                     <p className="text-xs text-muted-foreground max-w-sm">
                       {search || statusFilter !== "all" || fromDate || toDate
                         ? "Try adjusting your search criteria or resetting filters."
                         : "No financial credit notes have been issued in this organization yet."}
                     </p>
                     <div className="flex items-center gap-2 mt-2">
-                      {(search || statusFilter !== "all" || fromDate || toDate) && (
+                      {(search ||
+                        statusFilter !== "all" ||
+                        fromDate ||
+                        toDate) && (
                         <Button
                           variant="outline"
                           size="sm"
@@ -427,7 +443,7 @@ export default function CreditNotesDirectoryPage() {
                   typeof cn.invoiceId === "object" ? cn.invoiceId : null;
                 const formattedDate = new Date(cn.date).toLocaleDateString(
                   "en-IN",
-                  { day: "numeric", month: "short", year: "numeric" }
+                  { day: "numeric", month: "short", year: "numeric" },
                 );
 
                 return (
@@ -470,7 +486,9 @@ export default function CreditNotesDirectoryPage() {
                           {invoice.invoiceNo}
                         </Link>
                       ) : (
-                        <span className="font-mono text-xs text-muted-foreground">—</span>
+                        <span className="font-mono text-xs text-muted-foreground">
+                          —
+                        </span>
                       )}
                     </TableCell>
 
@@ -491,14 +509,20 @@ export default function CreditNotesDirectoryPage() {
 
                     {/* Grand Total */}
                     <TableCell className="text-right font-mono text-xs font-bold text-foreground">
-                      ₹{cn.totals?.grandTotal?.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                      ₹
+                      {cn.totals?.grandTotal?.toLocaleString("en-IN", {
+                        minimumFractionDigits: 2,
+                      })}
                     </TableCell>
 
                     {/* Unallocated Balance */}
                     <TableCell className="text-right font-mono text-xs">
                       {cn.unallocatedCredit > 0 ? (
                         <span className="font-bold text-amber-600 dark:text-amber-400">
-                          ₹{cn.unallocatedCredit.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                          ₹
+                          {cn.unallocatedCredit.toLocaleString("en-IN", {
+                            minimumFractionDigits: 2,
+                          })}
                         </span>
                       ) : (
                         <span className="text-muted-foreground">₹0.00</span>
@@ -567,8 +591,12 @@ export default function CreditNotesDirectoryPage() {
         {/* Footer */}
         <div className="flex items-center justify-between border-t px-4 py-2.5 text-xs text-muted-foreground bg-muted/20">
           <span>
-            Showing <strong className="text-foreground">{creditNotes.length}</strong> of{" "}
-            <strong className="text-foreground">{listData?.total ?? creditNotes.length}</strong> Credit Notes
+            Showing{" "}
+            <strong className="text-foreground">{creditNotes.length}</strong> of{" "}
+            <strong className="text-foreground">
+              {listData?.total ?? creditNotes.length}
+            </strong>{" "}
+            Credit Notes
           </span>
           {listData?.totalPages && listData.totalPages > 1 && (
             <span>

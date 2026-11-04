@@ -1,11 +1,11 @@
 export type DocumentRequestStatus =
-  | 'Pending'
-  | 'Partially Uploaded'
-  | 'Completed'
-  | 'Expired'
-  | 'Cancelled';
+  | "Pending"
+  | "Partially Uploaded"
+  | "Completed"
+  | "Expired"
+  | "Cancelled";
 
-export type RequestedFileStatus = 'Pending' | 'Uploaded' | 'Rejected';
+export type RequestedFileStatus = "Pending" | "Uploaded" | "Rejected";
 
 export interface RequestedFileItem {
   _id?: string;

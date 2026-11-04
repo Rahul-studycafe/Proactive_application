@@ -3,9 +3,18 @@
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { TriggerAutomationModal } from "@/components/automation/TriggerAutomationModal";
 import { AutomationLogsTable } from "@/components/automation/AutomationLogsTable";
-import { useGetAutomationLogsQuery, useGetQueueHealthQuery } from "@/lib/services/api";
+import {
+  useGetAutomationLogsQuery,
+  useGetQueueHealthQuery,
+} from "@/lib/services/api";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Zap,
@@ -28,7 +37,8 @@ export default function AutomationHubPage() {
   const { data: health } = useGetQueueHealthQuery();
 
   const latestLog = logsData?.logs?.[0];
-  const isHealthy = health?.database?.state === "connected" || health?.status === "OK";
+  const isHealthy =
+    health?.database?.state === "connected" || health?.status === "OK";
 
   return (
     <div className="space-y-6">
@@ -54,7 +64,8 @@ export default function AutomationHubPage() {
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            Automated recurring task generation for monthly, quarterly, and fiscal year client services.
+            Automated recurring task generation for monthly, quarterly, and
+            fiscal year client services.
           </p>
         </div>
 
@@ -148,7 +159,9 @@ export default function AutomationHubPage() {
           </CardHeader>
           <CardContent>
             <div className="text-xl font-bold text-foreground">
-              {latestLog ? `${latestLog.tasksSkippedCount} Skipped` : "100% Protected"}
+              {latestLog
+                ? `${latestLog.tasksSkippedCount} Skipped`
+                : "100% Protected"}
             </div>
             <p className="text-[11px] text-muted-foreground mt-1">
               Zero duplicate tasks spawned

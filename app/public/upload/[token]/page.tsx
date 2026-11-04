@@ -24,7 +24,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   useGetPublicDocumentRequestQuery,
@@ -46,7 +52,8 @@ export default function PublicUploadPage({ params }: PublicUploadPageProps) {
     refetch,
   } = useGetPublicDocumentRequestQuery(token);
 
-  const [uploadFile, { isLoading: isUploading }] = useUploadPublicDocumentFileMutation();
+  const [uploadFile, { isLoading: isUploading }] =
+    useUploadPublicDocumentFileMutation();
 
   const [uploadingItemId, setUploadingItemId] = useState<string | null>(null);
   const [activeDragItemId, setActiveDragItemId] = useState<string | null>(null);
@@ -82,7 +89,8 @@ export default function PublicUploadPage({ params }: PublicUploadPageProps) {
           </div>
           <div className="pt-2">
             <p className="text-xs text-muted-foreground">
-              Please contact your accounting advisor or firm coordinator to request a renewed upload link.
+              Please contact your accounting advisor or firm coordinator to
+              request a renewed upload link.
             </p>
           </div>
         </Card>
@@ -90,12 +98,22 @@ export default function PublicUploadPage({ params }: PublicUploadPageProps) {
     );
   }
 
-  const { items = [], client, firm, title, instructions, requestNo, expiresAt } = request;
+  const {
+    items = [],
+    client,
+    firm,
+    title,
+    instructions,
+    requestNo,
+    expiresAt,
+  } = request;
 
   const totalFiles = items.length;
   const uploadedFiles = items.filter((it) => it.status === "Uploaded").length;
   const requiredItems = items.filter((it) => it.isRequired);
-  const requiredUploaded = requiredItems.filter((it) => it.status === "Uploaded").length;
+  const requiredUploaded = requiredItems.filter(
+    (it) => it.status === "Uploaded",
+  ).length;
 
   const isFullyComplete =
     uploadedFiles === totalFiles ||
@@ -104,7 +122,11 @@ export default function PublicUploadPage({ params }: PublicUploadPageProps) {
   const progressPercent =
     totalFiles > 0 ? Math.round((uploadedFiles / totalFiles) * 100) : 0;
 
-  const handleFileSelection = async (itemId: string, file: File, item: RequestedFileItem) => {
+  const handleFileSelection = async (
+    itemId: string,
+    file: File,
+    item: RequestedFileItem,
+  ) => {
     // 1. Check size (< 25MB)
     const maxSizeBytes = 25 * 1024 * 1024;
     if (file.size > maxSizeBytes) {
@@ -114,18 +136,13 @@ export default function PublicUploadPage({ params }: PublicUploadPageProps) {
 
     // 2. Check format against acceptedFormats
     const ext = "." + (file.name.split(".").pop()?.toLowerCase() || "");
-    const allowed = item.acceptedFormats?.map((f) => f.toLowerCase().trim()) || [
-      ".pdf",
-      ".xlsx",
-      ".csv",
-      ".zip",
-      ".png",
-      ".jpg",
-    ];
+    const allowed = item.acceptedFormats?.map((f) =>
+      f.toLowerCase().trim(),
+    ) || [".pdf", ".xlsx", ".csv", ".zip", ".png", ".jpg"];
 
     if (!allowed.includes(ext)) {
       toast.error(
-        `File format "${ext}" is not accepted for this item. Allowed formats: ${allowed.join(", ")}`
+        `File format "${ext}" is not accepted for this item. Allowed formats: ${allowed.join(", ")}`,
       );
       return;
     }
@@ -141,7 +158,9 @@ export default function PublicUploadPage({ params }: PublicUploadPageProps) {
       toast.success(`"${file.name}" uploaded successfully!`);
       refetch();
     } catch (err: any) {
-      toast.error(err?.data?.message || err?.message || "Failed to upload file");
+      toast.error(
+        err?.data?.message || err?.message || "Failed to upload file",
+      );
     } finally {
       setUploadingItemId(null);
     }
@@ -192,7 +211,10 @@ export default function PublicUploadPage({ params }: PublicUploadPageProps) {
               <div>
                 <CardTitle className="text-xl font-bold">{title}</CardTitle>
                 <CardDescription className="text-xs mt-1">
-                  Requested for: <strong className="text-foreground">{client?.name || "Client"}</strong>
+                  Requested for:{" "}
+                  <strong className="text-foreground">
+                    {client?.name || "Client"}
+                  </strong>
                 </CardDescription>
               </div>
 
@@ -239,7 +261,9 @@ export default function PublicUploadPage({ params }: PublicUploadPageProps) {
                     All Required Documents Submitted!
                   </div>
                   <div className="text-xs text-emerald-800 dark:text-emerald-300 mt-0.5 leading-relaxed">
-                    Thank you, {client?.name}! Your accountant at {firm?.name} has been notified and will review your files shortly. You may close this page.
+                    Thank you, {client?.name}! Your accountant at {firm?.name}{" "}
+                    has been notified and will review your files shortly. You
+                    may close this page.
                   </div>
                 </div>
               </div>
@@ -259,12 +283,13 @@ export default function PublicUploadPage({ params }: PublicUploadPageProps) {
                       isItemUploaded
                         ? "bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-300/60 dark:border-emerald-800/60"
                         : isDragOver
-                        ? "border-primary bg-primary/5 ring-2 ring-primary/20"
-                        : "bg-card hover:border-primary/40"
+                          ? "border-primary bg-primary/5 ring-2 ring-primary/20"
+                          : "bg-card hover:border-primary/40"
                     }`}
                     onDragOver={(e) => {
                       e.preventDefault();
-                      if (!isItemUploaded) setActiveDragItemId(item._id || String(index));
+                      if (!isItemUploaded)
+                        setActiveDragItemId(item._id || String(index));
                     }}
                     onDragLeave={() => setActiveDragItemId(null)}
                     onDrop={(e) => {
@@ -304,7 +329,10 @@ export default function PublicUploadPage({ params }: PublicUploadPageProps) {
                                 Required
                               </Badge>
                             ) : (
-                              <Badge variant="secondary" className="text-[10px] py-0 px-1.5 text-muted-foreground">
+                              <Badge
+                                variant="secondary"
+                                className="text-[10px] py-0 px-1.5 text-muted-foreground"
+                              >
                                 Optional
                               </Badge>
                             )}
@@ -316,14 +344,15 @@ export default function PublicUploadPage({ params }: PublicUploadPageProps) {
                             </p>
                           )}
 
-                          {item.acceptedFormats && item.acceptedFormats.length > 0 && (
-                            <div className="text-[11px] text-muted-foreground/80 flex items-center gap-1">
-                              <span>Formats:</span>
-                              <span className="font-mono text-foreground/80">
-                                {item.acceptedFormats.join(", ")}
-                              </span>
-                            </div>
-                          )}
+                          {item.acceptedFormats &&
+                            item.acceptedFormats.length > 0 && (
+                              <div className="text-[11px] text-muted-foreground/80 flex items-center gap-1">
+                                <span>Formats:</span>
+                                <span className="font-mono text-foreground/80">
+                                  {item.acceptedFormats.join(", ")}
+                                </span>
+                              </div>
+                            )}
                         </div>
                       </div>
 
@@ -360,7 +389,8 @@ export default function PublicUploadPage({ params }: PublicUploadPageProps) {
                               size="sm"
                               className="text-xs h-8 text-muted-foreground hover:text-foreground"
                               onClick={() => {
-                                if (item._id) fileInputRefs.current[item._id]?.click();
+                                if (item._id)
+                                  fileInputRefs.current[item._id]?.click();
                               }}
                               disabled={isUploading}
                             >
@@ -374,7 +404,8 @@ export default function PublicUploadPage({ params }: PublicUploadPageProps) {
                             className="text-xs h-9"
                             disabled={isUploading}
                             onClick={() => {
-                              if (item._id) fileInputRefs.current[item._id]?.click();
+                              if (item._id)
+                                fileInputRefs.current[item._id]?.click();
                             }}
                           >
                             {isCurrentUploading ? (
@@ -401,7 +432,9 @@ export default function PublicUploadPage({ params }: PublicUploadPageProps) {
             <div className="pt-4 border-t text-center text-xs text-muted-foreground space-y-1">
               <div className="flex items-center justify-center gap-1.5">
                 <ShieldCheck className="h-4 w-4 text-emerald-600" />
-                <span>256-bit encrypted transfer directly to practice document vault</span>
+                <span>
+                  256-bit encrypted transfer directly to practice document vault
+                </span>
               </div>
               <div>Max file size 25MB per document.</div>
             </div>

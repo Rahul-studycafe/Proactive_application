@@ -124,14 +124,20 @@ export default function DSCDirectoryPage() {
   };
 
   const handleDelete = async (dsc: DSCItem) => {
-    if (!window.confirm(`Are you sure you want to decommission DSC token "${dsc.certificateName}"?`)) {
+    if (
+      !window.confirm(
+        `Are you sure you want to decommission DSC token "${dsc.certificateName}"?`,
+      )
+    ) {
       return;
     }
     try {
       await deleteDsc(dsc._id).unwrap();
       toast.success("DSC token decommissioned successfully");
     } catch (err: any) {
-      toast.error(err?.data?.message || err?.message || "Failed to delete DSC token");
+      toast.error(
+        err?.data?.message || err?.message || "Failed to delete DSC token",
+      );
     }
   };
 
@@ -225,7 +231,8 @@ export default function DSCDirectoryPage() {
                 Digital Signature Certificates (DSC)
               </h1>
               <p className="text-sm text-muted-foreground">
-                Client hardware USB token inventory, physical office safe custody & expiry automation.
+                Client hardware USB token inventory, physical office safe
+                custody & expiry automation.
               </p>
             </div>
           </div>
@@ -241,7 +248,9 @@ export default function DSCDirectoryPage() {
             disabled={isFetching}
             className="gap-1.5"
           >
-            <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
+            />
             Refresh
           </Button>
 
@@ -269,9 +278,7 @@ export default function DSCDirectoryPage() {
               </span>
               <HardDrive className="h-4 w-4 text-primary" />
             </div>
-            <div className="mt-2 text-2xl font-bold">
-              {kpiData?.total ?? 0}
-            </div>
+            <div className="mt-2 text-2xl font-bold">{kpiData?.total ?? 0}</div>
             <p className="mt-0.5 text-xs text-muted-foreground">
               Registered in organization
             </p>
@@ -471,14 +478,20 @@ export default function DSCDirectoryPage() {
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
                       <KeyRound className="h-6 w-6" />
                     </div>
-                    <p className="text-base font-medium">No DSC records found</p>
+                    <p className="text-base font-medium">
+                      No DSC records found
+                    </p>
                     <p className="text-xs text-muted-foreground max-w-sm">
-                      {search || statusFilter !== "all" || expiryFilter !== "all"
+                      {search ||
+                      statusFilter !== "all" ||
+                      expiryFilter !== "all"
                         ? "Try adjusting your search criteria or resetting filters."
                         : "There are currently no digital signature certificates logged in the directory."}
                     </p>
                     <div className="flex items-center gap-2 mt-2">
-                      {(search || statusFilter !== "all" || expiryFilter !== "all") && (
+                      {(search ||
+                        statusFilter !== "all" ||
+                        expiryFilter !== "all") && (
                         <Button
                           variant="outline"
                           size="sm"
@@ -505,18 +518,28 @@ export default function DSCDirectoryPage() {
               </TableRow>
             ) : (
               dscs.map((dsc) => {
-                const client = typeof dsc.clientId === "object" ? dsc.clientId : null;
-                const formattedExpiry = new Date(dsc.expiryDate).toLocaleDateString(
-                  "en-IN",
-                  { day: "numeric", month: "short", year: "numeric" }
-                );
-                const formattedIssue = new Date(dsc.issueDate).toLocaleDateString(
-                  "en-IN",
-                  { day: "numeric", month: "short", year: "numeric" }
-                );
+                const client =
+                  typeof dsc.clientId === "object" ? dsc.clientId : null;
+                const formattedExpiry = new Date(
+                  dsc.expiryDate,
+                ).toLocaleDateString("en-IN", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                });
+                const formattedIssue = new Date(
+                  dsc.issueDate,
+                ).toLocaleDateString("en-IN", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                });
 
                 return (
-                  <TableRow key={dsc._id} className="hover:bg-muted/30 transition-colors">
+                  <TableRow
+                    key={dsc._id}
+                    className="hover:bg-muted/30 transition-colors"
+                  >
                     {/* Certificate & Client */}
                     <TableCell>
                       <div className="font-semibold text-sm text-foreground">
@@ -543,7 +566,9 @@ export default function DSCDirectoryPage() {
                         </span>
                       </div>
                       <div className="text-[11px] text-muted-foreground font-mono mt-0.5">
-                        {dsc.tokenSerialNumber ? `#${dsc.tokenSerialNumber}` : "No Serial #"}
+                        {dsc.tokenSerialNumber
+                          ? `#${dsc.tokenSerialNumber}`
+                          : "No Serial #"}
                       </div>
                       <div className="text-[10px] text-muted-foreground/80 mt-0.5">
                         CA: {dsc.issuingAuthority}
@@ -579,10 +604,14 @@ export default function DSCDirectoryPage() {
                       <div className="text-xs">
                         {dsc.status === "With Client" ? (
                           <span className="font-medium text-blue-600 dark:text-blue-400">
-                            {dsc.currentHolderName || client?.name || "Client Rep"}
+                            {dsc.currentHolderName ||
+                              client?.name ||
+                              "Client Rep"}
                           </span>
                         ) : dsc.status === "In Office" ? (
-                          <span className="text-muted-foreground">Office Custody</span>
+                          <span className="text-muted-foreground">
+                            Office Custody
+                          </span>
                         ) : (
                           <span className="text-muted-foreground">—</span>
                         )}
@@ -665,8 +694,12 @@ export default function DSCDirectoryPage() {
         {/* Footer Count */}
         <div className="flex items-center justify-between border-t px-4 py-2.5 text-xs text-muted-foreground bg-muted/20">
           <span>
-            Showing <strong className="text-foreground">{dscs.length}</strong> of{" "}
-            <strong className="text-foreground">{listData?.total ?? dscs.length}</strong> DSC tokens
+            Showing <strong className="text-foreground">{dscs.length}</strong>{" "}
+            of{" "}
+            <strong className="text-foreground">
+              {listData?.total ?? dscs.length}
+            </strong>{" "}
+            DSC tokens
           </span>
           {listData?.totalPages && listData.totalPages > 1 && (
             <span>

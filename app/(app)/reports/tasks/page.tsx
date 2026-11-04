@@ -239,10 +239,18 @@ export default function TasksReportPage() {
                   <TableHead className="w-[28%] min-w-[200px]">
                     Task & Client
                   </TableHead>
-                  <TableHead className="w-[18%] min-w-[140px]">Service</TableHead>
-                  <TableHead className="w-[16%] min-w-[130px]">Assignees</TableHead>
-                  <TableHead className="w-[12%] min-w-[100px]">Due Date</TableHead>
-                  <TableHead className="w-[8%] min-w-[80px]">Priority</TableHead>
+                  <TableHead className="w-[18%] min-w-[140px]">
+                    Service
+                  </TableHead>
+                  <TableHead className="w-[16%] min-w-[130px]">
+                    Assignees
+                  </TableHead>
+                  <TableHead className="w-[12%] min-w-[100px]">
+                    Due Date
+                  </TableHead>
+                  <TableHead className="w-[8%] min-w-[80px]">
+                    Priority
+                  </TableHead>
                   <TableHead className="w-[10%] min-w-[90px] text-right">
                     Billable
                   </TableHead>
@@ -271,7 +279,8 @@ export default function TasksReportPage() {
                           No Tasks Match Filters
                         </h4>
                         <p className="text-xs text-muted-foreground">
-                          Try adjusting your date range, status, or staff assignee filters.
+                          Try adjusting your date range, status, or staff
+                          assignee filters.
                         </p>
                       </div>
                     </TableCell>
@@ -279,8 +288,12 @@ export default function TasksReportPage() {
                 ) : (
                   tasks.map((task) => {
                     const overdue = isOverdue(task.dueDate, task.status);
-                    const clientObj = Array.isArray(task.client) ? task.client[0] : task.client;
-                    const serviceObj = Array.isArray(task.service) ? task.service[0] : task.service;
+                    const clientObj = Array.isArray(task.client)
+                      ? task.client[0]
+                      : task.client;
+                    const serviceObj = Array.isArray(task.service)
+                      ? task.service[0]
+                      : task.service;
 
                     return (
                       <TableRow
@@ -351,11 +364,12 @@ export default function TasksReportPage() {
                           <Badge
                             variant="outline"
                             className={`text-[10px] uppercase font-semibold ${
-                              task.priority === "Urgent" || task.priority === "High"
+                              task.priority === "Urgent" ||
+                              task.priority === "High"
                                 ? "border-rose-400 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300"
                                 : task.priority === "Medium"
-                                ? "border-amber-400 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300"
-                                : "border-slate-300 bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-300"
+                                  ? "border-amber-400 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300"
+                                  : "border-slate-300 bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-300"
                             }`}
                           >
                             {task.priority || "Medium"}
@@ -388,8 +402,8 @@ export default function TasksReportPage() {
                               task.status === "Completed"
                                 ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
                                 : task.status === "In Progress"
-                                ? "border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-300"
-                                : "border-slate-300 bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-300"
+                                  ? "border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-300"
+                                  : "border-slate-300 bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-300"
                             }`}
                           >
                             {task.status}
@@ -431,7 +445,9 @@ export default function TasksReportPage() {
                   variant="outline"
                   size="sm"
                   disabled={page >= pagination.totalPages}
-                  onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
+                  onClick={() =>
+                    setPage((p) => Math.min(pagination.totalPages, p + 1))
+                  }
                   className="h-7 text-xs"
                 >
                   Next

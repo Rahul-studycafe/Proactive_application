@@ -71,12 +71,18 @@ export default function PasswordsMasterPage() {
 
   // Modals state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [editingCredential, setEditingCredential] = useState<ClientPassword | null>(null);
+  const [editingCredential, setEditingCredential] =
+    useState<ClientPassword | null>(null);
   const [isRevealOpen, setIsRevealOpen] = useState(false);
-  const [revealCredential, setRevealCredential] = useState<ClientPassword | null>(null);
+  const [revealCredential, setRevealCredential] =
+    useState<ClientPassword | null>(null);
   const [isAuditDrawerOpen, setIsAuditDrawerOpen] = useState(false);
-  const [auditPasswordId, setAuditPasswordId] = useState<string | undefined>(undefined);
-  const [auditPortalName, setAuditPortalName] = useState<string | undefined>(undefined);
+  const [auditPasswordId, setAuditPasswordId] = useState<string | undefined>(
+    undefined,
+  );
+  const [auditPortalName, setAuditPortalName] = useState<string | undefined>(
+    undefined,
+  );
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<ClientPassword | null>(null);
   const [copiedUsernameId, setCopiedUsernameId] = useState<string | null>(null);
@@ -85,17 +91,20 @@ export default function PasswordsMasterPage() {
   const queryParams = useMemo(() => {
     const params: any = { limit: 100 };
     if (clientFilter && clientFilter !== "all") params.clientId = clientFilter;
-    if (portalFilter && portalFilter !== "all") params.portalName = portalFilter;
+    if (portalFilter && portalFilter !== "all")
+      params.portalName = portalFilter;
     if (search.trim()) params.search = search.trim();
     return params;
   }, [clientFilter, portalFilter, search]);
 
-  const { data, isLoading, isFetching, refetch } = useGetPasswordsQuery(queryParams);
+  const { data, isLoading, isFetching, refetch } =
+    useGetPasswordsQuery(queryParams);
   const { data: portals = [] } = useGetPortalsQuery();
   const { data: clientsData } = useGetClientsQuery({ limit: 100 });
   const clients = clientsData?.clients || [];
 
-  const [deletePassword, { isLoading: isDeleting }] = useDeletePasswordMutation();
+  const [deletePassword, { isLoading: isDeleting }] =
+    useDeletePasswordMutation();
 
   const passwords = data?.passwords || [];
   const totalCount = data?.total || 0;
@@ -162,7 +171,9 @@ export default function PasswordsMasterPage() {
       toast.success(`${deleteTarget.portalName} credential deleted`);
       setDeleteTarget(null);
     } catch (err: any) {
-      toast.error(err?.data?.message || err?.message || "Failed to delete credential");
+      toast.error(
+        err?.data?.message || err?.message || "Failed to delete credential",
+      );
     }
   };
 
@@ -176,14 +187,22 @@ export default function PasswordsMasterPage() {
         </Badge>
       );
     }
-    if (lower.includes("income tax") || lower.includes("itax") || lower.includes("pan")) {
+    if (
+      lower.includes("income tax") ||
+      lower.includes("itax") ||
+      lower.includes("pan")
+    ) {
       return (
         <Badge className="bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30 gap-1 font-semibold">
           <ShieldCheck className="h-3 w-3" /> {name}
         </Badge>
       );
     }
-    if (lower.includes("mca") || lower.includes("roc") || lower.includes("v3")) {
+    if (
+      lower.includes("mca") ||
+      lower.includes("roc") ||
+      lower.includes("v3")
+    ) {
       return (
         <Badge className="bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-500/30 gap-1 font-semibold">
           <Globe className="h-3 w-3" /> {name}
@@ -197,7 +216,11 @@ export default function PasswordsMasterPage() {
         </Badge>
       );
     }
-    if (lower.includes("epfo") || lower.includes("pf") || lower.includes("esic")) {
+    if (
+      lower.includes("epfo") ||
+      lower.includes("pf") ||
+      lower.includes("esic")
+    ) {
       return (
         <Badge className="bg-cyan-500/15 text-cyan-700 dark:text-cyan-400 border-cyan-500/30 gap-1 font-semibold">
           <Users className="h-3 w-3" /> {name}
@@ -221,7 +244,8 @@ export default function PasswordsMasterPage() {
             <span>Client Portal Password Vault</span>
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Centralized practice-wide portal credentials protected by AES-256 cryptographic encryption and access audit logs.
+            Centralized practice-wide portal credentials protected by AES-256
+            cryptographic encryption and access audit logs.
           </p>
         </div>
 
@@ -338,7 +362,9 @@ export default function PasswordsMasterPage() {
                 <SelectValue placeholder="All Clients" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Clients ({clients.length})</SelectItem>
+                <SelectItem value="all">
+                  All Clients ({clients.length})
+                </SelectItem>
                 {clients.map((c: any) => (
                   <SelectItem key={c._id} value={c._id}>
                     {c.name} {c.fileNo ? `(${c.fileNo})` : ""}
@@ -387,7 +413,9 @@ export default function PasswordsMasterPage() {
               className="h-9 w-9 border-border"
               title="Refresh credentials"
             >
-              <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+              <RefreshCw
+                className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
+              />
             </Button>
           </div>
         </div>
@@ -397,20 +425,37 @@ export default function PasswordsMasterPage() {
           <Table>
             <TableHeader className="bg-muted/40">
               <TableRow className="border-border/60 hover:bg-transparent">
-                <TableHead className="text-xs font-semibold">Client Entity</TableHead>
-                <TableHead className="text-xs font-semibold">Portal / Authority</TableHead>
-                <TableHead className="text-xs font-semibold">Username / Login ID</TableHead>
-                <TableHead className="text-xs font-semibold">Encrypted Secret</TableHead>
-                <TableHead className="text-xs font-semibold">Notes / Purpose</TableHead>
-                <TableHead className="text-xs font-semibold">Last Updated</TableHead>
-                <TableHead className="text-xs font-semibold text-right">Actions</TableHead>
+                <TableHead className="text-xs font-semibold">
+                  Client Entity
+                </TableHead>
+                <TableHead className="text-xs font-semibold">
+                  Portal / Authority
+                </TableHead>
+                <TableHead className="text-xs font-semibold">
+                  Username / Login ID
+                </TableHead>
+                <TableHead className="text-xs font-semibold">
+                  Encrypted Secret
+                </TableHead>
+                <TableHead className="text-xs font-semibold">
+                  Notes / Purpose
+                </TableHead>
+                <TableHead className="text-xs font-semibold">
+                  Last Updated
+                </TableHead>
+                <TableHead className="text-xs font-semibold text-right">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 Array.from({ length: 4 }).map((_, i) => (
                   <TableRow key={i}>
-                    <TableCell colSpan={7} className="h-14 animate-pulse bg-muted/10" />
+                    <TableCell
+                      colSpan={7}
+                      className="h-14 animate-pulse bg-muted/10"
+                    />
                   </TableRow>
                 ))
               ) : passwords.length === 0 ? (
@@ -420,9 +465,13 @@ export default function PasswordsMasterPage() {
                       <div className="h-10 w-10 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground">
                         <Lock className="h-5 w-5" />
                       </div>
-                      <p className="text-sm font-medium text-foreground">No credentials found</p>
+                      <p className="text-sm font-medium text-foreground">
+                        No credentials found
+                      </p>
                       <p className="text-xs text-muted-foreground max-w-sm">
-                        {search || portalFilter !== "all" || clientFilter !== "all"
+                        {search ||
+                        portalFilter !== "all" ||
+                        clientFilter !== "all"
                           ? "Try clearing your search filters to find what you're looking for."
                           : "Start adding client portal credentials or import your bulk spreadsheet."}
                       </p>
@@ -439,12 +488,18 @@ export default function PasswordsMasterPage() {
                 </TableRow>
               ) : (
                 passwords.map((p) => {
-                  const clientObj = typeof p.clientId === "object" ? p.clientId : null;
-                  const clientIdStr = clientObj?._id || (typeof p.clientId === "string" ? p.clientId : "");
+                  const clientObj =
+                    typeof p.clientId === "object" ? p.clientId : null;
+                  const clientIdStr =
+                    clientObj?._id ||
+                    (typeof p.clientId === "string" ? p.clientId : "");
                   const isCopied = copiedUsernameId === p._id;
 
                   return (
-                    <TableRow key={p._id} className="hover:bg-muted/30 transition-colors border-border/50">
+                    <TableRow
+                      key={p._id}
+                      className="hover:bg-muted/30 transition-colors border-border/50"
+                    >
                       {/* Client Entity */}
                       <TableCell className="align-middle">
                         {clientObj ? (
@@ -528,7 +583,10 @@ export default function PasswordsMasterPage() {
 
                       {/* Notes */}
                       <TableCell className="align-middle">
-                        <p className="text-xs text-muted-foreground max-w-xs truncate" title={p.notes || ""}>
+                        <p
+                          className="text-xs text-muted-foreground max-w-xs truncate"
+                          title={p.notes || ""}
+                        >
                           {p.notes || "—"}
                         </p>
                       </TableCell>
@@ -536,11 +594,16 @@ export default function PasswordsMasterPage() {
                       {/* Updated At */}
                       <TableCell className="align-middle">
                         <span className="text-xs text-muted-foreground">
-                          {p.updatedAt ? new Date(p.updatedAt).toLocaleDateString("en-IN", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          }) : "—"}
+                          {p.updatedAt
+                            ? new Date(p.updatedAt).toLocaleDateString(
+                                "en-IN",
+                                {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                },
+                              )
+                            : "—"}
                         </span>
                       </TableCell>
 
@@ -621,14 +684,18 @@ export default function PasswordsMasterPage() {
       />
 
       {/* Delete Confirmation Alert */}
-      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+      <AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Portal Credential?</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete the credentials for{" "}
-              <strong>{deleteTarget?.portalName}</strong> ({deleteTarget?.username})?
-              This action is permanent and cannot be undone.
+              <strong>{deleteTarget?.portalName}</strong> (
+              {deleteTarget?.username})? This action is permanent and cannot be
+              undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

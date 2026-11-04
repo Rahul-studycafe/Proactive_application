@@ -1,11 +1,11 @@
 export type CreditNoteReason =
-  | 'Overcharge Correction'
-  | 'Service Cancellation'
-  | 'Goodwill Discount'
-  | 'Deficiency of Service'
-  | 'Other';
+  | "Overcharge Correction"
+  | "Service Cancellation"
+  | "Goodwill Discount"
+  | "Deficiency of Service"
+  | "Other";
 
-export type CreditNoteStatus = 'Issued' | 'Applied' | 'Refunded' | 'Cancelled';
+export type CreditNoteStatus = "Issued" | "Applied" | "Refunded" | "Cancelled";
 
 export interface CreditNoteItem {
   description: string;
@@ -31,18 +31,20 @@ export interface CreditNoteTotals {
 }
 
 export interface AllocatedInvoiceItem {
-  invoiceId: {
-    _id: string;
-    invoiceNo: string;
-    date: string;
-    totals?: { grandTotal: number; amountDue: number };
-  } | string;
+  invoiceId:
+    | {
+        _id: string;
+        invoiceNo: string;
+        date: string;
+        totals?: { grandTotal: number; amountDue: number };
+      }
+    | string;
   amountApplied: number;
   appliedAt: string;
 }
 
 export interface CreditNoteRefundRecord {
-  refundMode: 'Cash' | 'Bank Transfer' | 'Cheque' | 'UPI' | 'Other';
+  refundMode: "Cash" | "Bank Transfer" | "Cheque" | "UPI" | "Other";
   refundDate: string;
   referenceNo?: string;
   refundedAmount: number;
@@ -131,7 +133,7 @@ export interface ApplyCreditPayload {
 }
 
 export interface RefundCreditPayload {
-  refundMode: 'Cash' | 'Bank Transfer' | 'Cheque' | 'UPI' | 'Other';
+  refundMode: "Cash" | "Bank Transfer" | "Cheque" | "UPI" | "Other";
   refundDate?: string;
   referenceNo?: string;
   refundedAmount?: number;

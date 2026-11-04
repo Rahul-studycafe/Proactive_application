@@ -24,18 +24,18 @@ export interface GeolocationState {
   requestLocation: () => Promise<Coordinates | null>;
 }
 
-export function useGeolocation(options: GeofenceOptions = {}): GeolocationState {
-  const {
-    officeLatitude,
-    officeLongitude,
-    radiusMeters = 150,
-  } = options;
+export function useGeolocation(
+  options: GeofenceOptions = {},
+): GeolocationState {
+  const { officeLatitude, officeLongitude, radiusMeters = 150 } = options;
 
   const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [distanceToOffice, setDistanceToOffice] = useState<number | null>(null);
-  const [isInsideGeofence, setIsInsideGeofence] = useState<boolean | null>(null);
+  const [isInsideGeofence, setIsInsideGeofence] = useState<boolean | null>(
+    null,
+  );
 
   const evaluateGeofence = useCallback(
     (coords: Coordinates) => {
@@ -47,7 +47,7 @@ export function useGeolocation(options: GeofenceOptions = {}): GeolocationState 
           coords.latitude,
           coords.longitude,
           officeLatitude,
-          officeLongitude
+          officeLongitude,
         );
         setDistanceToOffice(distance);
         setIsInsideGeofence(distance <= radiusMeters);
@@ -56,7 +56,7 @@ export function useGeolocation(options: GeofenceOptions = {}): GeolocationState 
         setIsInsideGeofence(true); // If no office location configured, consider verified
       }
     },
-    [officeLatitude, officeLongitude, radiusMeters]
+    [officeLatitude, officeLongitude, radiusMeters],
   );
 
   const requestLocation = useCallback(async (): Promise<Coordinates | null> => {
@@ -94,7 +94,7 @@ export function useGeolocation(options: GeofenceOptions = {}): GeolocationState 
           setLoading(false);
           resolve(null);
         },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
       );
     });
   }, [evaluateGeofence]);

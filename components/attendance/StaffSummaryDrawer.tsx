@@ -14,7 +14,10 @@ import {
 } from "lucide-react";
 
 import { useGetStaffAttendanceSummaryQuery } from "@/lib/services/api";
-import type { MonthlyMatrixStaffMember, MonthlyMatrixDay } from "@/lib/types/attendance";
+import type {
+  MonthlyMatrixStaffMember,
+  MonthlyMatrixDay,
+} from "@/lib/types/attendance";
 import {
   Sheet,
   SheetContent,
@@ -55,7 +58,7 @@ export function StaffSummaryDrawer({
 
   const { data: summary, isLoading } = useGetStaffAttendanceSummaryQuery(
     { userId, month, year },
-    { skip: !open || !userId }
+    { skip: !open || !userId },
   );
 
   if (!staff) return null;
@@ -80,9 +83,12 @@ export function StaffSummaryDrawer({
               {staff.name.charAt(0)}
             </div>
             <div>
-              <SheetTitle className="text-xl font-bold">{staff.name}</SheetTitle>
+              <SheetTitle className="text-xl font-bold">
+                {staff.name}
+              </SheetTitle>
               <SheetDescription className="text-xs">
-                {staff.roleName || "Staff Member"} • {staff.email || staff.username} •{" "}
+                {staff.roleName || "Staff Member"} •{" "}
+                {staff.email || staff.username} •{" "}
                 <span className="font-semibold text-foreground">
                   {month}/{year}
                 </span>
@@ -103,9 +109,15 @@ export function StaffSummaryDrawer({
               <div className="flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3.5 text-xs text-amber-800 dark:text-amber-300">
                 <AlertCircle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
                 <div className="space-y-0.5">
-                  <div className="font-semibold text-sm">Prorated Attendance Period</div>
+                  <div className="font-semibold text-sm">
+                    Prorated Attendance Period
+                  </div>
                   <p className="opacity-90 leading-relaxed">
-                    Employee joined mid-month on <strong>{summary.joiningDate}</strong>. {summary.preJoiningDays} calendar days prior to joining date are excluded from working day targets and payable denominator.
+                    Employee joined mid-month on{" "}
+                    <strong>{summary.joiningDate}</strong>.{" "}
+                    {summary.preJoiningDays} calendar days prior to joining date
+                    are excluded from working day targets and payable
+                    denominator.
                   </p>
                 </div>
               </div>
@@ -128,7 +140,8 @@ export function StaffSummaryDrawer({
                     </span>
                   </div>
                   <p className="text-[11px] text-muted-foreground mt-1">
-                    Includes Present + Half Days + Paid Leaves + Weekends/Holidays credit.
+                    Includes Present + Half Days + Paid Leaves +
+                    Weekends/Holidays credit.
                   </p>
                 </CardContent>
               </Card>
@@ -136,7 +149,9 @@ export function StaffSummaryDrawer({
               <Card className="border-border">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between text-xs font-medium">
-                    <span className="text-muted-foreground">Attendance Rate</span>
+                    <span className="text-muted-foreground">
+                      Attendance Rate
+                    </span>
                     <span className="font-bold text-foreground">
                       {summary.attendancePercentage}%
                     </span>
@@ -146,7 +161,9 @@ export function StaffSummaryDrawer({
                     className="h-2 mt-2 bg-muted"
                   />
                   <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
-                    <span>Working Hours: {formatHours(summary.totalWorkingMinutes)}</span>
+                    <span>
+                      Working Hours: {formatHours(summary.totalWorkingMinutes)}
+                    </span>
                     <span className="font-medium text-emerald-600 dark:text-emerald-400">
                       OT: {formatHours(summary.totalOvertimeMinutes)}
                     </span>
@@ -158,28 +175,36 @@ export function StaffSummaryDrawer({
             {/* Metric Counters Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="rounded-lg border p-3 bg-card">
-                <span className="text-xs text-muted-foreground block">Present Days</span>
+                <span className="text-xs text-muted-foreground block">
+                  Present Days
+                </span>
                 <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
                   {summary.presentDays}
                 </span>
               </div>
 
               <div className="rounded-lg border p-3 bg-card">
-                <span className="text-xs text-muted-foreground block">Half Days</span>
+                <span className="text-xs text-muted-foreground block">
+                  Half Days
+                </span>
                 <span className="text-lg font-bold text-amber-600 dark:text-amber-400">
                   {summary.halfDays} ({summary.halfDays * 0.5} credit)
                 </span>
               </div>
 
               <div className="rounded-lg border p-3 bg-card">
-                <span className="text-xs text-muted-foreground block">Paid Leaves</span>
+                <span className="text-xs text-muted-foreground block">
+                  Paid Leaves
+                </span>
                 <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
                   {summary.paidLeaves}
                 </span>
               </div>
 
               <div className="rounded-lg border p-3 bg-card">
-                <span className="text-xs text-muted-foreground block">Absent Days</span>
+                <span className="text-xs text-muted-foreground block">
+                  Absent Days
+                </span>
                 <span className="text-lg font-bold text-rose-600 dark:text-rose-400">
                   {summary.absentDays}
                 </span>
@@ -193,7 +218,9 @@ export function StaffSummaryDrawer({
                   Weekends & Statutory Holidays:
                 </span>{" "}
                 <span className="text-muted-foreground">
-                  {summary.weekendsCount} Weekends + {summary.officialHolidaysCount} Official Holidays ({summary.holidays} total credited days)
+                  {summary.weekendsCount} Weekends +{" "}
+                  {summary.officialHolidaysCount} Official Holidays (
+                  {summary.holidays} total credited days)
                 </span>
               </div>
               <Badge variant="outline" className="text-xs">
@@ -210,12 +237,24 @@ export function StaffSummaryDrawer({
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/40">
-                      <TableHead className="font-semibold text-xs">Date</TableHead>
-                      <TableHead className="font-semibold text-xs">Day</TableHead>
-                      <TableHead className="font-semibold text-xs">Status</TableHead>
-                      <TableHead className="font-semibold text-xs">In Time</TableHead>
-                      <TableHead className="font-semibold text-xs">Out Time</TableHead>
-                      <TableHead className="font-semibold text-xs">Duration</TableHead>
+                      <TableHead className="font-semibold text-xs">
+                        Date
+                      </TableHead>
+                      <TableHead className="font-semibold text-xs">
+                        Day
+                      </TableHead>
+                      <TableHead className="font-semibold text-xs">
+                        Status
+                      </TableHead>
+                      <TableHead className="font-semibold text-xs">
+                        In Time
+                      </TableHead>
+                      <TableHead className="font-semibold text-xs">
+                        Out Time
+                      </TableHead>
+                      <TableHead className="font-semibold text-xs">
+                        Duration
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -231,39 +270,53 @@ export function StaffSummaryDrawer({
                       }
 
                       return (
-                        <TableRow key={day.day} className="text-xs hover:bg-muted/30">
-                          <TableCell className="font-mono">{day.date}</TableCell>
-                          <TableCell className="text-muted-foreground">{day.dayOfWeek}</TableCell>
+                        <TableRow
+                          key={day.day}
+                          className="text-xs hover:bg-muted/30"
+                        >
+                          <TableCell className="font-mono">
+                            {day.date}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {day.dayOfWeek}
+                          </TableCell>
                           <TableCell>
                             <Badge
                               variant="outline"
                               className={
-                                displayStatus.includes("Pre-Joining") || displayStatus === "N/A"
+                                displayStatus.includes("Pre-Joining") ||
+                                displayStatus === "N/A"
                                   ? "border-dashed border-border/70 text-muted-foreground/60 bg-muted/20 text-[10px]"
                                   : displayStatus === "Present"
-                                  ? "border-emerald-500/30 text-emerald-600 bg-emerald-500/10 text-[10px]"
-                                  : displayStatus === "Half Day"
-                                  ? "border-amber-500/30 text-amber-600 bg-amber-500/10 text-[10px]"
-                                  : displayStatus === "Absent"
-                                  ? "border-rose-500/30 text-rose-600 bg-rose-500/10 text-[10px]"
-                                  : displayStatus === "Holiday"
-                                  ? "border-purple-500/30 text-purple-600 bg-purple-500/10 text-[10px]"
-                                  : displayStatus === "Weekend"
-                                  ? "border-border text-muted-foreground text-[10px]"
-                                  : "border-dashed text-muted-foreground text-[10px]"
+                                    ? "border-emerald-500/30 text-emerald-600 bg-emerald-500/10 text-[10px]"
+                                    : displayStatus === "Half Day"
+                                      ? "border-amber-500/30 text-amber-600 bg-amber-500/10 text-[10px]"
+                                      : displayStatus === "Absent"
+                                        ? "border-rose-500/30 text-rose-600 bg-rose-500/10 text-[10px]"
+                                        : displayStatus === "Holiday"
+                                          ? "border-purple-500/30 text-purple-600 bg-purple-500/10 text-[10px]"
+                                          : displayStatus === "Weekend"
+                                            ? "border-border text-muted-foreground text-[10px]"
+                                            : "border-dashed text-muted-foreground text-[10px]"
                               }
                             >
                               {displayStatus}
                             </Badge>
                           </TableCell>
                           <TableCell className="font-mono text-muted-foreground">
-                            {rec?.checkIn ? format(new Date(rec.checkIn), "hh:mm a") : "--"}
+                            {rec?.checkIn
+                              ? format(new Date(rec.checkIn), "hh:mm a")
+                              : "--"}
                           </TableCell>
                           <TableCell className="font-mono text-muted-foreground">
-                            {rec?.checkOut ? format(new Date(rec.checkOut), "hh:mm a") : "--"}
+                            {rec?.checkOut
+                              ? format(new Date(rec.checkOut), "hh:mm a")
+                              : "--"}
                           </TableCell>
                           <TableCell className="font-mono text-muted-foreground">
-                            {rec?.totalMinutes ? formatHours(rec.totalMinutes) : "--"}
+                            {rec?.totalMinutes
+                              ? formatHours(rec.totalMinutes)
+                              : "--"}
                           </TableCell>
                         </TableRow>
                       );

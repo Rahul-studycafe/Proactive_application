@@ -57,7 +57,7 @@ export function ApplyCreditModal({
   const [amountToApply, setAmountToApply] = useState<number>(0);
 
   const selectedInvoice = (unpaidInvoices as any[]).find(
-    (inv: any) => inv._id === targetInvoiceId
+    (inv: any) => inv._id === targetInvoiceId,
   );
 
   const availableCredit = creditNote?.unallocatedCredit || 0;
@@ -86,12 +86,19 @@ export function ApplyCreditModal({
     }
 
     if (amountToApply > availableCredit) {
-      toast.error(`Amount cannot exceed available credit of ₹${availableCredit}`);
+      toast.error(
+        `Amount cannot exceed available credit of ₹${availableCredit}`,
+      );
       return;
     }
 
-    if (selectedInvoice && amountToApply > (selectedInvoice.totals?.amountDue || 0)) {
-      toast.error(`Amount cannot exceed invoice balance due of ₹${selectedInvoice.totals?.amountDue}`);
+    if (
+      selectedInvoice &&
+      amountToApply > (selectedInvoice.totals?.amountDue || 0)
+    ) {
+      toast.error(
+        `Amount cannot exceed invoice balance due of ₹${selectedInvoice.totals?.amountDue}`,
+      );
       return;
     }
 
@@ -105,13 +112,13 @@ export function ApplyCreditModal({
       }).unwrap();
 
       toast.success(
-        `₹${amountToApply.toLocaleString("en-IN")} credit successfully applied to ${selectedInvoice?.invoiceNo || "invoice"}.`
+        `₹${amountToApply.toLocaleString("en-IN")} credit successfully applied to ${selectedInvoice?.invoiceNo || "invoice"}.`,
       );
       onOpenChange(false);
       if (onSuccess) onSuccess();
     } catch (err: any) {
       toast.error(
-        err?.data?.message || err?.message || "Failed to apply credit note"
+        err?.data?.message || err?.message || "Failed to apply credit note",
       );
     }
   };
@@ -123,8 +130,9 @@ export function ApplyCreditModal({
           <DialogHeader>
             <DialogTitle>Apply Unallocated Credit</DialogTitle>
             <DialogDescription>
-              Allocate leftover credit from <strong>{creditNote?.creditNoteNo}</strong>{" "}
-              against another unpaid invoice for this client.
+              Allocate leftover credit from{" "}
+              <strong>{creditNote?.creditNoteNo}</strong> against another unpaid
+              invoice for this client.
             </DialogDescription>
           </DialogHeader>
 
@@ -136,14 +144,19 @@ export function ApplyCreditModal({
                   Available Unallocated Credit:
                 </span>
                 <span className="text-base font-bold text-purple-700 dark:text-purple-300 font-mono">
-                  ₹{availableCredit.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                  ₹
+                  {availableCredit.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                  })}
                 </span>
               </div>
             </div>
 
             {/* Target Invoice Selector */}
             <div className="space-y-1.5">
-              <Label htmlFor="targetInvoice">Select Target Unpaid Invoice</Label>
+              <Label htmlFor="targetInvoice">
+                Select Target Unpaid Invoice
+              </Label>
               <Select
                 value={targetInvoiceId}
                 onValueChange={setTargetInvoiceId}
@@ -154,8 +167,8 @@ export function ApplyCreditModal({
                       isLoadingInvoices
                         ? "Loading invoices..."
                         : unpaidInvoices.length === 0
-                        ? "No unpaid invoices found"
-                        : "Choose unpaid invoice"
+                          ? "No unpaid invoices found"
+                          : "Choose unpaid invoice"
                     }
                   />
                 </SelectTrigger>
@@ -176,13 +189,17 @@ export function ApplyCreditModal({
                 <div className="flex justify-between text-muted-foreground">
                   <span>Invoice Total:</span>
                   <span className="font-mono text-foreground">
-                    ₹{selectedInvoice.totals?.grandTotal?.toLocaleString("en-IN")}
+                    ₹
+                    {selectedInvoice.totals?.grandTotal?.toLocaleString(
+                      "en-IN",
+                    )}
                   </span>
                 </div>
                 <div className="flex justify-between text-muted-foreground">
                   <span>Balance Due:</span>
                   <span className="font-mono font-semibold text-amber-600 dark:text-amber-400">
-                    ₹{selectedInvoice.totals?.amountDue?.toLocaleString("en-IN")}
+                    ₹
+                    {selectedInvoice.totals?.amountDue?.toLocaleString("en-IN")}
                   </span>
                 </div>
               </div>
@@ -198,7 +215,9 @@ export function ApplyCreditModal({
                 max={maxCanApply}
                 step="any"
                 value={amountToApply}
-                onChange={(e) => setAmountToApply(parseFloat(e.target.value) || 0)}
+                onChange={(e) =>
+                  setAmountToApply(parseFloat(e.target.value) || 0)
+                }
                 required
               />
               <p className="text-[11px] text-muted-foreground">

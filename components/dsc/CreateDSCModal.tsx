@@ -83,10 +83,10 @@ export function CreateDSCModal({
       setTokenSerialNumber(dscToEdit.tokenSerialNumber || "");
       setIssuingAuthority(dscToEdit.issuingAuthority || "eMudhra");
       setIssueDate(
-        dscToEdit.issueDate ? dscToEdit.issueDate.split("T")[0] : ""
+        dscToEdit.issueDate ? dscToEdit.issueDate.split("T")[0] : "",
       );
       setExpiryDate(
-        dscToEdit.expiryDate ? dscToEdit.expiryDate.split("T")[0] : ""
+        dscToEdit.expiryDate ? dscToEdit.expiryDate.split("T")[0] : "",
       );
       setPhysicalLocation(dscToEdit.physicalLocation || "");
       setStatus(dscToEdit.status || "In Office");
@@ -172,7 +172,7 @@ export function CreateDSCModal({
       onOpenChange(false);
     } catch (err: any) {
       toast.error(
-        err?.data?.message || err?.message || "Failed to save DSC token"
+        err?.data?.message || err?.message || "Failed to save DSC token",
       );
     }
   };
@@ -186,7 +186,8 @@ export function CreateDSCModal({
               {isEditing ? "Edit DSC Certificate" : "Register New DSC Token"}
             </DialogTitle>
             <DialogDescription>
-              Record client USB token serial, certifying authority, physical safe coordinate, and validity dates.
+              Record client USB token serial, certifying authority, physical
+              safe coordinate, and validity dates.
             </DialogDescription>
           </DialogHeader>
 
@@ -238,7 +239,9 @@ export function CreateDSCModal({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Class 3">Class 3 (MCA/GST Standard)</SelectItem>
+                    <SelectItem value="Class 3">
+                      Class 3 (MCA/GST Standard)
+                    </SelectItem>
                     <SelectItem value="Class 2">Class 2 (Legacy)</SelectItem>
                   </SelectContent>
                 </Select>
@@ -288,12 +291,18 @@ export function CreateDSCModal({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="eMudhra">eMudhra Consumer Services</SelectItem>
-                    <SelectItem value="Capricorn">Capricorn Identity Services</SelectItem>
+                    <SelectItem value="eMudhra">
+                      eMudhra Consumer Services
+                    </SelectItem>
+                    <SelectItem value="Capricorn">
+                      Capricorn Identity Services
+                    </SelectItem>
                     <SelectItem value="Vsign">Vsign (Verasys CA)</SelectItem>
                     <SelectItem value="Sify">Sify SafeScrypt</SelectItem>
                     <SelectItem value="IDSign">IDSign CA</SelectItem>
-                    <SelectItem value="Other">Other Certifying Authority</SelectItem>
+                    <SelectItem value="Other">
+                      Other Certifying Authority
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -332,7 +341,8 @@ export function CreateDSCModal({
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor="physicalLocation">
-                  Physical Storage Location <span className="text-destructive">*</span>
+                  Physical Storage Location{" "}
+                  <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="physicalLocation"
@@ -400,7 +410,11 @@ export function CreateDSCModal({
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Saving..." : isEditing ? "Update DSC" : "Register DSC"}
+              {isSubmitting
+                ? "Saving..."
+                : isEditing
+                  ? "Update DSC"
+                  : "Register DSC"}
             </Button>
           </DialogFooter>
         </form>

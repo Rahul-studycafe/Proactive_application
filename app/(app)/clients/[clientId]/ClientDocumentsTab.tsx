@@ -149,7 +149,7 @@ export function ClientDocumentsTab({
   initialSubTab = "vault",
 }: ClientDocumentsTabProps) {
   const [subTab, setSubTab] = useState<"vault" | "requests" | "physical">(
-    initialSubTab
+    initialSubTab,
   );
 
   // --- 1. Digital Vault Queries & Mutations ---
@@ -174,7 +174,7 @@ export function ClientDocumentsTab({
     return rawDocuments.filter(
       (doc: any) =>
         doc.fileName?.toLowerCase().includes(q) ||
-        doc.uploadedBy?.name?.toLowerCase().includes(q)
+        doc.uploadedBy?.name?.toLowerCase().includes(q),
     );
   }, [rawDocuments, vaultSearch]);
 
@@ -240,7 +240,7 @@ export function ClientDocumentsTab({
   const requests: DocumentRequest[] = requestsData?.requests || [];
   const activeRequestsCount = useMemo(() => {
     return requests.filter(
-      (r) => r.status === "Pending" || r.status === "Partially Uploaded"
+      (r) => r.status === "Pending" || r.status === "Partially Uploaded",
     ).length;
   }, [requests]);
 
@@ -253,7 +253,7 @@ export function ClientDocumentsTab({
       toast.success(
         res.emailDispatched
           ? "Reminder email dispatched to client!"
-          : "Magic link ready (no client email configured)."
+          : "Magic link ready (no client email configured).",
       );
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to resend reminder");
@@ -263,7 +263,7 @@ export function ClientDocumentsTab({
   const handleCancel = async (req: DocumentRequest) => {
     if (
       !confirm(
-        `Are you sure you want to cancel document request #${req.requestNo}? This will revoke the client's upload link.`
+        `Are you sure you want to cancel document request #${req.requestNo}? This will revoke the client's upload link.`,
       )
     ) {
       return;
@@ -278,7 +278,7 @@ export function ClientDocumentsTab({
   };
 
   const handleRequestCreated = (
-    newReq: DocumentRequest & { uploadUrl: string; emailDispatched: boolean }
+    newReq: DocumentRequest & { uploadUrl: string; emailDispatched: boolean },
   ) => {
     refetchRequests();
     setShareDialogRequest(newReq);
@@ -660,12 +660,22 @@ export function ClientDocumentsTab({
                 <Table>
                   <TableHeader>
                     <TableRow className="hover:bg-transparent">
-                      <TableHead className="w-[110px] text-xs">Request #</TableHead>
+                      <TableHead className="w-[110px] text-xs">
+                        Request #
+                      </TableHead>
                       <TableHead className="text-xs">Title & Items</TableHead>
-                      <TableHead className="w-[180px] text-xs">Progress</TableHead>
-                      <TableHead className="w-[120px] text-xs">Expires</TableHead>
-                      <TableHead className="w-[120px] text-xs">Status</TableHead>
-                      <TableHead className="w-[60px] text-right text-xs">Action</TableHead>
+                      <TableHead className="w-[180px] text-xs">
+                        Progress
+                      </TableHead>
+                      <TableHead className="w-[120px] text-xs">
+                        Expires
+                      </TableHead>
+                      <TableHead className="w-[120px] text-xs">
+                        Status
+                      </TableHead>
+                      <TableHead className="w-[60px] text-right text-xs">
+                        Action
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -742,7 +752,9 @@ export function ClientDocumentsTab({
                             {formatDate(req.expiresAt)}
                           </TableCell>
 
-                          <TableCell>{getRequestStatusBadge(req.status)}</TableCell>
+                          <TableCell>
+                            {getRequestStatusBadge(req.status)}
+                          </TableCell>
 
                           <TableCell className="text-right">
                             <DropdownMenu>
@@ -772,7 +784,7 @@ export function ClientDocumentsTab({
                                     onClick={() =>
                                       window.open(
                                         `/public/upload/${req.token}`,
-                                        "_blank"
+                                        "_blank",
                                       )
                                     }
                                     className="gap-2 cursor-pointer"

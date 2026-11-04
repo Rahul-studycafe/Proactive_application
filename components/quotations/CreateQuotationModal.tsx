@@ -72,7 +72,7 @@ export function CreateQuotationModal({
 
   const { data: clientsData } = useGetClientsQuery(
     { limit: 250 },
-    { skip: !open }
+    { skip: !open },
   );
   const clients = clientsData?.clients || [];
 
@@ -81,7 +81,9 @@ export function CreateQuotationModal({
   });
   const services: any[] = Array.isArray(servicesResponse)
     ? servicesResponse
-    : (servicesResponse as any)?.data || (servicesResponse as any)?.services || [];
+    : (servicesResponse as any)?.data ||
+      (servicesResponse as any)?.services ||
+      [];
 
   // Form states
   const [clientId, setClientId] = useState(preselectedClientId || "");
@@ -149,7 +151,7 @@ export function CreateQuotationModal({
   const handleItemChange = (
     index: number,
     field: keyof QuotationItemRow,
-    value: any
+    value: any,
   ) => {
     setItems((prev) => {
       const updated = [...prev];
@@ -198,7 +200,9 @@ export function CreateQuotationModal({
       const taxableAmount = Math.max(0, Number((amount - discount).toFixed(2)));
       const gstPercentage = Number(item.gstPercentage) || 0;
 
-      const taxAmount = Number(((taxableAmount * gstPercentage) / 100).toFixed(2));
+      const taxAmount = Number(
+        ((taxableAmount * gstPercentage) / 100).toFixed(2),
+      );
 
       let cgst = 0;
       let sgst = 0;
@@ -325,7 +329,10 @@ export function CreateQuotationModal({
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
+        <form
+          onSubmit={handleSubmit}
+          className="flex-1 overflow-y-auto px-6 py-4 space-y-6"
+        >
           {/* Top Row: Client Selector & Dates */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Client Selector */}
@@ -398,7 +405,8 @@ export function CreateQuotationModal({
                 </span>
               </div>
               <p className="text-xs text-muted-foreground">
-                Toggle on if client is located in another State or Union Territory outside practice base.
+                Toggle on if client is located in another State or Union
+                Territory outside practice base.
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -443,13 +451,27 @@ export function CreateQuotationModal({
                 <Table>
                   <TableHeader className="bg-muted/50 text-xs">
                     <TableRow>
-                      <TableHead className="w-[22%] min-w-[160px]">Service / Template</TableHead>
-                      <TableHead className="w-[26%] min-w-[180px]">Description & SAC</TableHead>
-                      <TableHead className="w-[10%] min-w-[70px] text-right">Qty</TableHead>
-                      <TableHead className="w-[14%] min-w-[100px] text-right">Rate (₹)</TableHead>
-                      <TableHead className="w-[11%] min-w-[80px] text-right">Disc (₹)</TableHead>
-                      <TableHead className="w-[10%] min-w-[75px] text-right">GST %</TableHead>
-                      <TableHead className="w-[12%] min-w-[95px] text-right">Total (₹)</TableHead>
+                      <TableHead className="w-[22%] min-w-[160px]">
+                        Service / Template
+                      </TableHead>
+                      <TableHead className="w-[26%] min-w-[180px]">
+                        Description & SAC
+                      </TableHead>
+                      <TableHead className="w-[10%] min-w-[70px] text-right">
+                        Qty
+                      </TableHead>
+                      <TableHead className="w-[14%] min-w-[100px] text-right">
+                        Rate (₹)
+                      </TableHead>
+                      <TableHead className="w-[11%] min-w-[80px] text-right">
+                        Disc (₹)
+                      </TableHead>
+                      <TableHead className="w-[10%] min-w-[75px] text-right">
+                        GST %
+                      </TableHead>
+                      <TableHead className="w-[12%] min-w-[95px] text-right">
+                        Total (₹)
+                      </TableHead>
                       <TableHead className="w-[5%] min-w-[40px] text-center"></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -457,18 +479,25 @@ export function CreateQuotationModal({
                     {items.map((item, idx) => {
                       const rowCalc = calculated.rowCalcs[idx];
                       return (
-                        <TableRow key={item.tempId} className="align-top text-xs">
+                        <TableRow
+                          key={item.tempId}
+                          className="align-top text-xs"
+                        >
                           {/* Service Template selector */}
                           <TableCell className="p-2">
                             <Select
                               value={item.serviceId || "custom"}
-                              onValueChange={(val) => handleServiceSelect(idx, val)}
+                              onValueChange={(val) =>
+                                handleServiceSelect(idx, val)
+                              }
                             >
                               <SelectTrigger className="h-8 text-xs">
                                 <SelectValue placeholder="Custom Item" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="custom">Custom Line Item</SelectItem>
+                                <SelectItem value="custom">
+                                  Custom Line Item
+                                </SelectItem>
                                 {services.map((s: any) => (
                                   <SelectItem key={s._id} value={s._id}>
                                     {s.name}
@@ -485,7 +514,11 @@ export function CreateQuotationModal({
                               className="h-8 text-xs font-medium"
                               value={item.description}
                               onChange={(e) =>
-                                handleItemChange(idx, "description", e.target.value)
+                                handleItemChange(
+                                  idx,
+                                  "description",
+                                  e.target.value,
+                                )
                               }
                             />
                             <div className="flex items-center gap-1">
@@ -497,7 +530,11 @@ export function CreateQuotationModal({
                                 className="h-6 text-[11px] font-mono px-1.5 py-0 w-24"
                                 value={item.sacCode || ""}
                                 onChange={(e) =>
-                                  handleItemChange(idx, "sacCode", e.target.value)
+                                  handleItemChange(
+                                    idx,
+                                    "sacCode",
+                                    e.target.value,
+                                  )
                                 }
                               />
                             </div>
@@ -515,7 +552,7 @@ export function CreateQuotationModal({
                                 handleItemChange(
                                   idx,
                                   "quantity",
-                                  parseFloat(e.target.value) || 0
+                                  parseFloat(e.target.value) || 0,
                                 )
                               }
                             />
@@ -533,7 +570,7 @@ export function CreateQuotationModal({
                                 handleItemChange(
                                   idx,
                                   "rate",
-                                  parseFloat(e.target.value) || 0
+                                  parseFloat(e.target.value) || 0,
                                 )
                               }
                             />
@@ -551,7 +588,7 @@ export function CreateQuotationModal({
                                 handleItemChange(
                                   idx,
                                   "discount",
-                                  parseFloat(e.target.value) || 0
+                                  parseFloat(e.target.value) || 0,
                                 )
                               }
                             />
@@ -562,7 +599,11 @@ export function CreateQuotationModal({
                             <Select
                               value={String(item.gstPercentage ?? 18)}
                               onValueChange={(val) =>
-                                handleItemChange(idx, "gstPercentage", Number(val))
+                                handleItemChange(
+                                  idx,
+                                  "gstPercentage",
+                                  Number(val),
+                                )
                               }
                             >
                               <SelectTrigger className="h-8 text-xs font-mono text-right">
@@ -580,7 +621,8 @@ export function CreateQuotationModal({
 
                           {/* Line Total */}
                           <TableCell className="p-2 text-right font-mono font-semibold pt-3.5">
-                            ₹{(rowCalc?.total || 0).toLocaleString("en-IN", {
+                            ₹
+                            {(rowCalc?.total || 0).toLocaleString("en-IN", {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
                             })}
@@ -650,7 +692,10 @@ export function CreateQuotationModal({
                   <div className="flex justify-between text-muted-foreground">
                     <span>Subtotal:</span>
                     <span className="font-mono text-foreground">
-                      ₹{calculated.subtotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                      ₹
+                      {calculated.subtotal.toLocaleString("en-IN", {
+                        minimumFractionDigits: 2,
+                      })}
                     </span>
                   </div>
 
@@ -658,7 +703,10 @@ export function CreateQuotationModal({
                     <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
                       <span>Total Discount:</span>
                       <span className="font-mono">
-                        -₹{calculated.discountTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                        -₹
+                        {calculated.discountTotal.toLocaleString("en-IN", {
+                          minimumFractionDigits: 2,
+                        })}
                       </span>
                     </div>
                   )}
@@ -666,7 +714,10 @@ export function CreateQuotationModal({
                   <div className="flex justify-between text-muted-foreground pt-1 border-t border-border/40">
                     <span>Taxable Value:</span>
                     <span className="font-mono font-medium text-foreground">
-                      ₹{calculated.taxableTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                      ₹
+                      {calculated.taxableTotal.toLocaleString("en-IN", {
+                        minimumFractionDigits: 2,
+                      })}
                     </span>
                   </div>
 
@@ -674,7 +725,10 @@ export function CreateQuotationModal({
                     <div className="flex justify-between text-muted-foreground">
                       <span>IGST (Inter-State):</span>
                       <span className="font-mono text-foreground">
-                        ₹{calculated.igstTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                        ₹
+                        {calculated.igstTotal.toLocaleString("en-IN", {
+                          minimumFractionDigits: 2,
+                        })}
                       </span>
                     </div>
                   ) : (
@@ -682,13 +736,19 @@ export function CreateQuotationModal({
                       <div className="flex justify-between text-muted-foreground">
                         <span>CGST (Intra-State 50%):</span>
                         <span className="font-mono text-foreground">
-                          ₹{calculated.cgstTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                          ₹
+                          {calculated.cgstTotal.toLocaleString("en-IN", {
+                            minimumFractionDigits: 2,
+                          })}
                         </span>
                       </div>
                       <div className="flex justify-between text-muted-foreground">
                         <span>SGST (Intra-State 50%):</span>
                         <span className="font-mono text-foreground">
-                          ₹{calculated.sgstTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                          ₹
+                          {calculated.sgstTotal.toLocaleString("en-IN", {
+                            minimumFractionDigits: 2,
+                          })}
                         </span>
                       </div>
                     </>
@@ -698,8 +758,8 @@ export function CreateQuotationModal({
                     <div className="flex justify-between text-muted-foreground">
                       <span>Round-off:</span>
                       <span className="font-mono text-foreground">
-                        {calculated.roundOff > 0 ? "+" : ""}
-                        ₹{calculated.roundOff.toFixed(2)}
+                        {calculated.roundOff > 0 ? "+" : ""}₹
+                        {calculated.roundOff.toFixed(2)}
                       </span>
                     </div>
                   )}
@@ -709,7 +769,10 @@ export function CreateQuotationModal({
                       Grand Total:
                     </span>
                     <span className="text-lg font-bold font-mono text-primary">
-                      ₹{calculated.grandTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                      ₹
+                      {calculated.grandTotal.toLocaleString("en-IN", {
+                        minimumFractionDigits: 2,
+                      })}
                     </span>
                   </div>
                 </div>

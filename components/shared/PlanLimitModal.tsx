@@ -80,7 +80,8 @@ export function PlanLimitModal({
             <div className="flex justify-between text-xs font-semibold">
               <span className="text-muted-foreground">Current Usage:</span>
               <span className="text-foreground">
-                {currentCount} / {maxLimit} ({Math.min(100, Math.round((currentCount / maxLimit) * 100))}%)
+                {currentCount} / {maxLimit} (
+                {Math.min(100, Math.round((currentCount / maxLimit) * 100))}%)
               </span>
             </div>
             <Progress
@@ -111,4 +112,3 @@ export function PlanLimitModal({
     </Dialog>
   );
 }
-

@@ -18,10 +18,15 @@ import {
   GripVertical,
   Pencil,
   Equal,
+  Users,
+  Search,
+  ExternalLink,
+  Building2,
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import {
   useGetServiceByIdQuery,
+  useGetServiceClientsQuery,
   useUpdateServiceMutation,
   useDeleteServiceMutation,
   useGetUsersQuery,
@@ -47,7 +52,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Check, ChevronsUpDown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatDate, getInitials } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -174,8 +179,31 @@ export default function ServiceDetailPage() {
 
   const [updateService, { isLoading: isUpdating }] = useUpdateServiceMutation();
   const [deleteService] = useDeleteServiceMutation();
+  const { data: subscribedClients = [], isLoading: isLoadingClients } =
+    useGetServiceClientsQuery(serviceId);
 
   const [formData, setFormData] = useState<any>(null);
+  const [clientSearch, setClientSearch] = useState("");
+
+  const filteredClients = useMemo(() => {
+    if (!clientSearch.trim()) return subscribedClients;
+    const q = clientSearch.toLowerCase();
+    return subscribedClients.filter(
+      (c: any) =>
+        c.name?.toLowerCase().includes(q) ||
+        c.fileNo?.toLowerCase().includes(q) ||
+        c.pan?.toLowerCase().includes(q) ||
+        c.gstin?.toLowerCase().includes(q) ||
+        c.email?.toLowerCase().includes(q),
+    );
+  }, [subscribedClients, clientSearch]);
+
+  const totalRecurringValue = useMemo(() => {
+    return subscribedClients.reduce(
+      (acc: number, c: any) => acc + (c.effectivePrice || 0),
+      0,
+    );
+  }, [subscribedClients]);
 
   // Initialize form data when API data arrives
   useEffect(() => {
@@ -345,6 +373,10 @@ export default function ServiceDetailPage() {
             { v: "checklist", l: "Checklist" },
             { v: "subtasks", l: "Subtasks" },
             { v: "fields", l: "Custom Fields" },
+            {
+              v: "clients",
+              l: `Clients (${subscribedClients.length})`,
+            },
           ].map((t) => (
             <TabsTrigger
               key={t.v}
@@ -1555,6 +1587,259 @@ export default function ServiceDetailPage() {
                     </li>
                   ))}
                 </ul>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Subscribed Clients Tab */}
+        <TabsContent value="clients" className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Card className="border shadow-xs bg-card">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Subscribed Clients
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-foreground flex items-center gap-2">
+                  <Users className="h-5 w-5 text-primary" />
+                  {subscribedClients.length}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Active client retainers linked to this service
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border shadow-xs bg-card">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Recurring Retainer Value
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                  ₹{totalRecurringValue.toLocaleString("en-IN")}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Cumulative billing volume per cycle
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border shadow-xs bg-card">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Standard Rate / SAC
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-foreground">
+                  ₹{(formData?.defaultBillingRate || 0).toLocaleString("en-IN")}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1 font-mono">
+                  SAC: {formData?.sacCode || "N/A"} · GST:{" "}
+                  {formData?.gstPercentage || 18}%
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="border shadow-xs bg-card">
+            <CardHeader className="pb-3 border-b">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <CardTitle className="text-base font-semibold">
+                    Subscribed Clients
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Clients enrolled in this service blueprint for automated
+                    compliance task generation and retainer billing.
+                  </p>
+                </div>
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by name, PAN, GSTIN..."
+                    value={clientSearch}
+                    onChange={(e) => setClientSearch(e.target.value)}
+                    className="pl-8 text-xs h-9"
+                  />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              {isLoadingClients ? (
+                <div className="flex h-48 items-center justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : filteredClients.length === 0 ? (
+                <div className="text-center py-12 px-4">
+                  <Users className="h-10 w-10 text-muted-foreground/40 mx-auto mb-2" />
+                  <h3 className="text-sm font-semibold text-foreground">
+                    No Subscribed Clients Found
+                  </h3>
+                  <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1">
+                    {clientSearch
+                      ? `No clients match the search "${clientSearch}".`
+                      : "No clients are currently subscribed to this service blueprint. You can assign this service directly from any client's Retainers tab or package subscription."}
+                  </p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader className="bg-muted/40">
+                    <TableRow>
+                      <TableHead className="text-xs font-semibold">
+                        Client Name & Details
+                      </TableHead>
+                      <TableHead className="text-xs font-semibold">
+                        PAN / GSTIN
+                      </TableHead>
+                      <TableHead className="text-xs font-semibold">
+                        Contact
+                      </TableHead>
+                      <TableHead className="text-xs font-semibold text-right">
+                        Agreed Rate
+                      </TableHead>
+                      <TableHead className="text-xs font-semibold text-center">
+                        Subscribed Via
+                      </TableHead>
+                      <TableHead className="text-xs font-semibold text-center">
+                        Tasks
+                      </TableHead>
+                      <TableHead className="text-xs font-semibold text-right">
+                        Action
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredClients.map((client: any) => (
+                      <TableRow
+                        key={client._id}
+                        className="hover:bg-muted/30 transition-colors"
+                      >
+                        <TableCell>
+                          <div className="flex items-center gap-2.5">
+                            <Avatar className="h-8 w-8 rounded-lg text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+                              <AvatarFallback className="rounded-lg">
+                                {getInitials(client.name)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <Link
+                                href={`/clients/${client._id}`}
+                                className="font-semibold text-xs text-primary hover:underline block"
+                              >
+                                {client.name}
+                              </Link>
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                {client.fileNo && (
+                                  <span className="font-mono text-[10px] text-muted-foreground">
+                                    #{client.fileNo}
+                                  </span>
+                                )}
+                                {client.entityType && (
+                                  <Badge
+                                    variant="outline"
+                                    className="text-[9px] px-1 py-0 h-4 font-normal"
+                                  >
+                                    {client.entityType}
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-mono text-xs">
+                          {client.pan && <div>{client.pan}</div>}
+                          {client.gstin ? (
+                            <div className="text-[11px] text-muted-foreground">
+                              {client.gstin}
+                            </div>
+                          ) : (
+                            <div className="text-[10px] text-muted-foreground">
+                              No GSTIN
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          {client.email && (
+                            <div className="text-muted-foreground">
+                              {client.email}
+                            </div>
+                          )}
+                          {client.mobile && (
+                            <div className="text-[11px] font-mono text-muted-foreground">
+                              {client.mobile}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-xs font-bold text-right">
+                          <div>
+                            ₹
+                            {(client.effectivePrice || 0).toLocaleString(
+                              "en-IN",
+                            )}
+                          </div>
+                          {client.customPrice !== null &&
+                          client.customPrice !== undefined ? (
+                            <Badge
+                              variant="secondary"
+                              className="text-[9px] px-1 py-0 h-3.5 bg-amber-50 text-amber-700 dark:bg-amber-950/40 border-amber-200"
+                            >
+                              Custom Retainer
+                            </Badge>
+                          ) : (
+                            <span className="text-[10px] text-muted-foreground font-normal">
+                              Standard
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] bg-muted/40"
+                          >
+                            {client.subscriptionSource}
+                          </Badge>
+                          {client.subscribedAt && (
+                            <div className="text-[10px] text-muted-foreground mt-0.5">
+                              Since {formatDate(client.subscribedAt)}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-center text-xs">
+                          <div className="font-semibold">
+                            {client.totalTasks} total
+                          </div>
+                          {client.pendingTasks > 0 ? (
+                            <span className="text-[10px] text-amber-600 font-medium">
+                              {client.pendingTasks} active
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-emerald-600 font-medium">
+                              All done
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            asChild
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-xs gap-1"
+                          >
+                            <Link href={`/clients/${client._id}`}>
+                              <span>View Client</span>
+                              <ExternalLink className="h-3 w-3" />
+                            </Link>
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               )}
             </CardContent>
           </Card>

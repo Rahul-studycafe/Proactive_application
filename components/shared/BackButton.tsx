@@ -49,7 +49,7 @@ export function BackButton({
     <div
       className={cn(
         "flex items-center justify-between text-sm text-muted-foreground",
-        className
+        className,
       )}
     >
       {href ? (

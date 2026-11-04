@@ -1,9 +1,9 @@
 export type ExpensePaymentMode =
-  | 'Bank Transfer'
-  | 'Cash'
-  | 'UPI'
-  | 'Credit Card'
-  | 'Cheque';
+  | "Bank Transfer"
+  | "Cash"
+  | "UPI"
+  | "Credit Card"
+  | "Cheque";
 
 export interface ClientExpense {
   _id: string;
@@ -102,7 +102,7 @@ export interface UnbilledExpenseItem {
   paymentMode: string;
   notes?: string;
   particulars: string;
-  referenceType: 'Expense';
+  referenceType: "Expense";
   referenceId: string;
   receiptFileUrl?: string;
 }

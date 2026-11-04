@@ -91,7 +91,7 @@ export default function DebtorsAgingReportPage() {
       (d) =>
         d.clientName?.toLowerCase().includes(q) ||
         d.pan?.toLowerCase().includes(q) ||
-        d.mobile?.includes(q)
+        d.mobile?.includes(q),
     );
   }, [rawDebtors, search]);
 
@@ -205,8 +205,12 @@ export default function DebtorsAgingReportPage() {
               <TableHeader className="bg-muted/40 text-xs">
                 <TableRow>
                   <TableHead className="w-[4%]"></TableHead>
-                  <TableHead className="w-[24%] min-w-[180px]">Debtor Client</TableHead>
-                  <TableHead className="w-[14%] min-w-[110px] text-right">Total Due</TableHead>
+                  <TableHead className="w-[24%] min-w-[180px]">
+                    Debtor Client
+                  </TableHead>
+                  <TableHead className="w-[14%] min-w-[110px] text-right">
+                    Total Due
+                  </TableHead>
                   <TableHead className="w-[13%] min-w-[100px] text-right text-emerald-600 dark:text-emerald-400">
                     0–30 Days
                   </TableHead>
@@ -219,7 +223,9 @@ export default function DebtorsAgingReportPage() {
                   <TableHead className="w-[13%] min-w-[100px] text-right text-rose-600 dark:text-rose-400">
                     90+ Days
                   </TableHead>
-                  <TableHead className="w-[6%] min-w-[60px] text-center">Invoices</TableHead>
+                  <TableHead className="w-[6%] min-w-[60px] text-center">
+                    Invoices
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody className="text-xs">
@@ -242,7 +248,8 @@ export default function DebtorsAgingReportPage() {
                           No Debtors with Pending Dues
                         </h4>
                         <p className="text-xs text-muted-foreground">
-                          Excellent! All client billing receivables are fully settled.
+                          Excellent! All client billing receivables are fully
+                          settled.
                         </p>
                       </div>
                     </TableCell>
@@ -306,76 +313,100 @@ export default function DebtorsAgingReportPage() {
                           </TableCell>
 
                           <TableCell className="text-center">
-                            <Badge variant="outline" className="text-[10px] font-mono">
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] font-mono"
+                            >
                               {debtor.invoicesCount} inv
                             </Badge>
                           </TableCell>
                         </TableRow>
 
                         {/* Expandable Sub-table for Unpaid Invoices */}
-                        {isExpanded && debtor.invoices && debtor.invoices.length > 0 && (
-                          <TableRow className="bg-muted/30">
-                            <TableCell colSpan={8} className="p-3 pl-10">
-                              <div className="rounded-lg border border-border/80 bg-card p-3 space-y-2">
-                                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block">
-                                  Unpaid Invoices for {debtor.clientName}
-                                </span>
-                                <div className="overflow-x-auto">
-                                  <Table>
-                                    <TableHeader className="bg-muted/50 text-[11px]">
-                                      <TableRow>
-                                        <TableHead>Invoice #</TableHead>
-                                        <TableHead>Due Date</TableHead>
-                                        <TableHead className="text-center">Days Overdue</TableHead>
-                                        <TableHead className="text-right">Amount Due</TableHead>
-                                        <TableHead className="text-center">Status</TableHead>
-                                      </TableRow>
-                                    </TableHeader>
-                                    <TableBody className="text-xs">
-                                      {debtor.invoices.map((inv, idx) => (
-                                        <TableRow key={idx}>
-                                          <TableCell className="font-mono font-bold text-foreground">
-                                            {inv.invoiceNo}
-                                          </TableCell>
-                                          <TableCell className="text-muted-foreground">
-                                            {formatDate(inv.dueDate)}
-                                          </TableCell>
-                                          <TableCell className="text-center font-mono">
-                                            {inv.daysOverdue > 90 ? (
-                                              <Badge variant="outline" className="border-rose-400 bg-rose-50 text-rose-700 text-[10px] font-bold">
-                                                {inv.daysOverdue} days
-                                              </Badge>
-                                            ) : inv.daysOverdue > 60 ? (
-                                              <Badge variant="outline" className="border-orange-400 bg-orange-50 text-orange-700 text-[10px] font-bold">
-                                                {inv.daysOverdue} days
-                                              </Badge>
-                                            ) : inv.daysOverdue > 30 ? (
-                                              <Badge variant="outline" className="border-amber-400 bg-amber-50 text-amber-700 text-[10px]">
-                                                {inv.daysOverdue} days
-                                              </Badge>
-                                            ) : (
-                                              <span className="text-emerald-600 font-medium">
-                                                {inv.daysOverdue} days (Current)
-                                              </span>
-                                            )}
-                                          </TableCell>
-                                          <TableCell className="text-right font-mono font-semibold text-foreground">
-                                            {formatCurrency(inv.amountDue)}
-                                          </TableCell>
-                                          <TableCell className="text-center">
-                                            <Badge variant="outline" className="text-[10px]">
-                                              {inv.status}
-                                            </Badge>
-                                          </TableCell>
+                        {isExpanded &&
+                          debtor.invoices &&
+                          debtor.invoices.length > 0 && (
+                            <TableRow className="bg-muted/30">
+                              <TableCell colSpan={8} className="p-3 pl-10">
+                                <div className="rounded-lg border border-border/80 bg-card p-3 space-y-2">
+                                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block">
+                                    Unpaid Invoices for {debtor.clientName}
+                                  </span>
+                                  <div className="overflow-x-auto">
+                                    <Table>
+                                      <TableHeader className="bg-muted/50 text-[11px]">
+                                        <TableRow>
+                                          <TableHead>Invoice #</TableHead>
+                                          <TableHead>Due Date</TableHead>
+                                          <TableHead className="text-center">
+                                            Days Overdue
+                                          </TableHead>
+                                          <TableHead className="text-right">
+                                            Amount Due
+                                          </TableHead>
+                                          <TableHead className="text-center">
+                                            Status
+                                          </TableHead>
                                         </TableRow>
-                                      ))}
-                                    </TableBody>
-                                  </Table>
+                                      </TableHeader>
+                                      <TableBody className="text-xs">
+                                        {debtor.invoices.map((inv, idx) => (
+                                          <TableRow key={idx}>
+                                            <TableCell className="font-mono font-bold text-foreground">
+                                              {inv.invoiceNo}
+                                            </TableCell>
+                                            <TableCell className="text-muted-foreground">
+                                              {formatDate(inv.dueDate)}
+                                            </TableCell>
+                                            <TableCell className="text-center font-mono">
+                                              {inv.daysOverdue > 90 ? (
+                                                <Badge
+                                                  variant="outline"
+                                                  className="border-rose-400 bg-rose-50 text-rose-700 text-[10px] font-bold"
+                                                >
+                                                  {inv.daysOverdue} days
+                                                </Badge>
+                                              ) : inv.daysOverdue > 60 ? (
+                                                <Badge
+                                                  variant="outline"
+                                                  className="border-orange-400 bg-orange-50 text-orange-700 text-[10px] font-bold"
+                                                >
+                                                  {inv.daysOverdue} days
+                                                </Badge>
+                                              ) : inv.daysOverdue > 30 ? (
+                                                <Badge
+                                                  variant="outline"
+                                                  className="border-amber-400 bg-amber-50 text-amber-700 text-[10px]"
+                                                >
+                                                  {inv.daysOverdue} days
+                                                </Badge>
+                                              ) : (
+                                                <span className="text-emerald-600 font-medium">
+                                                  {inv.daysOverdue} days
+                                                  (Current)
+                                                </span>
+                                              )}
+                                            </TableCell>
+                                            <TableCell className="text-right font-mono font-semibold text-foreground">
+                                              {formatCurrency(inv.amountDue)}
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                              <Badge
+                                                variant="outline"
+                                                className="text-[10px]"
+                                              >
+                                                {inv.status}
+                                              </Badge>
+                                            </TableCell>
+                                          </TableRow>
+                                        ))}
+                                      </TableBody>
+                                    </Table>
+                                  </div>
                                 </div>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        )}
+                              </TableCell>
+                            </TableRow>
+                          )}
                       </Fragment>
                     );
                   })
@@ -387,8 +418,14 @@ export default function DebtorsAgingReportPage() {
           {pagination.totalPages > 1 && (
             <div className="flex items-center justify-between p-3.5 border-t border-border/80 text-xs text-muted-foreground">
               <div>
-                Showing page <span className="font-semibold text-foreground">{pagination.page}</span> of{" "}
-                <span className="font-semibold text-foreground">{pagination.totalPages}</span>
+                Showing page{" "}
+                <span className="font-semibold text-foreground">
+                  {pagination.page}
+                </span>{" "}
+                of{" "}
+                <span className="font-semibold text-foreground">
+                  {pagination.totalPages}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -404,7 +441,9 @@ export default function DebtorsAgingReportPage() {
                   variant="outline"
                   size="sm"
                   disabled={page >= pagination.totalPages}
-                  onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
+                  onClick={() =>
+                    setPage((p) => Math.min(pagination.totalPages, p + 1))
+                  }
                   className="h-7 text-xs"
                 >
                   Next

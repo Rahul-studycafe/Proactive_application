@@ -203,7 +203,10 @@ export default function TaskDashboard() {
       <Breadcrumbs
         items={[
           { label: "Tasks", href: "/tasks" },
-          { label: (task as any).title || task.serviceId?.name || "Task Details" },
+          {
+            label:
+              (task as any).title || task.serviceId?.name || "Task Details",
+          },
         ]}
       />
 
@@ -276,7 +279,10 @@ export default function TaskDashboard() {
           <div className="flex items-center gap-2.5 p-3 bg-muted/60 border rounded-lg text-xs text-muted-foreground">
             <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0" />
             <span>
-              This task is <strong>{task.status}</strong>. To-dos, subtasks, notes, and file uploads are locked. To make further changes, change the status dropdown to <em>In Progress</em> or <em>Under Review</em>.
+              This task is <strong>{task.status}</strong>. To-dos, subtasks,
+              notes, and file uploads are locked. To make further changes,
+              change the status dropdown to <em>In Progress</em> or{" "}
+              <em>Under Review</em>.
             </span>
           </div>
         )}
@@ -390,9 +396,11 @@ export default function TaskDashboard() {
                 <div className="grid grid-cols-[120px_1fr] gap-4 items-center">
                   <span className="text-sm text-muted-foreground">Amount</span>
                   <span className="text-sm font-medium">
-                    ₹{((task.billableAmount !== undefined && task.billableAmount !== null)
+                    ₹
+                    {(task.billableAmount !== undefined &&
+                    task.billableAmount !== null
                       ? task.billableAmount
-                      : (task.billingAmount || 0)
+                      : task.billingAmount || 0
                     ).toLocaleString("en-IN")}
                   </span>
                 </div>
@@ -609,7 +617,8 @@ export default function TaskDashboard() {
                   </div>
                 ) : (
                   <p className="text-xs text-muted-foreground italic">
-                    Notes are locked while the task is {task.status.toLowerCase()}.
+                    Notes are locked while the task is{" "}
+                    {task.status.toLowerCase()}.
                   </p>
                 )}
 

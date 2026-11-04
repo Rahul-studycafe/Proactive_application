@@ -1,7 +1,18 @@
-export type DSCStatus = 'In Office' | 'With Client' | 'Expired' | 'Renewed';
-export type DSCClass = 'Class 2' | 'Class 3';
-export type DSCTokenType = 'ePass2003' | 'ProxKey' | 'mToken' | 'Watchdata' | 'Other';
-export type DSCIssuingAuthority = 'eMudhra' | 'Capricorn' | 'Vsign' | 'Sify' | 'IDSign' | 'Other';
+export type DSCStatus = "In Office" | "With Client" | "Expired" | "Renewed";
+export type DSCClass = "Class 2" | "Class 3";
+export type DSCTokenType =
+  | "ePass2003"
+  | "ProxKey"
+  | "mToken"
+  | "Watchdata"
+  | "Other";
+export type DSCIssuingAuthority =
+  | "eMudhra"
+  | "Capricorn"
+  | "Vsign"
+  | "Sify"
+  | "IDSign"
+  | "Other";
 
 export interface DSCClient {
   _id: string;
@@ -25,7 +36,7 @@ export interface DSCItem {
   physicalLocation: string;
   status: DSCStatus;
   currentHolderName?: string;
-  alertMilestonesSent?: ('30_day' | '15_day' | '7_day')[];
+  alertMilestonesSent?: ("30_day" | "15_day" | "7_day")[];
   notes?: string;
   createdBy?: {
     _id: string;
@@ -67,7 +78,7 @@ export interface UpdateDscPayload {
 }
 
 export interface DscHandoverPayload {
-  action: 'Handed to Client' | 'Received from Client' | 'Internal Transfer';
+  action: "Handed to Client" | "Received from Client" | "Internal Transfer";
   transferredToName: string;
   transferredToPhone?: string;
   reason: string;
@@ -80,7 +91,7 @@ export interface DscHandoverLogItem {
   _id: string;
   tenantId: string;
   dscId: string;
-  action: 'Handed to Client' | 'Received from Client' | 'Internal Transfer';
+  action: "Handed to Client" | "Received from Client" | "Internal Transfer";
   transferredToName: string;
   transferredToPhone?: string;
   reason: string;

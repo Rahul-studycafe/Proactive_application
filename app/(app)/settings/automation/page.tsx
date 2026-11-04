@@ -4,7 +4,13 @@ import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { QueueHealthCard } from "@/components/automation/QueueHealthCard";
 import { TriggerAutomationModal } from "@/components/automation/TriggerAutomationModal";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Zap, ShieldCheck, History, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
@@ -27,7 +33,8 @@ export default function AutomationSettingsPage() {
             <Zap className="h-5 w-5 text-amber-500 fill-amber-500" />
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            Configure BullMQ background task workers, inspect Redis queue status, and run manual generation cycles.
+            Configure BullMQ background task workers, inspect Redis queue
+            status, and run manual generation cycles.
           </p>
         </div>
 
@@ -63,8 +70,10 @@ export default function AutomationSettingsPage() {
               </div>
               <p>
                 Each generated task is assigned a unique period key (e.g.{" "}
-                <code className="text-[10px] font-mono text-primary">2026-10</code>).
-                Duplicate tasks are guaranteed to never be spawned twice.
+                <code className="text-[10px] font-mono text-primary">
+                  2026-10
+                </code>
+                ). Duplicate tasks are guaranteed to never be spawned twice.
               </p>
             </div>
             <div className="rounded-lg border bg-muted/20 p-3 space-y-1">
@@ -72,8 +81,9 @@ export default function AutomationSettingsPage() {
                 Recurrence Cadences
               </div>
               <p>
-                Supports Monthly (1st of month), Calendar Quarterly (Jan/Apr/Jul/Oct),
-                Indian Fiscal Quarter (Apr/Jul/Oct/Jan), and Yearly schedules.
+                Supports Monthly (1st of month), Calendar Quarterly
+                (Jan/Apr/Jul/Oct), Indian Fiscal Quarter (Apr/Jul/Oct/Jan), and
+                Yearly schedules.
               </p>
             </div>
             <div className="rounded-lg border bg-muted/20 p-3 space-y-1">
@@ -81,8 +91,9 @@ export default function AutomationSettingsPage() {
                 Audit Trail Guarantee
               </div>
               <p>
-                Every automated run generates an immutable audit record containing
-                itemized counts, client references, and execution durations.
+                Every automated run generates an immutable audit record
+                containing itemized counts, client references, and execution
+                durations.
               </p>
             </div>
           </div>

@@ -80,13 +80,19 @@ export function ClientPasswordsTab({
 
   // Modal & Drawer States
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [editingCredential, setEditingCredential] = useState<ClientPassword | null>(null);
+  const [editingCredential, setEditingCredential] =
+    useState<ClientPassword | null>(null);
 
-  const [revealCredential, setRevealCredential] = useState<ClientPassword | null>(null);
+  const [revealCredential, setRevealCredential] =
+    useState<ClientPassword | null>(null);
   const [isRevealOpen, setIsRevealOpen] = useState(false);
 
-  const [auditPasswordId, setAuditPasswordId] = useState<string | undefined>(undefined);
-  const [auditPortalName, setAuditPortalName] = useState<string | undefined>(undefined);
+  const [auditPasswordId, setAuditPasswordId] = useState<string | undefined>(
+    undefined,
+  );
+  const [auditPortalName, setAuditPortalName] = useState<string | undefined>(
+    undefined,
+  );
   const [isAuditDrawerOpen, setIsAuditDrawerOpen] = useState(false);
 
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -104,12 +110,16 @@ export function ClientPasswordsTab({
     };
   }, [clientId, search, portalFilter]);
 
-  const { data, isLoading, isFetching, refetch } = useGetPasswordsQuery(queryParams, {
-    skip: !clientId,
-  });
+  const { data, isLoading, isFetching, refetch } = useGetPasswordsQuery(
+    queryParams,
+    {
+      skip: !clientId,
+    },
+  );
 
   const { data: portals = [] } = useGetPortalsQuery();
-  const [deletePassword, { isLoading: isDeleting }] = useDeletePasswordMutation();
+  const [deletePassword, { isLoading: isDeleting }] =
+    useDeletePasswordMutation();
 
   const passwords: ClientPassword[] = data?.passwords || [];
   const totalCount = data?.total || 0;
@@ -162,7 +172,9 @@ export function ClientPasswordsTab({
       toast.success(`${deleteTarget.portalName} credential deleted`);
       setDeleteTarget(null);
     } catch (err: any) {
-      toast.error(err?.data?.message || err?.message || "Failed to delete credential");
+      toast.error(
+        err?.data?.message || err?.message || "Failed to delete credential",
+      );
     }
   };
 
@@ -176,14 +188,23 @@ export function ClientPasswordsTab({
         </Badge>
       );
     }
-    if (lower.includes("income tax") || lower.includes("itax") || lower.includes("pan")) {
+    if (
+      lower.includes("income tax") ||
+      lower.includes("itax") ||
+      lower.includes("pan")
+    ) {
       return (
         <Badge className="bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30 gap-1 font-semibold">
           <FileCheck2 className="h-3 w-3" /> {name}
         </Badge>
       );
     }
-    if (lower.includes("mca") || lower.includes("roc") || lower.includes("v2") || lower.includes("v3")) {
+    if (
+      lower.includes("mca") ||
+      lower.includes("roc") ||
+      lower.includes("v2") ||
+      lower.includes("v3")
+    ) {
       return (
         <Badge className="bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-500/30 gap-1 font-semibold">
           <Layers className="h-3 w-3" /> {name}
@@ -214,8 +235,12 @@ export function ClientPasswordsTab({
           </div>
           <div className="min-w-0">
             <div className="flex items-baseline gap-1.5">
-              <span className="text-base font-bold tracking-tight">{totalCount}</span>
-              <span className="text-[11px] text-muted-foreground font-medium truncate">Credentials</span>
+              <span className="text-base font-bold tracking-tight">
+                {totalCount}
+              </span>
+              <span className="text-[11px] text-muted-foreground font-medium truncate">
+                Credentials
+              </span>
             </div>
           </div>
         </div>
@@ -226,8 +251,12 @@ export function ClientPasswordsTab({
           </div>
           <div className="min-w-0">
             <div className="flex items-baseline gap-1.5">
-              <span className="text-base font-bold tracking-tight">{distinctPortals}</span>
-              <span className="text-[11px] text-muted-foreground font-medium truncate">Portals</span>
+              <span className="text-base font-bold tracking-tight">
+                {distinctPortals}
+              </span>
+              <span className="text-[11px] text-muted-foreground font-medium truncate">
+                Portals
+              </span>
             </div>
           </div>
         </div>
@@ -237,8 +266,12 @@ export function ClientPasswordsTab({
             <ShieldCheck className="h-3.5 w-3.5" />
           </div>
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 truncate">AES-256-CBC</p>
-            <p className="text-[10px] text-muted-foreground truncate">Encrypted At Rest</p>
+            <p className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 truncate">
+              AES-256-CBC
+            </p>
+            <p className="text-[10px] text-muted-foreground truncate">
+              Encrypted At Rest
+            </p>
           </div>
         </div>
 
@@ -248,8 +281,12 @@ export function ClientPasswordsTab({
               <History className="h-3.5 w-3.5" />
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] font-semibold text-foreground truncate">Audit Trail</p>
-              <p className="text-[10px] text-muted-foreground truncate">Access Logged</p>
+              <p className="text-[11px] font-semibold text-foreground truncate">
+                Audit Trail
+              </p>
+              <p className="text-[10px] text-muted-foreground truncate">
+                Access Logged
+              </p>
             </div>
           </div>
           <Button
@@ -322,18 +359,33 @@ export function ClientPasswordsTab({
           <Table>
             <TableHeader className="bg-muted/40">
               <TableRow>
-                <TableHead className="w-[200px] text-xs font-semibold">Portal / Authority</TableHead>
-                <TableHead className="text-xs font-semibold">Username / Login ID</TableHead>
-                <TableHead className="text-xs font-semibold">Password</TableHead>
-                <TableHead className="text-xs font-semibold">Security Notes / Remarks</TableHead>
-                <TableHead className="text-xs font-semibold">Last Verified</TableHead>
-                <TableHead className="text-right text-xs font-semibold w-[160px]">Actions</TableHead>
+                <TableHead className="w-[200px] text-xs font-semibold">
+                  Portal / Authority
+                </TableHead>
+                <TableHead className="text-xs font-semibold">
+                  Username / Login ID
+                </TableHead>
+                <TableHead className="text-xs font-semibold">
+                  Password
+                </TableHead>
+                <TableHead className="text-xs font-semibold">
+                  Security Notes / Remarks
+                </TableHead>
+                <TableHead className="text-xs font-semibold">
+                  Last Verified
+                </TableHead>
+                <TableHead className="text-right text-xs font-semibold w-[160px]">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-12 text-sm text-muted-foreground">
+                  <TableCell
+                    colSpan={6}
+                    className="text-center py-12 text-sm text-muted-foreground"
+                  >
                     <div className="flex items-center justify-center gap-2">
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                       <span>Loading client credentials...</span>
@@ -348,13 +400,20 @@ export function ClientPasswordsTab({
                         <KeyRound className="h-6 w-6" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-sm text-foreground">No Credentials Saved</h4>
+                        <h4 className="font-semibold text-sm text-foreground">
+                          No Credentials Saved
+                        </h4>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Keep all tax portal logins (GST, IT, MCA, TRACES) securely encrypted in one place.
+                          Keep all tax portal logins (GST, IT, MCA, TRACES)
+                          securely encrypted in one place.
                         </p>
                       </div>
                       <div className="flex items-center gap-2 pt-2">
-                        <Button size="sm" onClick={handleOpenAdd} className="text-xs h-8 gap-1.5">
+                        <Button
+                          size="sm"
+                          onClick={handleOpenAdd}
+                          className="text-xs h-8 gap-1.5"
+                        >
                           <Plus className="h-3.5 w-3.5" />
                           <span>Add First Credential</span>
                         </Button>
@@ -374,7 +433,10 @@ export function ClientPasswordsTab({
               ) : (
                 passwords.map((p) => {
                   return (
-                    <TableRow key={p._id} className="hover:bg-muted/40 transition-colors">
+                    <TableRow
+                      key={p._id}
+                      className="hover:bg-muted/40 transition-colors"
+                    >
                       {/* Portal Column */}
                       <TableCell className="align-middle">
                         <div className="space-y-1">
@@ -387,7 +449,9 @@ export function ClientPasswordsTab({
                               className="text-[11px] text-muted-foreground hover:text-blue-600 inline-flex items-center gap-1 font-mono transition-colors"
                               title={p.portalUrl}
                             >
-                              <span className="truncate max-w-[140px]">{p.portalUrl.replace(/^https?:\/\//, "")}</span>
+                              <span className="truncate max-w-[140px]">
+                                {p.portalUrl.replace(/^https?:\/\//, "")}
+                              </span>
                               <ExternalLink className="h-2.5 w-2.5 shrink-0" />
                             </a>
                           )}
@@ -437,11 +501,16 @@ export function ClientPasswordsTab({
                       {/* Notes Column */}
                       <TableCell className="align-middle max-w-[200px]">
                         {p.notes ? (
-                          <p className="text-xs text-muted-foreground line-clamp-2" title={p.notes}>
+                          <p
+                            className="text-xs text-muted-foreground line-clamp-2"
+                            title={p.notes}
+                          >
                             {p.notes}
                           </p>
                         ) : (
-                          <span className="text-xs text-muted-foreground/60 italic">—</span>
+                          <span className="text-xs text-muted-foreground/60 italic">
+                            —
+                          </span>
                         )}
                       </TableCell>
 
@@ -450,14 +519,19 @@ export function ClientPasswordsTab({
                         {p.lastVerifiedDate ? (
                           <span className="text-xs text-muted-foreground flex items-center gap-1">
                             <Calendar className="h-3 w-3 text-muted-foreground/80" />
-                            {new Date(p.lastVerifiedDate).toLocaleDateString("en-IN", {
-                              day: "2-digit",
-                              month: "short",
-                              year: "numeric",
-                            })}
+                            {new Date(p.lastVerifiedDate).toLocaleDateString(
+                              "en-IN",
+                              {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              },
+                            )}
                           </span>
                         ) : (
-                          <span className="text-xs text-muted-foreground/60 italic">Not set</span>
+                          <span className="text-xs text-muted-foreground/60 italic">
+                            Not set
+                          </span>
                         )}
                       </TableCell>
 
@@ -553,10 +627,13 @@ export function ClientPasswordsTab({
               Delete Portal Credential?
             </AlertDialogTitle>
             <AlertDialogDescription className="text-sm">
-              Are you sure you want to permanently delete the encrypted credentials for{" "}
-              <strong className="text-foreground">{deleteTarget?.portalName}</strong> (
-              <span className="font-mono">{deleteTarget?.username}</span>)? This action cannot
-              be undone.
+              Are you sure you want to permanently delete the encrypted
+              credentials for{" "}
+              <strong className="text-foreground">
+                {deleteTarget?.portalName}
+              </strong>{" "}
+              (<span className="font-mono">{deleteTarget?.username}</span>)?
+              This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

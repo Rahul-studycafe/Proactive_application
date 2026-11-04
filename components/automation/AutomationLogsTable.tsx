@@ -167,8 +167,8 @@ export function AutomationLogsTable({
             <Server className="h-10 w-10 text-muted-foreground/40" />
             <p className="text-sm font-medium">No automation logs recorded</p>
             <p className="text-xs max-w-sm">
-              Trigger a manual run or await the midnight BullMQ recurring scheduler
-              to view execution logs.
+              Trigger a manual run or await the midnight BullMQ recurring
+              scheduler to view execution logs.
             </p>
           </div>
         ) : (
@@ -176,13 +176,21 @@ export function AutomationLogsTable({
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/40 hover:bg-muted/40">
-                  <TableHead className="w-[190px]">Execution Timestamp</TableHead>
+                  <TableHead className="w-[190px]">
+                    Execution Timestamp
+                  </TableHead>
                   <TableHead className="w-[180px]">Trigger Source</TableHead>
                   <TableHead className="w-[130px]">Status</TableHead>
-                  <TableHead className="text-center w-[120px]">Tasks Created</TableHead>
-                  <TableHead className="text-center w-[120px]">Tasks Skipped</TableHead>
+                  <TableHead className="text-center w-[120px]">
+                    Tasks Created
+                  </TableHead>
+                  <TableHead className="text-center w-[120px]">
+                    Tasks Skipped
+                  </TableHead>
                   <TableHead className="w-[120px]">Duration</TableHead>
-                  <TableHead className="text-right w-[110px]">Diagnostics</TableHead>
+                  <TableHead className="text-right w-[110px]">
+                    Diagnostics
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -205,7 +213,7 @@ export function AutomationLogsTable({
                         {log.startedAt
                           ? format(
                               new Date(log.startedAt),
-                              "dd MMM yyyy, hh:mm:ss a"
+                              "dd MMM yyyy, hh:mm:ss a",
                             )
                           : "—"}
                       </TableCell>
@@ -302,7 +310,8 @@ export function AutomationLogsTable({
         {pagination && pagination.totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/20 text-xs">
             <span className="text-muted-foreground">
-              Showing page {pagination.page} of {pagination.totalPages} ({pagination.total} total runs)
+              Showing page {pagination.page} of {pagination.totalPages} (
+              {pagination.total} total runs)
             </span>
             <div className="flex items-center gap-1.5">
               <Button

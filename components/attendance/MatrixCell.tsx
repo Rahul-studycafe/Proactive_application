@@ -2,7 +2,11 @@
 
 import { format } from "date-fns";
 import { Calendar, Clock, Wifi, MapPin } from "lucide-react";
-import type { IAttendance, MonthlyMatrixDay, AttendanceStatus } from "@/lib/types/attendance";
+import type {
+  IAttendance,
+  MonthlyMatrixDay,
+  AttendanceStatus,
+} from "@/lib/types/attendance";
 import {
   Tooltip,
   TooltipContent,
@@ -31,8 +35,7 @@ export function MatrixCell({
   const isPreJoining = status === "N/A" || Boolean(record?.isPreJoining);
 
   let badgeText = "--";
-  let badgeStyle =
-    "text-muted-foreground/40 hover:bg-muted/60";
+  let badgeStyle = "text-muted-foreground/40 hover:bg-muted/60";
 
   // Dedicated badge styling inside the tooltip pill
   let statusBadgeStyle = "bg-muted/80 text-muted-foreground border-border/60";
@@ -75,17 +78,18 @@ export function MatrixCell({
       "bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30";
   } else if (isWeekend) {
     badgeText = "W";
-    badgeStyle = "bg-muted/60 text-muted-foreground font-normal border border-border/40";
+    badgeStyle =
+      "bg-muted/60 text-muted-foreground font-normal border border-border/40";
     statusBadgeStyle = "bg-muted/60 text-muted-foreground border-border/40";
   }
 
   const tooltipTitle = isPreJoining
-    ? (record?.notes || "Pre-Joining Period (Not Applicable)")
+    ? record?.notes || "Pre-Joining Period (Not Applicable)"
     : isHoliday
-    ? `Holiday: ${dayInfo.holiday?.name || "Official Holiday"}`
-    : isWeekend
-    ? "Weekly Weekend Closure"
-    : status || "Unmarked";
+      ? `Holiday: ${dayInfo.holiday?.name || "Official Holiday"}`
+      : isWeekend
+        ? "Weekly Weekend Closure"
+        : status || "Unmarked";
 
   const effectiveCanEdit = canEdit && !isPreJoining;
 
@@ -98,7 +102,9 @@ export function MatrixCell({
             onClick={effectiveCanEdit ? onClick : undefined}
             disabled={!effectiveCanEdit}
             className={`flex h-8 w-8 mx-auto items-center justify-center rounded-md text-xs transition-transform active:scale-95 ${badgeStyle} ${
-              effectiveCanEdit ? "cursor-pointer hover:ring-2 hover:ring-primary/40" : "cursor-default"
+              effectiveCanEdit
+                ? "cursor-pointer hover:ring-2 hover:ring-primary/40"
+                : "cursor-default"
             }`}
           >
             {badgeText}
@@ -146,7 +152,8 @@ export function MatrixCell({
               </span>
               <span className="font-mono text-[10px]">
                 {format(new Date(record.checkIn), "hh:mm a")}
-                {record?.checkOut && ` - ${format(new Date(record.checkOut), "hh:mm a")}`}
+                {record?.checkOut &&
+                  ` - ${format(new Date(record.checkOut), "hh:mm a")}`}
               </span>
             </div>
           )}

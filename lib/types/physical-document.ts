@@ -1,15 +1,15 @@
-export type PhysicalDocCategory = 'Received' | 'Given';
+export type PhysicalDocCategory = "Received" | "Given";
 
 export type PhysicalDocType =
-  | 'Passbook'
-  | 'Cheque Book'
-  | 'Original Deeds'
-  | 'PAN Card'
-  | 'Registration Certificate'
-  | 'Company Seal'
-  | 'Other';
+  | "Passbook"
+  | "Cheque Book"
+  | "Original Deeds"
+  | "PAN Card"
+  | "Registration Certificate"
+  | "Company Seal"
+  | "Other";
 
-export type PhysicalDocStatus = 'In Custody' | 'Returned' | 'Overdue';
+export type PhysicalDocStatus = "In Custody" | "Returned" | "Overdue";
 
 export interface PhysicalDocClient {
   _id: string;
@@ -18,6 +18,28 @@ export interface PhysicalDocClient {
   mobile?: string;
   entityType?: string;
   fileNo?: string;
+}
+
+export interface PhysicalDocMovement {
+  _id?: string;
+  movementType: PhysicalDocCategory;
+  date: string;
+  location: string;
+  custodianUserId?:
+    | {
+        _id: string;
+        name: string;
+        email?: string;
+      }
+    | string;
+  receivedByPersonName?: string;
+  receivedByPhone?: string;
+  returnedToPersonName?: string;
+  isReturnable: boolean;
+  returnDate?: string;
+  actualReturnedDate?: string;
+  notes?: string;
+  createdAt?: string;
 }
 
 export interface PhysicalDocument {
@@ -40,12 +62,15 @@ export interface PhysicalDocument {
   };
   receivedByPersonName?: string;
   receivedByPhone?: string;
+  returnedToPersonName?: string;
   notes?: string;
+  movements?: PhysicalDocMovement[];
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CreatePhysicalDocPayload {
+  documentId?: string;
   clientId: string;
   date?: string;
   category: PhysicalDocCategory;
@@ -57,6 +82,7 @@ export interface CreatePhysicalDocPayload {
   custodianUserId?: string;
   receivedByPersonName?: string;
   receivedByPhone?: string;
+  returnedToPersonName?: string;
   notes?: string;
 }
 
@@ -81,11 +107,44 @@ export interface ReturnPhysicalDocPayload {
   returnedNotes?: string;
 }
 
+export type StorageUnitType =
+  | "Cabinet"
+  | "Shelf"
+  | "Safe Box"
+  | "Locker"
+  | "Drawer"
+  | "Archive Room"
+  | "Other";
+
 export interface StorageLocationSummary {
+  _id?: string;
   location: string;
+  code?: string;
+  unitType?: StorageUnitType;
+  roomOrFloor?: string;
+  description?: string;
   activeCount: number;
   returnedCount: number;
   overdueCount: number;
+  totalCount?: number;
+  isMaster?: boolean;
+}
+
+export interface CreateStorageLocationPayload {
+  name: string;
+  code?: string;
+  unitType?: StorageUnitType;
+  roomOrFloor?: string;
+  description?: string;
+}
+
+export interface UpdateStorageLocationPayload {
+  name?: string;
+  code?: string;
+  unitType?: StorageUnitType;
+  roomOrFloor?: string;
+  description?: string;
+  updateReferencedDocs?: boolean;
 }
 
 export interface OverdueScanSummary {

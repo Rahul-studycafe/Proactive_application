@@ -26,7 +26,8 @@ export function BranchSwitcher() {
       if (found) {
         setActiveEntityId(found._id);
       } else {
-        const defaultEntity = entities.find((e: any) => e.isDefault) || entities[0];
+        const defaultEntity =
+          entities.find((e: any) => e.isDefault) || entities[0];
         if (defaultEntity) {
           setActiveEntityId(defaultEntity._id);
           localStorage.setItem("activeBillingEntityId", defaultEntity._id);
@@ -41,22 +42,28 @@ export function BranchSwitcher() {
       localStorage.setItem("activeBillingEntityId", entity._id);
       window.dispatchEvent(new Event("branchChanged"));
     }
-    toast.success(`Active branch switched to ${entity.branchName || entity.name}`);
+    toast.success(
+      `Active branch switched to ${entity.branchName || entity.name}`,
+    );
   };
 
   if (isLoading || entities.length <= 1) {
     // If only 1 entity or loading, show compact badge
-    const active = entities.find((e: any) => e._id === activeEntityId) || entities[0];
+    const active =
+      entities.find((e: any) => e._id === activeEntityId) || entities[0];
     if (!active) return null;
     return (
       <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted/60 text-xs font-medium text-foreground">
         <Building2 className="h-3.5 w-3.5 text-primary" />
-        <span className="truncate max-w-[120px]">{active.branchName || active.name}</span>
+        <span className="truncate max-w-[120px]">
+          {active.branchName || active.name}
+        </span>
       </div>
     );
   }
 
-  const active = entities.find((e: any) => e._id === activeEntityId) || entities[0];
+  const active =
+    entities.find((e: any) => e._id === activeEntityId) || entities[0];
 
   return (
     <DropdownMenu>
@@ -67,7 +74,9 @@ export function BranchSwitcher() {
           className="h-8 gap-1.5 px-2.5 text-xs font-semibold bg-background hover:bg-muted/50 border-border shadow-2xs"
         >
           <Building2 className="h-3.5 w-3.5 text-primary" />
-          <span className="truncate max-w-[140px]">{active?.branchName || active?.name || "Branch"}</span>
+          <span className="truncate max-w-[140px]">
+            {active?.branchName || active?.name || "Branch"}
+          </span>
           <ChevronDown className="h-3 w-3 text-muted-foreground ml-0.5 opacity-70" />
         </Button>
       </DropdownMenuTrigger>
@@ -94,10 +103,13 @@ export function BranchSwitcher() {
                   )}
                 </div>
                 <div className="text-[11px] text-muted-foreground font-mono">
-                  {entity.stateCode ? `State: ${entity.stateCode}` : ""}{entity.gstin ? ` • ${entity.gstin}` : ""}
+                  {entity.stateCode ? `State: ${entity.stateCode}` : ""}
+                  {entity.gstin ? ` • ${entity.gstin}` : ""}
                 </div>
               </div>
-              {isSelected && <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />}
+              {isSelected && (
+                <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+              )}
             </DropdownMenuItem>
           );
         })}
@@ -105,4 +117,3 @@ export function BranchSwitcher() {
     </DropdownMenu>
   );
 }
-

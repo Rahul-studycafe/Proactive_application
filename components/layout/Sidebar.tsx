@@ -77,13 +77,13 @@ const navItems: NavItem[] = [
   },
   {
     to: "/services",
-    label: "Services",
+    label: "services",
     icon: Layers,
     requiredPermission: "settings.view",
   },
   {
     type: "group",
-    label: "Finance",
+    label: "Billing & Invoices",
     icon: Landmark,
     children: [
       {
@@ -155,8 +155,7 @@ const navItems: NavItem[] = [
       },
     ],
   },
-  
-  
+
   {
     type: "group",
     label: "HR & Attendance",
@@ -273,8 +272,11 @@ export function Sidebar() {
             const GroupIcon = item.icon;
             const isGroupActive =
               item.children.some((child) =>
-                child.exact ? pathname === child.to : pathname.startsWith(child.to)
-              ) || (item.label === "Reports" && pathname.startsWith("/reports"));
+                child.exact
+                  ? pathname === child.to
+                  : pathname.startsWith(child.to),
+              ) ||
+              (item.label === "Reports" && pathname.startsWith("/reports"));
             const isOpen =
               openGroups[item.label] !== undefined
                 ? openGroups[item.label]

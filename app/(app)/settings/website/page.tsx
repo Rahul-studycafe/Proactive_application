@@ -20,10 +20,17 @@ import {
   Trash2,
   Eye,
   Loader2,
-  AlertCircle
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -47,7 +54,8 @@ const COLOR_PRESETS = [
 
 export default function WebsiteSettingsPage() {
   const { data: websiteData, isLoading } = useGetWebsiteSettingsQuery();
-  const [updateWebsite, { isLoading: isSaving }] = useUpdateWebsiteSettingsMutation();
+  const [updateWebsite, { isLoading: isSaving }] =
+    useUpdateWebsiteSettingsMutation();
 
   const [subdomain, setSubdomain] = useState("");
   const [customDomain, setCustomDomain] = useState("");
@@ -60,7 +68,9 @@ export default function WebsiteSettingsPage() {
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [contactAddress, setContactAddress] = useState("");
-  const [services, setServices] = useState<Array<{ title: string; description: string; isActive: boolean }>>([]);
+  const [services, setServices] = useState<
+    Array<{ title: string; description: string; isActive: boolean }>
+  >([]);
   const [isPublished, setIsPublished] = useState(true);
 
   // Initialize form with backend data
@@ -73,7 +83,10 @@ export default function WebsiteSettingsPage() {
       setLogoUrl(websiteData.branding?.logoUrl || "");
       setFaviconUrl(websiteData.branding?.faviconUrl || "");
       setHeroTitle(websiteData.hero?.title || "Client Self-Service Portal");
-      setHeroSubtitle(websiteData.hero?.subtitle || "Track statutory filings, view acknowledged tax returns, and access invoices securely.");
+      setHeroSubtitle(
+        websiteData.hero?.subtitle ||
+          "Track statutory filings, view acknowledged tax returns, and access invoices securely.",
+      );
       setContactEmail(websiteData.contact?.email || "");
       setContactPhone(websiteData.contact?.phone || "");
       setContactAddress(websiteData.contact?.address || "");
@@ -81,10 +94,22 @@ export default function WebsiteSettingsPage() {
         websiteData.services?.length
           ? websiteData.services
           : [
-              { title: "GST Filings & Advisory", description: "Monthly GSTR-3B & GSTR-1 compliances", isActive: true },
-              { title: "Income Tax Returns", description: "Annual corporate & individual filing", isActive: true },
-              { title: "Audit & Assurance", description: "Statutory, internal and tax audits", isActive: true },
-            ]
+              {
+                title: "GST Filings & Advisory",
+                description: "Monthly GSTR-3B & GSTR-1 compliances",
+                isActive: true,
+              },
+              {
+                title: "Income Tax Returns",
+                description: "Annual corporate & individual filing",
+                isActive: true,
+              },
+              {
+                title: "Audit & Assurance",
+                description: "Statutory, internal and tax audits",
+                isActive: true,
+              },
+            ],
       );
       setIsPublished(websiteData.isPublished ?? true);
     }
@@ -130,7 +155,11 @@ export default function WebsiteSettingsPage() {
 
       toast.success("Website and Portal branding updated successfully!");
     } catch (err: any) {
-      toast.error(err?.data?.error?.message || err?.data?.message || "Failed to update website settings");
+      toast.error(
+        err?.data?.error?.message ||
+          err?.data?.message ||
+          "Failed to update website settings",
+      );
     }
   };
 
@@ -156,10 +185,12 @@ export default function WebsiteSettingsPage() {
             </Link>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <Globe className="h-6 w-6 text-primary" /> White-Label Website & Portal CMS
+            <Globe className="h-6 w-6 text-primary" /> White-Label Website &
+            Portal CMS
           </h1>
           <p className="text-xs text-muted-foreground max-w-2xl">
-            Configure your custom practice portal subdomain, primary branding color, hero messaging, and client self-service landing experience.
+            Configure your custom practice portal subdomain, primary branding
+            color, hero messaging, and client self-service landing experience.
           </p>
         </div>
 
@@ -169,7 +200,11 @@ export default function WebsiteSettingsPage() {
             disabled={isSaving}
             className="gap-2 shadow-xs"
           >
-            {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            {isSaving ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4" />
+            )}
             Save Changes
           </Button>
         </div>
@@ -192,22 +227,35 @@ export default function WebsiteSettingsPage() {
               <Card className="border-border/80 shadow-xs">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Globe className="h-4 w-4 text-primary" /> Practice Subdomain & Custom URL
+                    <Globe className="h-4 w-4 text-primary" /> Practice
+                    Subdomain & Custom URL
                   </CardTitle>
                   <CardDescription className="text-xs">
-                    Your clients access their documents and compliance calendar through this address.
+                    Your clients access their documents and compliance calendar
+                    through this address.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 text-xs">
                   <div className="space-y-1.5">
-                    <Label htmlFor="subdomain" className="text-xs font-semibold">Proactive Subdomain</Label>
+                    <Label
+                      htmlFor="subdomain"
+                      className="text-xs font-semibold"
+                    >
+                      Proactive Subdomain
+                    </Label>
                     <div className="flex rounded-md shadow-xs">
                       <Input
                         id="subdomain"
                         type="text"
                         placeholder="your-firm-name"
                         value={subdomain}
-                        onChange={(e) => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
+                        onChange={(e) =>
+                          setSubdomain(
+                            e.target.value
+                              .toLowerCase()
+                              .replace(/[^a-z0-9-]/g, ""),
+                          )
+                        }
                         className="rounded-r-none text-xs"
                       />
                       <span className="inline-flex items-center px-3 rounded-r-md border border-l-0 border-input bg-muted text-muted-foreground text-xs">
@@ -215,12 +263,20 @@ export default function WebsiteSettingsPage() {
                       </span>
                     </div>
                     <p className="text-[11px] text-muted-foreground">
-                      Public portal address: <strong className="text-foreground">{subdomain || "your-firm"}.proactive.in/portal</strong>
+                      Public portal address:{" "}
+                      <strong className="text-foreground">
+                        {subdomain || "your-firm"}.proactive.in/portal
+                      </strong>
                     </p>
                   </div>
 
                   <div className="space-y-1.5 pt-2 border-t">
-                    <Label htmlFor="custom-domain" className="text-xs font-semibold">Custom Domain (CNAME)</Label>
+                    <Label
+                      htmlFor="custom-domain"
+                      className="text-xs font-semibold"
+                    >
+                      Custom Domain (CNAME)
+                    </Label>
                     <Input
                       id="custom-domain"
                       type="text"
@@ -231,9 +287,13 @@ export default function WebsiteSettingsPage() {
                     />
                     <div className="rounded-lg bg-blue-500/10 border border-blue-500/20 p-3 text-[11px] text-blue-900 dark:text-blue-300 space-y-1">
                       <div className="font-semibold flex items-center gap-1.5">
-                        <AlertCircle className="h-3.5 w-3.5" /> DNS Setup Instructions:
+                        <AlertCircle className="h-3.5 w-3.5" /> DNS Setup
+                        Instructions:
                       </div>
-                      <p>Add a CNAME record at your DNS provider (GoDaddy, Cloudflare, Namecheap):</p>
+                      <p>
+                        Add a CNAME record at your DNS provider (GoDaddy,
+                        Cloudflare, Namecheap):
+                      </p>
                       <div className="font-mono bg-background/80 p-1.5 rounded border text-[10px]">
                         CNAME {customDomain || "portal"} → cname.proactive.in
                       </div>
@@ -242,12 +302,18 @@ export default function WebsiteSettingsPage() {
 
                   <div className="flex items-center justify-between pt-2 border-t">
                     <div className="space-y-0.5">
-                      <Label className="text-xs font-semibold">Publish Portal Landing Page</Label>
+                      <Label className="text-xs font-semibold">
+                        Publish Portal Landing Page
+                      </Label>
                       <p className="text-[11px] text-muted-foreground">
-                        When enabled, clients can view your branded login and service showcase.
+                        When enabled, clients can view your branded login and
+                        service showcase.
                       </p>
                     </div>
-                    <Switch checked={isPublished} onCheckedChange={setIsPublished} />
+                    <Switch
+                      checked={isPublished}
+                      onCheckedChange={setIsPublished}
+                    />
                   </div>
                 </CardContent>
               </Card>
@@ -258,15 +324,22 @@ export default function WebsiteSettingsPage() {
               <Card className="border-border/80 shadow-xs">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Palette className="h-4 w-4 text-primary" /> Visual Identity & Colors
+                    <Palette className="h-4 w-4 text-primary" /> Visual Identity
+                    & Colors
                   </CardTitle>
                   <CardDescription className="text-xs">
-                    Apply your practice's exact brand color and firm logos to all portal screens.
+                    Apply your practice's exact brand color and firm logos to
+                    all portal screens.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 text-xs">
                   <div className="space-y-1.5">
-                    <Label htmlFor="firm-name" className="text-xs font-semibold">Practice / Firm Name</Label>
+                    <Label
+                      htmlFor="firm-name"
+                      className="text-xs font-semibold"
+                    >
+                      Practice / Firm Name
+                    </Label>
                     <Input
                       id="firm-name"
                       type="text"
@@ -278,7 +351,9 @@ export default function WebsiteSettingsPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold">Primary Brand Theme Color</Label>
+                    <Label className="text-xs font-semibold">
+                      Primary Brand Theme Color
+                    </Label>
                     <div className="flex items-center gap-3">
                       <input
                         type="color"
@@ -314,7 +389,9 @@ export default function WebsiteSettingsPage() {
                   </div>
 
                   <div className="space-y-1.5 pt-2 border-t">
-                    <Label htmlFor="logo-url" className="text-xs font-semibold">Firm Logo URL</Label>
+                    <Label htmlFor="logo-url" className="text-xs font-semibold">
+                      Firm Logo URL
+                    </Label>
                     <Input
                       id="logo-url"
                       type="url"
@@ -329,7 +406,12 @@ export default function WebsiteSettingsPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="favicon-url" className="text-xs font-semibold">Favicon URL (Optional)</Label>
+                    <Label
+                      htmlFor="favicon-url"
+                      className="text-xs font-semibold"
+                    >
+                      Favicon URL (Optional)
+                    </Label>
                     <Input
                       id="favicon-url"
                       type="url"
@@ -348,15 +430,22 @@ export default function WebsiteSettingsPage() {
               <Card className="border-border/80 shadow-xs">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-primary" /> Hero Header & Contact Info
+                    <Sparkles className="h-4 w-4 text-primary" /> Hero Header &
+                    Contact Info
                   </CardTitle>
                   <CardDescription className="text-xs">
-                    Customize greeting headlines and footer contact channels shown to clients.
+                    Customize greeting headlines and footer contact channels
+                    shown to clients.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 text-xs">
                   <div className="space-y-1.5">
-                    <Label htmlFor="hero-title" className="text-xs font-semibold">Portal Title</Label>
+                    <Label
+                      htmlFor="hero-title"
+                      className="text-xs font-semibold"
+                    >
+                      Portal Title
+                    </Label>
                     <Input
                       id="hero-title"
                       type="text"
@@ -368,7 +457,9 @@ export default function WebsiteSettingsPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="hero-sub" className="text-xs font-semibold">Portal Subtitle</Label>
+                    <Label htmlFor="hero-sub" className="text-xs font-semibold">
+                      Portal Subtitle
+                    </Label>
                     <Textarea
                       id="hero-sub"
                       rows={2}
@@ -381,7 +472,12 @@ export default function WebsiteSettingsPage() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t">
                     <div className="space-y-1.5">
-                      <Label htmlFor="contact-email" className="text-xs font-semibold">Contact Email</Label>
+                      <Label
+                        htmlFor="contact-email"
+                        className="text-xs font-semibold"
+                      >
+                        Contact Email
+                      </Label>
                       <Input
                         id="contact-email"
                         type="email"
@@ -392,7 +488,12 @@ export default function WebsiteSettingsPage() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label htmlFor="contact-phone" className="text-xs font-semibold">Support Phone</Label>
+                      <Label
+                        htmlFor="contact-phone"
+                        className="text-xs font-semibold"
+                      >
+                        Support Phone
+                      </Label>
                       <Input
                         id="contact-phone"
                         type="text"
@@ -405,7 +506,12 @@ export default function WebsiteSettingsPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="contact-address" className="text-xs font-semibold">Office Address</Label>
+                    <Label
+                      htmlFor="contact-address"
+                      className="text-xs font-semibold"
+                    >
+                      Office Address
+                    </Label>
                     <Input
                       id="contact-address"
                       type="text"
@@ -424,9 +530,12 @@ export default function WebsiteSettingsPage() {
               <Card className="border-border/80 shadow-xs">
                 <CardHeader className="pb-3 flex flex-row items-center justify-between">
                   <div>
-                    <CardTitle className="text-base">Practice Services Showcase</CardTitle>
+                    <CardTitle className="text-base">
+                      Practice Services Showcase
+                    </CardTitle>
                     <CardDescription className="text-xs">
-                      Highlight statutory capabilities on the client login landing page.
+                      Highlight statutory capabilities on the client login
+                      landing page.
                     </CardDescription>
                   </div>
                   <Button
@@ -449,20 +558,30 @@ export default function WebsiteSettingsPage() {
                         <Input
                           placeholder="Service Title (e.g. GST Annual Audit)"
                           value={srv.title}
-                          onChange={(e) => handleUpdateService(idx, "title", e.target.value)}
+                          onChange={(e) =>
+                            handleUpdateService(idx, "title", e.target.value)
+                          }
                           className="text-xs font-semibold"
                         />
                         <Input
                           placeholder="Short description or benefits"
                           value={srv.description}
-                          onChange={(e) => handleUpdateService(idx, "description", e.target.value)}
+                          onChange={(e) =>
+                            handleUpdateService(
+                              idx,
+                              "description",
+                              e.target.value,
+                            )
+                          }
                           className="text-xs"
                         />
                       </div>
                       <div className="flex items-center gap-2 pt-1">
                         <Switch
                           checked={srv.isActive}
-                          onCheckedChange={(checked) => handleUpdateService(idx, "isActive", checked)}
+                          onCheckedChange={(checked) =>
+                            handleUpdateService(idx, "isActive", checked)
+                          }
                         />
                         <Button
                           type="button"
@@ -478,7 +597,8 @@ export default function WebsiteSettingsPage() {
                   ))}
                   {services.length === 0 && (
                     <p className="text-xs text-muted-foreground text-center py-4">
-                      No custom services added. Click "+ Add Service" to showcase capabilities.
+                      No custom services added. Click "+ Add Service" to
+                      showcase capabilities.
                     </p>
                   )}
                 </CardContent>
@@ -529,21 +649,28 @@ export default function WebsiteSettingsPage() {
                   <Shield className="h-5 w-5" />
                 </div>
               )}
-              <div className="text-[11px] font-bold uppercase tracking-wider" style={{ color: brandColor }}>
+              <div
+                className="text-[11px] font-bold uppercase tracking-wider"
+                style={{ color: brandColor }}
+              >
                 {firmName || "Sharma & Associates"}
               </div>
               <div className="text-sm font-bold text-foreground">
                 {heroTitle || "Client Self-Service Portal"}
               </div>
               <p className="text-[10px] text-muted-foreground leading-snug line-clamp-2 px-2">
-                {heroSubtitle || "Access statutory filings, download tax returns, and view invoices securely."}
+                {heroSubtitle ||
+                  "Access statutory filings, download tax returns, and view invoices securely."}
               </p>
             </div>
 
             {/* Mini Login Card Mockup */}
             <div className="bg-card border rounded-lg p-3 shadow-xs space-y-2.5">
               <div className="flex rounded border text-[10px] text-center font-medium">
-                <div className="flex-1 py-1 rounded bg-muted/60 font-semibold" style={{ color: brandColor }}>
+                <div
+                  className="flex-1 py-1 rounded bg-muted/60 font-semibold"
+                  style={{ color: brandColor }}
+                >
                   OTP Login
                 </div>
                 <div className="flex-1 py-1 text-muted-foreground">
@@ -572,7 +699,9 @@ export default function WebsiteSettingsPage() {
                 {contactPhone && <span>📞 {contactPhone}</span>}
                 {contactEmail && <span>✉️ {contactEmail}</span>}
               </div>
-              {contactAddress && <p className="truncate px-2">{contactAddress}</p>}
+              {contactAddress && (
+                <p className="truncate px-2">{contactAddress}</p>
+              )}
             </div>
           </div>
         </div>
@@ -580,4 +709,3 @@ export default function WebsiteSettingsPage() {
     </div>
   );
 }
-

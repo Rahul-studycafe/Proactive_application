@@ -42,7 +42,8 @@ export function RevealPasswordDialog({
   onAuditLogsClick,
 }: RevealPasswordDialogProps) {
   const [purpose, setPurpose] = useState("Portal Login / Statutory Filing");
-  const [revealedData, setRevealedData] = useState<RevealPasswordResponse | null>(null);
+  const [revealedData, setRevealedData] =
+    useState<RevealPasswordResponse | null>(null);
   const [copiedPass, setCopiedPass] = useState(false);
   const [copiedUser, setCopiedUser] = useState(false);
 
@@ -67,9 +68,12 @@ export function RevealPasswordDialog({
       }).unwrap();
 
       setRevealedData(res);
-      toast.success("Password decrypted. Access attempt logged in audit trail.");
+      toast.success(
+        "Password decrypted. Access attempt logged in audit trail.",
+      );
     } catch (err: any) {
-      const msg = err?.data?.message || err?.message || "Failed to decrypt password";
+      const msg =
+        err?.data?.message || err?.message || "Failed to decrypt password";
       toast.error(msg);
     }
   };
@@ -115,7 +119,8 @@ export function RevealPasswordDialog({
                 Decrypted Password Reveal
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                {credential.portalName} • <span className="font-mono">{credential.username}</span>
+                {credential.portalName} •{" "}
+                <span className="font-mono">{credential.username}</span>
               </DialogDescription>
             </div>
           </div>
@@ -130,7 +135,9 @@ export function RevealPasswordDialog({
                 <div className="space-y-1">
                   <p className="font-semibold">Security Compliance Notice</p>
                   <p className="text-[11px] leading-relaxed opacity-90">
-                    Revealing statutory passwords decrypts client credentials and creates a permanent, immutable audit log with your User ID, IP address, and timestamp.
+                    Revealing statutory passwords decrypts client credentials
+                    and creates a permanent, immutable audit log with your User
+                    ID, IP address, and timestamp.
                   </p>
                 </div>
               </div>

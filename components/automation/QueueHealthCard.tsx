@@ -1,7 +1,13 @@
 "use client";
 
 import { useGetQueueHealthQuery } from "@/lib/services/api";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,9 +27,15 @@ import Link from "next/link";
 import { TriggerAutomationModal } from "./TriggerAutomationModal";
 
 export function QueueHealthCard() {
-  const { data: health, isLoading, isFetching, refetch } = useGetQueueHealthQuery();
+  const {
+    data: health,
+    isLoading,
+    isFetching,
+    refetch,
+  } = useGetQueueHealthQuery();
 
-  const isConnected = health?.database?.state === "connected" || health?.status === "OK";
+  const isConnected =
+    health?.database?.state === "connected" || health?.status === "OK";
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
@@ -116,7 +128,11 @@ export function QueueHealthCard() {
 
             <TriggerAutomationModal
               triggerButton={
-                <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8 gap-1.5 text-xs"
+                >
                   <Zap className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
                   <span>Run On-Demand</span>
                 </Button>
@@ -152,7 +168,9 @@ export function QueueHealthCard() {
               className="h-8 w-8 p-0"
               title="Refresh health status"
             >
-              <RotateCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+              <RotateCw
+                className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
+              />
             </Button>
           </div>
         </CardHeader>
@@ -172,7 +190,8 @@ export function QueueHealthCard() {
                     : "border-rose-500/30 bg-rose-500/10 text-rose-600 text-[11px]"
                 }
               >
-                {health?.database?.state || (isConnected ? "connected" : "offline")}
+                {health?.database?.state ||
+                  (isConnected ? "connected" : "offline")}
               </Badge>
             </div>
 

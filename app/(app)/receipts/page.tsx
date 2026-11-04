@@ -143,13 +143,16 @@ export default function ReceiptsPage() {
 
   // Aggregate stats on current page
   const totalReceived = useMemo(() => {
-    return receipts.reduce((sum: number, r: any) => sum + (r.totalAmount || 0), 0);
+    return receipts.reduce(
+      (sum: number, r: any) => sum + (r.totalAmount || 0),
+      0,
+    );
   }, [receipts]);
 
   const totalAdvance = useMemo(() => {
     return receipts.reduce(
       (sum: number, r: any) => sum + (r.unallocatedAmount || 0),
-      0
+      0,
     );
   }, [receipts]);
 
@@ -158,9 +161,12 @@ export default function ReceiptsPage() {
       {/* Page Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Receipts & Payments</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Receipts & Payments
+          </h1>
           <p className="text-sm text-muted-foreground">
-            Track incoming payments, TDS deductions, and invoice settlement reconciliation.
+            Track incoming payments, TDS deductions, and invoice settlement
+            reconciliation.
           </p>
         </div>
         <Button onClick={() => setCreateDialogOpen(true)} className="gap-2">
@@ -256,7 +262,8 @@ export default function ReceiptsPage() {
             <Receipt className="h-10 w-10 mb-3 opacity-20" />
             <p className="font-semibold text-foreground">No receipts found</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Record client payments to start tracking settlements and ledger credits.
+              Record client payments to start tracking settlements and ledger
+              credits.
             </p>
             <Button
               onClick={() => setCreateDialogOpen(true)}
@@ -276,14 +283,19 @@ export default function ReceiptsPage() {
                 <TableHead>Client</TableHead>
                 <TableHead className="w-[140px]">Payment Mode</TableHead>
                 <TableHead className="w-[160px]">Reference / UTR</TableHead>
-                <TableHead className="w-[130px] text-right">Amount (₹)</TableHead>
-                <TableHead className="w-[120px] text-right">Advance (₹)</TableHead>
+                <TableHead className="w-[130px] text-right">
+                  Amount (₹)
+                </TableHead>
+                <TableHead className="w-[120px] text-right">
+                  Advance (₹)
+                </TableHead>
                 <TableHead className="w-[90px] text-center">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredReceipts.map((r: any) => {
-                const client = typeof r.clientId === "object" ? r.clientId : null;
+                const client =
+                  typeof r.clientId === "object" ? r.clientId : null;
                 return (
                   <TableRow key={r._id} className="hover:bg-muted/20">
                     <TableCell className="font-mono text-xs font-semibold">
@@ -306,7 +318,9 @@ export default function ReceiptsPage() {
                           )}
                         </Link>
                       ) : (
-                        <span className="text-muted-foreground">Unknown Client</span>
+                        <span className="text-muted-foreground">
+                          Unknown Client
+                        </span>
                       )}
                     </TableCell>
                     <TableCell>{getPaymentModeBadge(r.paymentMode)}</TableCell>
@@ -347,7 +361,8 @@ export default function ReceiptsPage() {
         {pagination.pages > 1 && (
           <div className="flex items-center justify-between border-t p-4 text-xs text-muted-foreground">
             <div>
-              Showing Page {pagination.page} of {pagination.pages} ({pagination.total} total)
+              Showing Page {pagination.page} of {pagination.pages} (
+              {pagination.total} total)
             </div>
             <div className="flex items-center gap-2">
               <Button

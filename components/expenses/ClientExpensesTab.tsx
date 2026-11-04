@@ -72,9 +72,13 @@ export function ClientExpensesTab({
 
   // Modals
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [editingExpense, setEditingExpense] = useState<ClientExpense | null>(null);
+  const [editingExpense, setEditingExpense] = useState<ClientExpense | null>(
+    null,
+  );
 
-  const [previewExpense, setPreviewExpense] = useState<ClientExpense | null>(null);
+  const [previewExpense, setPreviewExpense] = useState<ClientExpense | null>(
+    null,
+  );
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const [deleteTarget, setDeleteTarget] = useState<ClientExpense | null>(null);
@@ -90,15 +94,22 @@ export function ClientExpensesTab({
     };
   }, [clientId, search, categoryFilter, billingFilter]);
 
-  const { data, isLoading, isFetching, refetch } = useGetExpensesQuery(queryParams, {
-    skip: !clientId,
-  });
+  const { data, isLoading, isFetching, refetch } = useGetExpensesQuery(
+    queryParams,
+    {
+      skip: !clientId,
+    },
+  );
 
   const { data: categories = [] } = useGetExpenseCategoriesQuery();
   const [deleteExpense, { isLoading: isDeleting }] = useDeleteExpenseMutation();
 
   const expenses: ClientExpense[] = data?.expenses || [];
-  const summary = data?.summary || { totalAmount: 0, billedAmount: 0, unbilledAmount: 0 };
+  const summary = data?.summary || {
+    totalAmount: 0,
+    billedAmount: 0,
+    unbilledAmount: 0,
+  };
   const totalCount = data?.pagination?.total || expenses.length;
 
   const recoveryRate =
@@ -116,7 +127,9 @@ export function ClientExpensesTab({
 
   const handleOpenEdit = (exp: ClientExpense) => {
     if (exp.isBilled) {
-      toast.error("Cannot edit an expense that has already been billed on an invoice");
+      toast.error(
+        "Cannot edit an expense that has already been billed on an invoice",
+      );
       return;
     }
     setEditingExpense(exp);
@@ -135,7 +148,9 @@ export function ClientExpensesTab({
       toast.success(`Expense ${deleteTarget.expenseNo} deleted successfully`);
       setDeleteTarget(null);
     } catch (err: any) {
-      toast.error(err?.data?.message || err?.message || "Failed to delete expense");
+      toast.error(
+        err?.data?.message || err?.message || "Failed to delete expense",
+      );
     }
   };
 
@@ -149,7 +164,11 @@ export function ClientExpensesTab({
         </Badge>
       );
     }
-    if (lower.includes("stamping") || lower.includes("court") || lower.includes("legal")) {
+    if (
+      lower.includes("stamping") ||
+      lower.includes("court") ||
+      lower.includes("legal")
+    ) {
       return (
         <Badge className="bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-500/30 font-medium">
           {name}
@@ -290,7 +309,9 @@ export function ClientExpensesTab({
               className="h-9 w-9 border-border"
               title="Refresh expenses"
             >
-              <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+              <RefreshCw
+                className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
+              />
             </Button>
 
             <Button
@@ -309,21 +330,38 @@ export function ClientExpensesTab({
           <Table>
             <TableHeader className="bg-muted/40">
               <TableRow>
-                <TableHead className="w-[110px] text-xs font-semibold">Expense #</TableHead>
-                <TableHead className="w-[100px] text-xs font-semibold">Date</TableHead>
-                <TableHead className="text-xs font-semibold">Category</TableHead>
+                <TableHead className="w-[110px] text-xs font-semibold">
+                  Expense #
+                </TableHead>
+                <TableHead className="w-[100px] text-xs font-semibold">
+                  Date
+                </TableHead>
+                <TableHead className="text-xs font-semibold">
+                  Category
+                </TableHead>
                 <TableHead className="text-xs font-semibold">Amount</TableHead>
-                <TableHead className="text-xs font-semibold">Pay Mode</TableHead>
-                <TableHead className="text-xs font-semibold">Billing Status</TableHead>
+                <TableHead className="text-xs font-semibold">
+                  Pay Mode
+                </TableHead>
+                <TableHead className="text-xs font-semibold">
+                  Billing Status
+                </TableHead>
                 <TableHead className="text-xs font-semibold">Receipt</TableHead>
-                <TableHead className="text-xs font-semibold">Particulars / Notes</TableHead>
-                <TableHead className="text-right text-xs font-semibold w-[100px]">Actions</TableHead>
+                <TableHead className="text-xs font-semibold">
+                  Particulars / Notes
+                </TableHead>
+                <TableHead className="text-right text-xs font-semibold w-[100px]">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-12 text-sm text-muted-foreground">
+                  <TableCell
+                    colSpan={9}
+                    className="text-center py-12 text-sm text-muted-foreground"
+                  >
                     <div className="flex items-center justify-center gap-2">
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
                       <span>Loading client expenses...</span>
@@ -338,9 +376,12 @@ export function ClientExpensesTab({
                         <Receipt className="h-6 w-6" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-sm text-foreground">No Expenses Logged</h4>
+                        <h4 className="font-semibold text-sm text-foreground">
+                          No Expenses Logged
+                        </h4>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Track statutory outlays, court fees, and challan payments to easily recover them on invoices.
+                          Track statutory outlays, court fees, and challan
+                          payments to easily recover them on invoices.
                         </p>
                       </div>
                       <div className="pt-2">
@@ -359,7 +400,10 @@ export function ClientExpensesTab({
               ) : (
                 expenses.map((exp) => {
                   return (
-                    <TableRow key={exp._id} className="hover:bg-muted/40 transition-colors">
+                    <TableRow
+                      key={exp._id}
+                      className="hover:bg-muted/40 transition-colors"
+                    >
                       {/* Expense No */}
                       <TableCell className="align-middle">
                         <span className="font-mono text-xs font-bold text-foreground">
@@ -388,7 +432,9 @@ export function ClientExpensesTab({
 
                       {/* Payment Mode */}
                       <TableCell className="align-middle text-xs">
-                        <span className="text-muted-foreground">{exp.paymentMode}</span>
+                        <span className="text-muted-foreground">
+                          {exp.paymentMode}
+                        </span>
                         {exp.paidFromAccount && (
                           <span className="block text-[10px] text-muted-foreground/70 truncate max-w-[120px]">
                             {exp.paidFromAccount}
@@ -405,7 +451,9 @@ export function ClientExpensesTab({
                             </Badge>
                             {exp.invoiceId && (
                               <p className="text-[10px] text-muted-foreground font-mono">
-                                {typeof exp.invoiceId === "object" ? exp.invoiceId.invoiceNo : "Invoiced"}
+                                {typeof exp.invoiceId === "object"
+                                  ? exp.invoiceId.invoiceNo
+                                  : "Invoiced"}
                               </p>
                             )}
                           </div>
@@ -431,18 +479,25 @@ export function ClientExpensesTab({
                             <span>Receipt</span>
                           </Button>
                         ) : (
-                          <span className="text-xs text-muted-foreground/50 italic">—</span>
+                          <span className="text-xs text-muted-foreground/50 italic">
+                            —
+                          </span>
                         )}
                       </TableCell>
 
                       {/* Particulars / Notes */}
                       <TableCell className="align-middle max-w-[200px]">
                         {exp.notes ? (
-                          <p className="text-xs text-muted-foreground line-clamp-2" title={exp.notes}>
+                          <p
+                            className="text-xs text-muted-foreground line-clamp-2"
+                            title={exp.notes}
+                          >
                             {exp.notes}
                           </p>
                         ) : (
-                          <span className="text-xs text-muted-foreground/50 italic">—</span>
+                          <span className="text-xs text-muted-foreground/50 italic">
+                            —
+                          </span>
                         )}
                       </TableCell>
 
@@ -469,7 +524,11 @@ export function ClientExpensesTab({
                                 ? "opacity-30 cursor-not-allowed"
                                 : "text-muted-foreground hover:text-primary"
                             }`}
-                            title={exp.isBilled ? "Billed expenses cannot be edited" : "Edit outlay"}
+                            title={
+                              exp.isBilled
+                                ? "Billed expenses cannot be edited"
+                                : "Edit outlay"
+                            }
                           >
                             <Pencil className="h-3.5 w-3.5" />
                           </Button>
@@ -484,7 +543,11 @@ export function ClientExpensesTab({
                                 ? "opacity-30 cursor-not-allowed"
                                 : "text-muted-foreground hover:text-destructive"
                             }`}
-                            title={exp.isBilled ? "Billed expenses cannot be deleted" : "Delete outlay"}
+                            title={
+                              exp.isBilled
+                                ? "Billed expenses cannot be deleted"
+                                : "Delete outlay"
+                            }
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
@@ -528,9 +591,11 @@ export function ClientExpensesTab({
             </AlertDialogTitle>
             <AlertDialogDescription className="text-sm">
               Are you sure you want to permanently delete outlay{" "}
-              <strong className="text-foreground">{deleteTarget?.expenseNo}</strong> (
-              {formatCurrency(deleteTarget?.amount || 0)} • {deleteTarget?.categoryName})? This action
-              cannot be undone.
+              <strong className="text-foreground">
+                {deleteTarget?.expenseNo}
+              </strong>{" "}
+              ({formatCurrency(deleteTarget?.amount || 0)} •{" "}
+              {deleteTarget?.categoryName})? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

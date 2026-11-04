@@ -54,7 +54,9 @@ export function QuotationPipelineFunnel({
 
   if (isLoading && !analytics) {
     return (
-      <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 ${className}`}>
+      <div
+        className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 ${className}`}
+      >
         {[1, 2, 3, 4].map((i) => (
           <Skeleton key={i} className="h-28 w-full rounded-xl" />
         ))}
@@ -67,10 +69,16 @@ export function QuotationPipelineFunnel({
     overview.winRatePercentage ??
     (overview as any).conversionRatePercentage ??
     Math.round(
-      ((overview.convertedCount + overview.acceptedCount) / total) * 100
+      ((overview.convertedCount + overview.acceptedCount) / total) * 100,
     );
-  const sentPct = Math.round(((overview.sentCount + overview.acceptedCount + overview.convertedCount) / total) * 100);
-  const acceptedPct = Math.round(((overview.acceptedCount + overview.convertedCount) / total) * 100);
+  const sentPct = Math.round(
+    ((overview.sentCount + overview.acceptedCount + overview.convertedCount) /
+      total) *
+      100,
+  );
+  const acceptedPct = Math.round(
+    ((overview.acceptedCount + overview.convertedCount) / total) * 100,
+  );
   const convertedPct = Math.round((overview.convertedCount / total) * 100);
 
   return (
@@ -158,7 +166,8 @@ export function QuotationPipelineFunnel({
                   {winRate}%
                 </h3>
                 <span className="text-xs text-muted-foreground">
-                  ({overview.convertedCount + overview.acceptedCount} / {overview.totalQuotations || 0})
+                  ({overview.convertedCount + overview.acceptedCount} /{" "}
+                  {overview.totalQuotations || 0})
                 </span>
               </div>
               <Progress
@@ -181,7 +190,8 @@ export function QuotationPipelineFunnel({
             Proposal Conversion Lifecycle
           </span>
           <span className="text-xs text-muted-foreground">
-            {overview.acceptedCount} Accepted Pending Invoicing • {overview.declinedCount} Declined
+            {overview.acceptedCount} Accepted Pending Invoicing •{" "}
+            {overview.declinedCount} Declined
           </span>
         </div>
 
@@ -189,17 +199,25 @@ export function QuotationPipelineFunnel({
           <div className="flex items-center justify-between p-2 rounded-lg bg-slate-500/10 border border-slate-500/20">
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-slate-400" />
-              <span className="font-medium text-slate-700 dark:text-slate-300">1. Drafts</span>
+              <span className="font-medium text-slate-700 dark:text-slate-300">
+                1. Drafts
+              </span>
             </div>
             <span className="font-bold text-slate-900 dark:text-slate-100">
-              {overview.totalQuotations - overview.sentCount - overview.acceptedCount - overview.convertedCount - overview.declinedCount}
+              {overview.totalQuotations -
+                overview.sentCount -
+                overview.acceptedCount -
+                overview.convertedCount -
+                overview.declinedCount}
             </span>
           </div>
 
           <div className="flex items-center justify-between p-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-blue-500" />
-              <span className="font-medium text-blue-700 dark:text-blue-300">2. Dispatched</span>
+              <span className="font-medium text-blue-700 dark:text-blue-300">
+                2. Dispatched
+              </span>
             </div>
             <span className="font-bold text-blue-900 dark:text-blue-100">
               {overview.sentCount}
@@ -209,7 +227,9 @@ export function QuotationPipelineFunnel({
           <div className="flex items-center justify-between p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-emerald-500" />
-              <span className="font-medium text-emerald-700 dark:text-emerald-300">3. Accepted</span>
+              <span className="font-medium text-emerald-700 dark:text-emerald-300">
+                3. Accepted
+              </span>
             </div>
             <span className="font-bold text-emerald-900 dark:text-emerald-100">
               {overview.acceptedCount}
@@ -219,7 +239,9 @@ export function QuotationPipelineFunnel({
           <div className="flex items-center justify-between p-2 rounded-lg bg-purple-500/10 border border-purple-500/20">
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-purple-500" />
-              <span className="font-medium text-purple-700 dark:text-purple-300">4. Invoiced</span>
+              <span className="font-medium text-purple-700 dark:text-purple-300">
+                4. Invoiced
+              </span>
             </div>
             <span className="font-bold text-purple-900 dark:text-purple-100">
               {overview.convertedCount}

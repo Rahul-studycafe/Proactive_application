@@ -70,17 +70,17 @@ export function IssueCreditNoteModal({
     useCreateCreditNoteMutation();
 
   const [selectedInvoiceId, setSelectedInvoiceId] = useState(
-    preselectedInvoiceId || ""
+    preselectedInvoiceId || "",
   );
 
   // If no preselected invoice, query finalized invoices
   const { data: invoicesData } = useGetInvoicesQuery(
     { page: 1, limit: 100 },
-    { skip: !!preselectedInvoiceId || !open }
+    { skip: !!preselectedInvoiceId || !open },
   );
   const eligibleInvoices = useMemo(() => {
     return (invoicesData?.invoices || []).filter(
-      (inv: any) => inv.status !== "Draft" && inv.status !== "Cancelled"
+      (inv: any) => inv.status !== "Draft" && inv.status !== "Cancelled",
     );
   }, [invoicesData]);
 
@@ -92,7 +92,7 @@ export function IssueCreditNoteModal({
 
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [reason, setReason] = useState<CreditNoteReason>(
-    "Overcharge Correction"
+    "Overcharge Correction",
   );
   const [notes, setNotes] = useState("");
   const [items, setItems] = useState<EditableCreditItem[]>([]);
@@ -171,10 +171,10 @@ export function IssueCreditNoteModal({
   const handleItemChange = (
     id: string,
     field: keyof EditableCreditItem,
-    val: any
+    val: any,
   ) => {
     setItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, [field]: val } : item))
+      prev.map((item) => (item.id === id ? { ...item, [field]: val } : item)),
     );
   };
 
@@ -214,7 +214,7 @@ export function IssueCreditNoteModal({
 
     if (isExceeding) {
       toast.error(
-        `Credit note total (₹${calculatedTotals.grandTotal}) cannot exceed original invoice total (₹${maxAllowableCredit})`
+        `Credit note total (₹${calculatedTotals.grandTotal}) cannot exceed original invoice total (₹${maxAllowableCredit})`,
       );
       return;
     }
@@ -254,7 +254,7 @@ export function IssueCreditNoteModal({
       }).unwrap();
 
       toast.success(
-        `Credit Note ${res.creditNoteNo} issued successfully. Invoice balance adjusted.`
+        `Credit Note ${res.creditNoteNo} issued successfully. Invoice balance adjusted.`,
       );
       onOpenChange(false);
       if (onSuccess) {
@@ -262,7 +262,7 @@ export function IssueCreditNoteModal({
       }
     } catch (err: any) {
       toast.error(
-        err?.data?.message || err?.message || "Failed to issue credit note"
+        err?.data?.message || err?.message || "Failed to issue credit note",
       );
     }
   };
@@ -277,7 +277,8 @@ export function IssueCreditNoteModal({
               <DialogTitle>Issue Financial Credit Note</DialogTitle>
             </div>
             <DialogDescription>
-              Create an immutable credit adjustment linked to an issued invoice with atomic balance reduction and running ledger sync.
+              Create an immutable credit adjustment linked to an issued invoice
+              with atomic balance reduction and running ledger sync.
             </DialogDescription>
           </DialogHeader>
 
@@ -286,7 +287,8 @@ export function IssueCreditNoteModal({
             {!preselectedInvoiceId && (
               <div className="space-y-1.5">
                 <Label htmlFor="invoiceSelect">
-                  Select Original Invoice <span className="text-destructive">*</span>
+                  Select Original Invoice{" "}
+                  <span className="text-destructive">*</span>
                 </Label>
                 <Select
                   value={selectedInvoiceId}
@@ -311,7 +313,9 @@ export function IssueCreditNoteModal({
             {invoiceDetail && (
               <div className="rounded-lg border bg-muted/40 p-3 text-xs flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <span className="text-muted-foreground">Original Invoice: </span>
+                  <span className="text-muted-foreground">
+                    Original Invoice:{" "}
+                  </span>
                   <strong className="text-foreground">
                     {invoiceDetail.invoiceNo}
                   </strong>
@@ -329,15 +333,23 @@ export function IssueCreditNoteModal({
                 </div>
                 <div className="flex items-center gap-3">
                   <div>
-                    <span className="text-muted-foreground">Invoice Total: </span>
+                    <span className="text-muted-foreground">
+                      Invoice Total:{" "}
+                    </span>
                     <strong className="text-foreground">
-                      ₹{invoiceDetail.totals?.grandTotal?.toLocaleString("en-IN") || 0}
+                      ₹
+                      {invoiceDetail.totals?.grandTotal?.toLocaleString(
+                        "en-IN",
+                      ) || 0}
                     </strong>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Current Due: </span>
                     <strong className="text-amber-600 dark:text-amber-400">
-                      ₹{invoiceDetail.totals?.amountDue?.toLocaleString("en-IN") || 0}
+                      ₹
+                      {invoiceDetail.totals?.amountDue?.toLocaleString(
+                        "en-IN",
+                      ) || 0}
                     </strong>
                   </div>
                 </div>
@@ -379,7 +391,9 @@ export function IssueCreditNoteModal({
                     <SelectItem value="Deficiency of Service">
                       Deficiency of Service
                     </SelectItem>
-                    <SelectItem value="Other">Other Statutory Reason</SelectItem>
+                    <SelectItem value="Other">
+                      Other Statutory Reason
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -406,12 +420,16 @@ export function IssueCreditNoteModal({
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/40">
-                      <TableHead className="min-w-[200px]">Description</TableHead>
+                      <TableHead className="min-w-[200px]">
+                        Description
+                      </TableHead>
                       <TableHead className="w-[90px]">SAC</TableHead>
                       <TableHead className="w-[80px]">Qty</TableHead>
                       <TableHead className="w-[110px]">Rate (₹)</TableHead>
                       <TableHead className="w-[90px]">GST %</TableHead>
-                      <TableHead className="w-[110px] text-right">Amount (₹)</TableHead>
+                      <TableHead className="w-[110px] text-right">
+                        Amount (₹)
+                      </TableHead>
                       <TableHead className="w-[40px]"></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -419,10 +437,10 @@ export function IssueCreditNoteModal({
                     {items.map((item) => {
                       const lineTotal =
                         Math.round(
-                          (item.quantity *
+                          item.quantity *
                             item.rate *
-                            (1 + item.gstPercentage / 100)) *
-                            100
+                            (1 + item.gstPercentage / 100) *
+                            100,
                         ) / 100;
 
                       return (
@@ -434,7 +452,7 @@ export function IssueCreditNoteModal({
                                 handleItemChange(
                                   item.id,
                                   "description",
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                               placeholder="Service description"
@@ -449,7 +467,7 @@ export function IssueCreditNoteModal({
                                 handleItemChange(
                                   item.id,
                                   "sacCode",
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                               placeholder="SAC"
@@ -466,7 +484,7 @@ export function IssueCreditNoteModal({
                                 handleItemChange(
                                   item.id,
                                   "quantity",
-                                  parseFloat(e.target.value) || 0
+                                  parseFloat(e.target.value) || 0,
                                 )
                               }
                               className="h-8 text-xs"
@@ -483,7 +501,7 @@ export function IssueCreditNoteModal({
                                 handleItemChange(
                                   item.id,
                                   "rate",
-                                  parseFloat(e.target.value) || 0
+                                  parseFloat(e.target.value) || 0,
                                 )
                               }
                               className="h-8 text-xs"
@@ -497,7 +515,7 @@ export function IssueCreditNoteModal({
                                 handleItemChange(
                                   item.id,
                                   "gstPercentage",
-                                  parseFloat(val)
+                                  parseFloat(val),
                                 )
                               }
                             >
@@ -514,7 +532,10 @@ export function IssueCreditNoteModal({
                             </Select>
                           </TableCell>
                           <TableCell className="p-2 text-right font-medium text-xs font-mono">
-                            ₹{lineTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                            ₹
+                            {lineTotal.toLocaleString("en-IN", {
+                              minimumFractionDigits: 2,
+                            })}
                           </TableCell>
                           <TableCell className="p-2 text-center">
                             <Button
@@ -553,26 +574,37 @@ export function IssueCreditNoteModal({
                 <div className="flex justify-between py-0.5">
                   <span className="text-muted-foreground">Subtotal:</span>
                   <span className="font-mono">
-                    ₹{calculatedTotals.subtotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                    ₹
+                    {calculatedTotals.subtotal.toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                    })}
                   </span>
                 </div>
                 <div className="flex justify-between py-0.5">
                   <span className="text-muted-foreground">GST Total:</span>
                   <span className="font-mono">
-                    ₹{calculatedTotals.taxTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                    ₹
+                    {calculatedTotals.taxTotal.toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                    })}
                   </span>
                 </div>
                 <div className="flex justify-between py-1 border-t text-sm font-bold text-foreground">
                   <span>Grand Total:</span>
                   <span className="text-purple-600 dark:text-purple-400 font-mono">
-                    ₹{calculatedTotals.grandTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                    ₹
+                    {calculatedTotals.grandTotal.toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                    })}
                   </span>
                 </div>
 
                 {isExceeding && (
                   <div className="flex items-center gap-1.5 text-destructive text-[11px] font-medium pt-1">
                     <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-                    <span>Exceeds original invoice total of ₹{maxAllowableCredit}</span>
+                    <span>
+                      Exceeds original invoice total of ₹{maxAllowableCredit}
+                    </span>
                   </div>
                 )}
               </div>

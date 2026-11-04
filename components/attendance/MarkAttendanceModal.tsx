@@ -5,7 +5,10 @@ import { format } from "date-fns";
 import { Loader2, Edit3, User, Calendar, Clock, FileText } from "lucide-react";
 import { toast } from "sonner";
 
-import type { DailyRosterMember, AttendanceStatus } from "@/lib/types/attendance";
+import type {
+  DailyRosterMember,
+  AttendanceStatus,
+} from "@/lib/types/attendance";
 import { useMarkAttendanceMutation } from "@/lib/services/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,7 +63,9 @@ export function MarkAttendanceModal({
     if (member) {
       const existingStatus = member.attendance?.status;
       setStatus(
-        existingStatus && existingStatus !== "Unmarked" ? existingStatus : "Present"
+        existingStatus && existingStatus !== "Unmarked"
+          ? existingStatus
+          : "Present",
       );
 
       if (member.attendance?.checkIn) {
@@ -110,7 +115,9 @@ export function MarkAttendanceModal({
       onOpenChange(false);
     } catch (err: any) {
       toast.error(
-        err?.data?.error?.message || err?.data?.message || "Failed to mark attendance"
+        err?.data?.error?.message ||
+          err?.data?.message ||
+          "Failed to mark attendance",
       );
     }
   };
@@ -136,10 +143,14 @@ export function MarkAttendanceModal({
                 {member.name.charAt(0)}
               </div>
               <div>
-                <p className="font-semibold text-sm leading-tight">{member.name}</p>
+                <p className="font-semibold text-sm leading-tight">
+                  {member.name}
+                </p>
                 <p className="text-xs text-muted-foreground">
                   {member.roleName || "Employee"} • Date:{" "}
-                  <span className="font-medium text-foreground">{targetDate}</span>
+                  <span className="font-medium text-foreground">
+                    {targetDate}
+                  </span>
                 </p>
               </div>
             </div>

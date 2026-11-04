@@ -126,7 +126,7 @@ export default function QuotationsPage() {
 
   const handleStatusChange = async (
     quoteId: string,
-    newStatus: "Draft" | "Sent" | "Accepted" | "Declined"
+    newStatus: "Draft" | "Sent" | "Accepted" | "Declined",
   ) => {
     try {
       await updateStatus({ id: quoteId, status: newStatus }).unwrap();
@@ -155,7 +155,9 @@ export default function QuotationsPage() {
     if (!quoteToDelete) return;
     try {
       await deleteQuotation(quoteToDelete._id).unwrap();
-      toast.success(`Quotation ${quoteToDelete.quotationNo} deleted successfully`);
+      toast.success(
+        `Quotation ${quoteToDelete.quotationNo} deleted successfully`,
+      );
       setQuoteToDelete(null);
     } catch (err: any) {
       toast.error("Failed to delete quotation", {
@@ -208,7 +210,8 @@ export default function QuotationsPage() {
             </h1>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            Build itemized service estimates, track client approvals, and seamlessly convert won deals into active invoices.
+            Build itemized service estimates, track client approvals, and
+            seamlessly convert won deals into active invoices.
           </p>
         </div>
 
@@ -337,11 +340,21 @@ export default function QuotationsPage() {
                 <TableHead className="w-[14%] min-w-[130px]">Quote #</TableHead>
                 <TableHead className="w-[20%] min-w-[180px]">Client</TableHead>
                 <TableHead className="w-[12%] min-w-[110px]">Date</TableHead>
-                <TableHead className="w-[12%] min-w-[110px]">Valid Until</TableHead>
-                <TableHead className="w-[16%] min-w-[140px]">Items Summary</TableHead>
-                <TableHead className="w-[12%] min-w-[110px] text-right">Grand Total</TableHead>
-                <TableHead className="w-[10%] min-w-[100px] text-center">Status</TableHead>
-                <TableHead className="w-[4%] min-w-[50px] text-right">Actions</TableHead>
+                <TableHead className="w-[12%] min-w-[110px]">
+                  Valid Until
+                </TableHead>
+                <TableHead className="w-[16%] min-w-[140px]">
+                  Items Summary
+                </TableHead>
+                <TableHead className="w-[12%] min-w-[110px] text-right">
+                  Grand Total
+                </TableHead>
+                <TableHead className="w-[10%] min-w-[100px] text-center">
+                  Status
+                </TableHead>
+                <TableHead className="w-[4%] min-w-[50px] text-right">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -481,7 +494,8 @@ export default function QuotationsPage() {
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
                           {/* Quick Convert Button for Accepted or Sent */}
-                          {(quote.status === "Accepted" || quote.status === "Sent") && (
+                          {(quote.status === "Accepted" ||
+                            quote.status === "Sent") && (
                             <ConvertToInvoiceButton
                               quotation={quote}
                               size="sm"
@@ -500,10 +514,15 @@ export default function QuotationsPage() {
                                 <MoreVertical className="h-3.5 w-3.5" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48 text-xs">
+                            <DropdownMenuContent
+                              align="end"
+                              className="w-48 text-xs"
+                            >
                               <DropdownMenuLabel>Actions</DropdownMenuLabel>
                               <DropdownMenuItem
-                                onClick={() => router.push(`/quotations/${quote._id}`)}
+                                onClick={() =>
+                                  router.push(`/quotations/${quote._id}`)
+                                }
                                 className="cursor-pointer"
                               >
                                 <Eye className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
@@ -521,10 +540,14 @@ export default function QuotationsPage() {
                               {!isConverted && (
                                 <>
                                   <DropdownMenuSeparator />
-                                  <DropdownMenuLabel>Change Status</DropdownMenuLabel>
+                                  <DropdownMenuLabel>
+                                    Change Status
+                                  </DropdownMenuLabel>
                                   {quote.status !== "Draft" && (
                                     <DropdownMenuItem
-                                      onClick={() => handleStatusChange(quote._id, "Draft")}
+                                      onClick={() =>
+                                        handleStatusChange(quote._id, "Draft")
+                                      }
                                       className="cursor-pointer"
                                     >
                                       <Clock className="h-3.5 w-3.5 mr-2 text-slate-500" />
@@ -533,7 +556,9 @@ export default function QuotationsPage() {
                                   )}
                                   {quote.status !== "Sent" && (
                                     <DropdownMenuItem
-                                      onClick={() => handleStatusChange(quote._id, "Sent")}
+                                      onClick={() =>
+                                        handleStatusChange(quote._id, "Sent")
+                                      }
                                       className="cursor-pointer"
                                     >
                                       <Send className="h-3.5 w-3.5 mr-2 text-blue-500" />
@@ -542,7 +567,12 @@ export default function QuotationsPage() {
                                   )}
                                   {quote.status !== "Accepted" && (
                                     <DropdownMenuItem
-                                      onClick={() => handleStatusChange(quote._id, "Accepted")}
+                                      onClick={() =>
+                                        handleStatusChange(
+                                          quote._id,
+                                          "Accepted",
+                                        )
+                                      }
                                       className="cursor-pointer"
                                     >
                                       <CheckCircle2 className="h-3.5 w-3.5 mr-2 text-emerald-500" />
@@ -551,7 +581,12 @@ export default function QuotationsPage() {
                                   )}
                                   {quote.status !== "Declined" && (
                                     <DropdownMenuItem
-                                      onClick={() => handleStatusChange(quote._id, "Declined")}
+                                      onClick={() =>
+                                        handleStatusChange(
+                                          quote._id,
+                                          "Declined",
+                                        )
+                                      }
                                       className="cursor-pointer"
                                     >
                                       <XCircle className="h-3.5 w-3.5 mr-2 text-rose-500" />
@@ -585,8 +620,12 @@ export default function QuotationsPage() {
         {totalPages > 1 && (
           <div className="flex items-center justify-between p-4 border-t border-border/80 text-xs text-muted-foreground">
             <div>
-              Showing page <span className="font-semibold text-foreground">{page}</span> of{" "}
-              <span className="font-semibold text-foreground">{totalPages}</span> ({total} total)
+              Showing page{" "}
+              <span className="font-semibold text-foreground">{page}</span> of{" "}
+              <span className="font-semibold text-foreground">
+                {totalPages}
+              </span>{" "}
+              ({total} total)
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -630,8 +669,8 @@ export default function QuotationsPage() {
               Delete Quotation {quoteToDelete?.quotationNo}?
             </AlertDialogTitle>
             <AlertDialogDescription className="text-muted-foreground">
-              Are you sure you want to permanently delete this quotation estimate?
-              This action cannot be undone.
+              Are you sure you want to permanently delete this quotation
+              estimate? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

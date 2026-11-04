@@ -3,13 +3,7 @@
 import { useState, useMemo, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  Plus,
-  Trash2,
-  Loader2,
-  X,
-} from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -104,11 +98,13 @@ function NewInvoiceContent() {
   const [billingEntityId, setBillingEntityId] = useState("");
   const [clientId, setClientId] = useState("");
   const [invoiceDate, setInvoiceDate] = useState(
-    new Date().toISOString().slice(0, 10)
+    new Date().toISOString().slice(0, 10),
   );
   const [dueDate, setDueDate] = useState("");
   const [notes, setNotes] = useState("");
-  const [saveAsStatus, setSaveAsStatus] = useState<"Draft" | "Unpaid">("Unpaid");
+  const [saveAsStatus, setSaveAsStatus] = useState<"Draft" | "Unpaid">(
+    "Unpaid",
+  );
   const [items, setItems] = useState<InvoiceItem[]>([
     {
       referenceType: "Manual",
@@ -126,10 +122,10 @@ function NewInvoiceContent() {
       const inv = existingInvoice;
       setClientId(inv.clientId?._id || inv.clientId || "");
       setInvoiceDate(
-        inv.date ? new Date(inv.date).toISOString().slice(0, 10) : ""
+        inv.date ? new Date(inv.date).toISOString().slice(0, 10) : "",
       );
       setDueDate(
-        inv.dueDate ? new Date(inv.dueDate).toISOString().slice(0, 10) : ""
+        inv.dueDate ? new Date(inv.dueDate).toISOString().slice(0, 10) : "",
       );
       setNotes(inv.notes || "");
       setSaveAsStatus(inv.status || "Draft");
@@ -147,7 +143,7 @@ function NewInvoiceContent() {
             rate: it.rate ?? 0,
             discount: it.discount ?? 0,
             gstPercentage: it.gstPercentage ?? 18,
-          }))
+          })),
         );
       }
     }
@@ -265,7 +261,11 @@ function NewInvoiceContent() {
 
     setItems((prev) => {
       // If there is only one empty placeholder line, replace it cleanly
-      if (prev.length === 1 && !prev[0].particulars.trim() && prev[0].rate === 0) {
+      if (
+        prev.length === 1 &&
+        !prev[0].particulars.trim() &&
+        prev[0].rate === 0
+      ) {
         return [newItem];
       }
       return [...prev, newItem];
@@ -343,7 +343,7 @@ function NewInvoiceContent() {
       } else {
         const res = await createInvoice(payload).unwrap();
         toast.success(
-          `Invoice ${res?.invoice?.invoiceNo || ""} created successfully`
+          `Invoice ${res?.invoice?.invoiceNo || ""} created successfully`,
         );
       }
       router.push("/invoices");
@@ -400,7 +400,9 @@ function NewInvoiceContent() {
               <SelectContent>
                 {billingEntities.map((b: any) => (
                   <SelectItem key={b._id} value={b._id}>
-                    {b.branchName || b.name} {b.stateCode ? `(${b.stateCode})` : ""}{b.isDefault ? " (Default)" : ""}
+                    {b.branchName || b.name}{" "}
+                    {b.stateCode ? `(${b.stateCode})` : ""}
+                    {b.isDefault ? " (Default)" : ""}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -467,12 +469,16 @@ function NewInvoiceContent() {
             <div className="flex flex-wrap gap-2">
               {unbilledTasks.map((task: any) => {
                 const alreadyAdded = items.some(
-                  (it) => it.referenceId === task._id
+                  (it) => it.referenceId === task._id,
                 );
                 const serviceName =
-                  task.serviceId?.name || task.title || task.description || "Task";
+                  task.serviceId?.name ||
+                  task.title ||
+                  task.description ||
+                  "Task";
                 const periodLabel = task.period?.label;
-                const taskAmount = task.billingAmount || task.billableAmount || 0;
+                const taskAmount =
+                  task.billingAmount || task.billableAmount || 0;
                 const buttonLabel = periodLabel
                   ? `${serviceName} (${periodLabel})`
                   : serviceName;

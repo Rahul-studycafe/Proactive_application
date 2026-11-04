@@ -51,7 +51,7 @@ export function Breadcrumbs({
     <div
       className={cn(
         "flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm",
-        className
+        className,
       )}
     >
       <Breadcrumb>
@@ -84,8 +84,12 @@ export function Breadcrumbs({
                 <BreadcrumbItem>
                   {isLast || (!item.href && !item.onClick) ? (
                     <BreadcrumbPage className="font-semibold text-foreground flex items-center gap-1.5">
-                      {Icon && <Icon className="h-3.5 w-3.5 text-primary shrink-0" />}
-                      <span className="truncate max-w-[280px] sm:max-w-[400px]">{item.label}</span>
+                      {Icon && (
+                        <Icon className="h-3.5 w-3.5 text-primary shrink-0" />
+                      )}
+                      <span className="truncate max-w-[280px] sm:max-w-[400px]">
+                        {item.label}
+                      </span>
                     </BreadcrumbPage>
                   ) : item.href ? (
                     <BreadcrumbLink asChild>

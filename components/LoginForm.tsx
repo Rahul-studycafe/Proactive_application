@@ -18,11 +18,23 @@ export function LoginForm() {
   const [showPw, setShowPw] = useState(false);
   const [pwFocused, setPwFocused] = useState(false);
   const [apiError, setApiError] = useState("");
+  const [successBanner, setSuccessBanner] = useState("");
   const [submitState, setSubmitState] = useState<"idle" | "success" | "error">(
     "idle",
   );
   const router = useRouter();
   const { setAuthToken, isAuthenticated, isLoading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("activated") === "true") {
+        setSuccessBanner(
+          "Your account has been activated successfully! Please sign in with your new password.",
+        );
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated && !authLoading) {
@@ -96,6 +108,11 @@ export function LoginForm() {
           </div>
 
           <form onSubmit={onSubmit} className="mt-8 space-y-4">
+            {successBanner && (
+              <div className="bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-sm p-3 rounded-md mb-4 text-center font-medium">
+                {successBanner}
+              </div>
+            )}
             {apiError && (
               <div className="bg-destructive/15 border border-destructive/30 text-destructive text-sm p-3 rounded-md mb-4 text-center">
                 {apiError}

@@ -65,7 +65,6 @@ import { ClientExpensesTab } from "@/components/expenses";
 import { ClientPortalTab } from "./ClientPortalTab";
 import { EnablePortalLoginModal } from "@/components/clients/EnablePortalLoginModal";
 
-
 export default function ClientDetailPage() {
   const params = useParams();
   const clientId = params?.clientId as string;
@@ -81,8 +80,6 @@ export default function ClientDetailPage() {
   };
 
   const { data: client, isLoading } = useGetClientByIdQuery(clientId);
-
-
 
   const photoInputRef = useRef<HTMLInputElement>(null);
   const [uploadClientPhoto, { isLoading: isUploadingPhoto }] =
@@ -121,8 +118,6 @@ export default function ClientDetailPage() {
       }
     }
   };
-
-
 
   if (isLoading) {
     return (
@@ -256,13 +251,19 @@ export default function ClientDetailPage() {
             value="services"
             className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2 pt-1 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
           >
-            Services{client?.subscribedServices?.length ? ` (${client.subscribedServices.length})` : ""}
+            Services
+            {client?.subscribedServices?.length
+              ? ` (${client.subscribedServices.length})`
+              : ""}
           </TabsTrigger>
           <TabsTrigger
             value="retainers"
             className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2 pt-1 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
           >
-            Retainers{client?.subscribedPackages?.length ? ` (${client.subscribedPackages.length})` : ""}
+            Retainers
+            {client?.subscribedPackages?.length
+              ? ` (${client.subscribedPackages.length})`
+              : ""}
           </TabsTrigger>
           <TabsTrigger
             value="tasks"
@@ -594,7 +595,8 @@ export default function ClientDetailPage() {
                   Individual Subscribed Services
                 </h3>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Standalone compliance and advisory services subscribed by this client.
+                  Standalone compliance and advisory services subscribed by this
+                  client.
                 </p>
               </div>
               <SubscribeDialog
@@ -610,32 +612,40 @@ export default function ClientDetailPage() {
             </div>
 
             {/* Note banner if client has retainers */}
-            {client.subscribedPackages && client.subscribedPackages.length > 0 && (
-              <div className="mx-5 mt-4 rounded-lg bg-primary/5 border border-primary/15 px-4 py-3 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2.5">
-                  <PackageIcon className="h-4 w-4 text-primary shrink-0" />
-                  <span>
-                    This client is also enrolled in{" "}
-                    <strong>{client.subscribedPackages.length} commercial Retainer package(s)</strong>.
-                  </span>
+            {client.subscribedPackages &&
+              client.subscribedPackages.length > 0 && (
+                <div className="mx-5 mt-4 rounded-lg bg-primary/5 border border-primary/15 px-4 py-3 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2.5">
+                    <PackageIcon className="h-4 w-4 text-primary shrink-0" />
+                    <span>
+                      This client is also enrolled in{" "}
+                      <strong>
+                        {client.subscribedPackages.length} commercial Retainer
+                        package(s)
+                      </strong>
+                      .
+                    </span>
+                  </div>
+                  <Button
+                    variant="link"
+                    size="sm"
+                    className="h-auto p-0 text-xs font-semibold text-primary"
+                    onClick={() => handleTabChange("retainers")}
+                  >
+                    View Retainers →
+                  </Button>
                 </div>
-                <Button
-                  variant="link"
-                  size="sm"
-                  className="h-auto p-0 text-xs font-semibold text-primary"
-                  onClick={() => handleTabChange("retainers")}
-                >
-                  View Retainers →
-                </Button>
-              </div>
-            )}
+              )}
 
-            {!client.subscribedServices || client.subscribedServices.length === 0 ? (
+            {!client.subscribedServices ||
+            client.subscribedServices.length === 0 ? (
               <div className="px-6 py-12 text-center text-sm text-muted-foreground flex flex-col items-center justify-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted/60 text-muted-foreground mb-1">
                   <FileText className="h-6 w-6 opacity-60" />
                 </div>
-                <h4 className="text-sm font-semibold">No Individual Services Subscribed</h4>
+                <h4 className="text-sm font-semibold">
+                  No Individual Services Subscribed
+                </h4>
                 <p className="text-xs text-muted-foreground max-w-sm mb-2">
                   No standalone services are directly assigned to this client.
                 </p>
@@ -698,15 +708,24 @@ export default function ClientDetailPage() {
                           className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                           title="Unsubscribe Service"
                           onClick={async () => {
-                            if (!confirm(`Are you sure you want to unsubscribe from "${svcName}"?`)) return;
+                            if (
+                              !confirm(
+                                `Are you sure you want to unsubscribe from "${svcName}"?`,
+                              )
+                            )
+                              return;
                             try {
                               await unsubscribeService({
                                 clientId,
                                 serviceId: svcId.toString(),
                               }).unwrap();
-                              toast.success("Successfully unsubscribed from service");
+                              toast.success(
+                                "Successfully unsubscribed from service",
+                              );
                             } catch (err: any) {
-                              toast.error(err?.data?.message || "Failed to unsubscribe");
+                              toast.error(
+                                err?.data?.message || "Failed to unsubscribe",
+                              );
                             }
                           }}
                         >
@@ -764,7 +783,9 @@ export default function ClientDetailPage() {
                             href={`/tasks/${t.id || t._id}`}
                             className="text-sm font-semibold hover:underline cursor-pointer text-foreground hover:text-primary transition-colors"
                           >
-                            {t.serviceId?.name || t.description || "Unknown Task"}
+                            {t.serviceId?.name ||
+                              t.description ||
+                              "Unknown Task"}
                           </Link>
                           {periodLabel && (
                             <Badge
@@ -790,14 +811,18 @@ export default function ClientDetailPage() {
                               ? new Date(t.dueDate).toLocaleDateString()
                               : "No date"}
                           </span>
-                          {(t.billableAmount !== undefined && t.billableAmount !== null) && (
-                            <span>
-                              Amount:{" "}
-                              <strong className="text-foreground font-medium">
-                                ₹{Number(t.billableAmount).toLocaleString("en-IN")}
-                              </strong>
-                            </span>
-                          )}
+                          {t.billableAmount !== undefined &&
+                            t.billableAmount !== null && (
+                              <span>
+                                Amount:{" "}
+                                <strong className="text-foreground font-medium">
+                                  ₹
+                                  {Number(t.billableAmount).toLocaleString(
+                                    "en-IN",
+                                  )}
+                                </strong>
+                              </span>
+                            )}
                         </div>
                       </div>
                       <Badge variant="outline">{t.status}</Badge>

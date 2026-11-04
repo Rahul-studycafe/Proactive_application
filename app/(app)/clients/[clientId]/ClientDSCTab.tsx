@@ -49,10 +49,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  useGetDscListQuery,
-  useDeleteDscMutation,
-} from "@/lib/services/api";
+import { useGetDscListQuery, useDeleteDscMutation } from "@/lib/services/api";
 import { DSCItem, DSCStatus } from "@/lib/types/dsc";
 import { CreateDSCModal } from "@/components/dsc/CreateDSCModal";
 import { DSCHandoverModal } from "@/components/dsc/DSCHandoverModal";
@@ -127,7 +124,7 @@ export function ClientDSCTab({ clientId }: ClientDSCTabProps) {
   const handleDelete = async (dsc: DSCItem) => {
     if (
       !window.confirm(
-        `Are you sure you want to decommission DSC token "${dsc.certificateName}"?`
+        `Are you sure you want to decommission DSC token "${dsc.certificateName}"?`,
       )
     ) {
       return;
@@ -137,7 +134,7 @@ export function ClientDSCTab({ clientId }: ClientDSCTabProps) {
       toast.success("DSC token decommissioned successfully");
     } catch (err: any) {
       toast.error(
-        err?.data?.message || err?.message || "Failed to delete DSC token"
+        err?.data?.message || err?.message || "Failed to delete DSC token",
       );
     }
   };
@@ -299,7 +296,10 @@ export function ClientDSCTab({ clientId }: ClientDSCTabProps) {
         )}
 
         {/* Filter bar */}
-        {(dscs.length > 0 || search || statusFilter !== "all" || expiryFilter !== "all") && (
+        {(dscs.length > 0 ||
+          search ||
+          statusFilter !== "all" ||
+          expiryFilter !== "all") && (
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="relative flex-1 max-w-sm">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -417,12 +417,16 @@ export function ClientDSCTab({ clientId }: ClientDSCTabProps) {
                         No digital signature certificates found
                       </p>
                       <p className="text-xs text-muted-foreground max-w-sm">
-                        {search || statusFilter !== "all" || expiryFilter !== "all"
+                        {search ||
+                        statusFilter !== "all" ||
+                        expiryFilter !== "all"
                           ? "No DSC records match your search filter criteria."
                           : "No DSC USB tokens have been registered for this client yet."}
                       </p>
                       <div className="flex items-center gap-2 mt-2">
-                        {(search || statusFilter !== "all" || expiryFilter !== "all") && (
+                        {(search ||
+                          statusFilter !== "all" ||
+                          expiryFilter !== "all") && (
                           <Button
                             variant="outline"
                             size="sm"
@@ -450,14 +454,14 @@ export function ClientDSCTab({ clientId }: ClientDSCTabProps) {
               ) : (
                 dscs.map((dsc) => {
                   const formattedExpiry = new Date(
-                    dsc.expiryDate
+                    dsc.expiryDate,
                   ).toLocaleDateString("en-IN", {
                     day: "numeric",
                     month: "short",
                     year: "numeric",
                   });
                   const formattedIssue = new Date(
-                    dsc.issueDate
+                    dsc.issueDate,
                   ).toLocaleDateString("en-IN", {
                     day: "numeric",
                     month: "short",

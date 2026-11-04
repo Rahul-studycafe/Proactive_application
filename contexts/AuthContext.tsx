@@ -23,6 +23,7 @@ export interface AuthUser {
   initials: string;
   plan: string;
   avatar?: string;
+  isOwner?: boolean;
 }
 
 interface AuthContextValue {
@@ -133,6 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         backendUser.email?.[0] ||
         "U"
       ).toUpperCase(),
+      isOwner: backendUser.isOwner || false,
     };
   }
 

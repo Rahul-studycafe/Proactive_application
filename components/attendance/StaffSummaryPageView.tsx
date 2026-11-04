@@ -25,7 +25,13 @@ import {
   useGetMonthlyMatrixQuery,
 } from "@/lib/services/api";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -69,19 +75,24 @@ export function StaffSummaryPageView({ userId }: StaffSummaryPageViewProps) {
   const router = useRouter();
   const currentDate = new Date();
 
-  const initialMonth = searchParams.get("month") || String(currentDate.getMonth() + 1);
-  const initialYear = searchParams.get("year") || String(currentDate.getFullYear());
+  const initialMonth =
+    searchParams.get("month") || String(currentDate.getMonth() + 1);
+  const initialYear =
+    searchParams.get("year") || String(currentDate.getFullYear());
 
   const [selectedMonth, setSelectedMonth] = useState<string>(initialMonth);
   const [selectedYear, setSelectedYear] = useState<string>(initialYear);
 
   // RTK Query: fetch staff summary
-  const { data: summary, isLoading: isSummaryLoading, isFetching: isSummaryFetching } =
-    useGetStaffAttendanceSummaryQuery({
-      userId,
-      month: selectedMonth,
-      year: selectedYear,
-    });
+  const {
+    data: summary,
+    isLoading: isSummaryLoading,
+    isFetching: isSummaryFetching,
+  } = useGetStaffAttendanceSummaryQuery({
+    userId,
+    month: selectedMonth,
+    year: selectedYear,
+  });
 
   // RTK Query: fetch monthly matrix to get calendar days & itemized record notes/punches
   const { data: matrixResult, isLoading: isMatrixLoading } =
@@ -91,7 +102,7 @@ export function StaffSummaryPageView({ userId }: StaffSummaryPageViewProps) {
     });
 
   const staffMember = matrixResult?.staff?.find(
-    (s) => String(s._id) === String(userId)
+    (s) => String(s._id) === String(userId),
   );
 
   const days = matrixResult?.days || [];
@@ -100,7 +111,7 @@ export function StaffSummaryPageView({ userId }: StaffSummaryPageViewProps) {
     setSelectedMonth(newMonth);
     router.replace(
       `/attendance/matrix/${userId}?month=${newMonth}&year=${selectedYear}`,
-      { scroll: false }
+      { scroll: false },
     );
   };
 
@@ -108,7 +119,7 @@ export function StaffSummaryPageView({ userId }: StaffSummaryPageViewProps) {
     setSelectedYear(newYear);
     router.replace(
       `/attendance/matrix/${userId}?month=${selectedMonth}&year=${newYear}`,
-      { scroll: false }
+      { scroll: false },
     );
   };
 
@@ -125,7 +136,7 @@ export function StaffSummaryPageView({ userId }: StaffSummaryPageViewProps) {
     setSelectedYear(newYear);
     router.replace(
       `/attendance/matrix/${userId}?month=${newMonth}&year=${newYear}`,
-      { scroll: false }
+      { scroll: false },
     );
   };
 
@@ -142,7 +153,7 @@ export function StaffSummaryPageView({ userId }: StaffSummaryPageViewProps) {
     setSelectedYear(newYear);
     router.replace(
       `/attendance/matrix/${userId}?month=${newMonth}&year=${newYear}`,
-      { scroll: false }
+      { scroll: false },
     );
   };
 
@@ -247,13 +258,18 @@ export function StaffSummaryPageView({ userId }: StaffSummaryPageViewProps) {
                   )}
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {displayEmail} {summary?.joiningDate ? `• Joined: ${summary.joiningDate}` : ""}
+                  {displayEmail}{" "}
+                  {summary?.joiningDate
+                    ? `• Joined: ${summary.joiningDate}`
+                    : ""}
                 </p>
               </div>
             </div>
 
             <div className="text-right sm:border-l sm:pl-6 border-border/60">
-              <span className="text-xs text-muted-foreground block">Selected Period</span>
+              <span className="text-xs text-muted-foreground block">
+                Selected Period
+              </span>
               <span className="text-base font-bold text-foreground">
                 {MONTH_NAMES[parseInt(selectedMonth, 10) - 1]} {selectedYear}
               </span>
@@ -275,12 +291,19 @@ export function StaffSummaryPageView({ userId }: StaffSummaryPageViewProps) {
             <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs text-amber-800 dark:text-amber-300 shadow-sm">
               <AlertCircle className="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
               <div className="space-y-1">
-                <div className="font-semibold text-sm">Prorated Attendance Period</div>
+                <div className="font-semibold text-sm">
+                  Prorated Attendance Period
+                </div>
                 <p className="opacity-90 leading-relaxed text-xs">
-                  This employee joined mid-month on <strong>{summary.joiningDate}</strong>.{" "}
-                  <strong>{summary.preJoiningDays} calendar days</strong> prior to their start date
-                  are marked as <span className="font-mono bg-amber-500/20 px-1 py-0.5 rounded">N/A</span> and
-                  excluded from working day targets and payable denominator calculations.
+                  This employee joined mid-month on{" "}
+                  <strong>{summary.joiningDate}</strong>.{" "}
+                  <strong>{summary.preJoiningDays} calendar days</strong> prior
+                  to their start date are marked as{" "}
+                  <span className="font-mono bg-amber-500/20 px-1 py-0.5 rounded">
+                    N/A
+                  </span>{" "}
+                  and excluded from working day targets and payable denominator
+                  calculations.
                 </p>
               </div>
             </div>
@@ -294,7 +317,10 @@ export function StaffSummaryPageView({ userId }: StaffSummaryPageViewProps) {
                   <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Total Payable Days
                   </span>
-                  <Badge variant="outline" className="border-primary/30 text-primary text-[11px]">
+                  <Badge
+                    variant="outline"
+                    className="border-primary/30 text-primary text-[11px]"
+                  >
                     Payroll Ready
                   </Badge>
                 </div>
@@ -308,7 +334,9 @@ export function StaffSummaryPageView({ userId }: StaffSummaryPageViewProps) {
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                  Formula: Present ({summary.presentDays}) + Half Days ({summary.halfDays * 0.5}) + Paid Leaves ({summary.paidLeaves}) + Weekends/Holidays ({summary.holidays}).
+                  Formula: Present ({summary.presentDays}) + Half Days (
+                  {summary.halfDays * 0.5}) + Paid Leaves ({summary.paidLeaves})
+                  + Weekends/Holidays ({summary.holidays}).
                 </p>
               </CardContent>
             </Card>
@@ -328,10 +356,20 @@ export function StaffSummaryPageView({ userId }: StaffSummaryPageViewProps) {
                 <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/40">
                   <div className="flex items-center gap-1.5">
                     <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span>Working Hours: <strong className="text-foreground">{formatHours(summary.totalWorkingMinutes)}</strong></span>
+                    <span>
+                      Working Hours:{" "}
+                      <strong className="text-foreground">
+                        {formatHours(summary.totalWorkingMinutes)}
+                      </strong>
+                    </span>
                   </div>
                   <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
-                    <span>Overtime: <strong>{formatHours(summary.totalOvertimeMinutes)}</strong></span>
+                    <span>
+                      Overtime:{" "}
+                      <strong>
+                        {formatHours(summary.totalOvertimeMinutes)}
+                      </strong>
+                    </span>
                   </div>
                 </div>
               </CardContent>
@@ -348,7 +386,9 @@ export function StaffSummaryPageView({ userId }: StaffSummaryPageViewProps) {
                 <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1 block">
                   {summary.presentDays}
                 </span>
-                <span className="text-[11px] text-muted-foreground mt-0.5 block">Full day shifts</span>
+                <span className="text-[11px] text-muted-foreground mt-0.5 block">
+                  Full day shifts
+                </span>
               </CardContent>
             </Card>
 
@@ -374,7 +414,9 @@ export function StaffSummaryPageView({ userId }: StaffSummaryPageViewProps) {
                 <span className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1 block">
                   {summary.paidLeaves}
                 </span>
-                <span className="text-[11px] text-muted-foreground mt-0.5 block">Approved paid leaves</span>
+                <span className="text-[11px] text-muted-foreground mt-0.5 block">
+                  Approved paid leaves
+                </span>
               </CardContent>
             </Card>
 
@@ -386,7 +428,9 @@ export function StaffSummaryPageView({ userId }: StaffSummaryPageViewProps) {
                 <span className="text-2xl font-bold text-rose-600 dark:text-rose-400 mt-1 block">
                   {summary.absentDays}
                 </span>
-                <span className="text-[11px] text-muted-foreground mt-0.5 block">Unexcused / unpaid</span>
+                <span className="text-[11px] text-muted-foreground mt-0.5 block">
+                  Unexcused / unpaid
+                </span>
               </CardContent>
             </Card>
           </div>
@@ -399,11 +443,18 @@ export function StaffSummaryPageView({ userId }: StaffSummaryPageViewProps) {
                 Weekends & Statutory Holidays
               </div>
               <p className="text-muted-foreground">
-                {summary.weekendsCount} Weekly Rest Days + {summary.officialHolidaysCount} Official Gazetted Holidays ={" "}
-                <strong className="text-foreground">{summary.holidays} total credited rest days</strong>.
+                {summary.weekendsCount} Weekly Rest Days +{" "}
+                {summary.officialHolidaysCount} Official Gazetted Holidays ={" "}
+                <strong className="text-foreground">
+                  {summary.holidays} total credited rest days
+                </strong>
+                .
               </p>
             </div>
-            <Badge variant="secondary" className="w-fit text-xs px-3 py-1 font-semibold">
+            <Badge
+              variant="secondary"
+              className="w-fit text-xs px-3 py-1 font-semibold"
+            >
               Automatically Credited
             </Badge>
           </div>
@@ -418,7 +469,8 @@ export function StaffSummaryPageView({ userId }: StaffSummaryPageViewProps) {
                     Itemized Daily Attendance & Punch Log
                   </CardTitle>
                   <CardDescription>
-                    Complete calendar day verification, punch in/out timestamps, and office perimeter verification method.
+                    Complete calendar day verification, punch in/out timestamps,
+                    and office perimeter verification method.
                   </CardDescription>
                 </div>
                 <div className="text-xs text-muted-foreground">
@@ -431,21 +483,38 @@ export function StaffSummaryPageView({ userId }: StaffSummaryPageViewProps) {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/40">
-                      <TableHead className="font-semibold text-xs">Date</TableHead>
-                      <TableHead className="font-semibold text-xs">Day</TableHead>
-                      <TableHead className="font-semibold text-xs">Status</TableHead>
-                      <TableHead className="font-semibold text-xs">Verification Method</TableHead>
-                      <TableHead className="font-semibold text-xs">In Time</TableHead>
-                      <TableHead className="font-semibold text-xs">Out Time</TableHead>
-                      <TableHead className="font-semibold text-xs">Total Duration</TableHead>
-                      <TableHead className="font-semibold text-xs">Notes / Details</TableHead>
+                      <TableHead className="font-semibold text-xs">
+                        Date
+                      </TableHead>
+                      <TableHead className="font-semibold text-xs">
+                        Day
+                      </TableHead>
+                      <TableHead className="font-semibold text-xs">
+                        Status
+                      </TableHead>
+                      <TableHead className="font-semibold text-xs">
+                        Verification Method
+                      </TableHead>
+                      <TableHead className="font-semibold text-xs">
+                        In Time
+                      </TableHead>
+                      <TableHead className="font-semibold text-xs">
+                        Out Time
+                      </TableHead>
+                      <TableHead className="font-semibold text-xs">
+                        Total Duration
+                      </TableHead>
+                      <TableHead className="font-semibold text-xs">
+                        Notes / Details
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {days.map((day) => {
                       const rec = staffMember?.records?.[day.day];
                       let displayStatus = rec?.status || "--";
-                      const isPreJoining = rec?.status === "N/A" || rec?.isPreJoining;
+                      const isPreJoining =
+                        rec?.status === "N/A" || rec?.isPreJoining;
 
                       if (isPreJoining) {
                         displayStatus = "Pre-Joining (N/A)";
@@ -462,8 +531,12 @@ export function StaffSummaryPageView({ userId }: StaffSummaryPageViewProps) {
                             isPreJoining ? "bg-muted/15" : ""
                           }`}
                         >
-                          <TableCell className="font-mono font-medium">{day.date}</TableCell>
-                          <TableCell className="text-muted-foreground">{day.dayOfWeek}</TableCell>
+                          <TableCell className="font-mono font-medium">
+                            {day.date}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {day.dayOfWeek}
+                          </TableCell>
                           <TableCell>
                             <Badge
                               variant="outline"
@@ -471,16 +544,16 @@ export function StaffSummaryPageView({ userId }: StaffSummaryPageViewProps) {
                                 isPreJoining
                                   ? "border-dashed border-border/70 text-muted-foreground/60 bg-muted/20 text-[10px]"
                                   : displayStatus === "Present"
-                                  ? "border-emerald-500/30 text-emerald-600 bg-emerald-500/10 text-[10px]"
-                                  : displayStatus === "Half Day"
-                                  ? "border-amber-500/30 text-amber-600 bg-amber-500/10 text-[10px]"
-                                  : displayStatus === "Absent"
-                                  ? "border-rose-500/30 text-rose-600 bg-rose-500/10 text-[10px]"
-                                  : displayStatus === "Holiday"
-                                  ? "border-purple-500/30 text-purple-600 bg-purple-500/10 text-[10px]"
-                                  : displayStatus === "Weekend"
-                                  ? "border-border text-muted-foreground text-[10px]"
-                                  : "border-dashed text-muted-foreground text-[10px]"
+                                    ? "border-emerald-500/30 text-emerald-600 bg-emerald-500/10 text-[10px]"
+                                    : displayStatus === "Half Day"
+                                      ? "border-amber-500/30 text-amber-600 bg-amber-500/10 text-[10px]"
+                                      : displayStatus === "Absent"
+                                        ? "border-rose-500/30 text-rose-600 bg-rose-500/10 text-[10px]"
+                                        : displayStatus === "Holiday"
+                                          ? "border-purple-500/30 text-purple-600 bg-purple-500/10 text-[10px]"
+                                          : displayStatus === "Weekend"
+                                            ? "border-border text-muted-foreground text-[10px]"
+                                            : "border-dashed text-muted-foreground text-[10px]"
                               }
                             >
                               {displayStatus}
@@ -508,26 +581,37 @@ export function StaffSummaryPageView({ userId }: StaffSummaryPageViewProps) {
                                 Manual / Admin
                               </Badge>
                             ) : isPreJoining ? (
-                              <span className="text-muted-foreground/40 font-mono text-[11px]">—</span>
+                              <span className="text-muted-foreground/40 font-mono text-[11px]">
+                                —
+                              </span>
                             ) : (
-                              <span className="text-muted-foreground/40 font-mono text-[11px]">—</span>
+                              <span className="text-muted-foreground/40 font-mono text-[11px]">
+                                —
+                              </span>
                             )}
                           </TableCell>
                           <TableCell className="font-mono text-muted-foreground">
-                            {rec?.checkIn ? format(new Date(rec.checkIn), "hh:mm a") : "--"}
+                            {rec?.checkIn
+                              ? format(new Date(rec.checkIn), "hh:mm a")
+                              : "--"}
                           </TableCell>
                           <TableCell className="font-mono text-muted-foreground">
-                            {rec?.checkOut ? format(new Date(rec.checkOut), "hh:mm a") : "--"}
+                            {rec?.checkOut
+                              ? format(new Date(rec.checkOut), "hh:mm a")
+                              : "--"}
                           </TableCell>
                           <TableCell className="font-mono font-medium">
-                            {rec?.totalMinutes ? formatHours(rec.totalMinutes) : "--"}
+                            {rec?.totalMinutes
+                              ? formatHours(rec.totalMinutes)
+                              : "--"}
                           </TableCell>
                           <TableCell className="text-muted-foreground max-w-[200px] truncate text-[11px]">
                             {isPreJoining
-                              ? rec?.notes || `Pre-Joining (Joined on ${summary.joiningDate})`
+                              ? rec?.notes ||
+                                `Pre-Joining (Joined on ${summary.joiningDate})`
                               : day.isHoliday
-                              ? day.holiday?.name
-                              : rec?.notes || "--"}
+                                ? day.holiday?.name
+                                : rec?.notes || "--"}
                           </TableCell>
                         </TableRow>
                       );
@@ -540,7 +624,8 @@ export function StaffSummaryPageView({ userId }: StaffSummaryPageViewProps) {
         </div>
       ) : (
         <Card className="p-8 text-center text-muted-foreground">
-          Employee attendance summary could not be retrieved for the selected period.
+          Employee attendance summary could not be retrieved for the selected
+          period.
         </Card>
       )}
     </div>

@@ -55,10 +55,12 @@ export default function QuotationViewPrintPage() {
   const router = useRouter();
   const quoteId = params?.quoteId as string;
 
-  const { data, isLoading, isError, refetch } =
-    useGetQuotationPrintQuery(quoteId, {
+  const { data, isLoading, isError, refetch } = useGetQuotationPrintQuery(
+    quoteId,
+    {
       skip: !quoteId,
-    });
+    },
+  );
 
   const [updateStatus, { isLoading: isUpdatingStatus }] =
     useUpdateQuotationStatusMutation();
@@ -93,7 +95,7 @@ export default function QuotationViewPrintPage() {
   };
 
   const handleStatusChange = async (
-    newStatus: "Draft" | "Sent" | "Accepted" | "Declined"
+    newStatus: "Draft" | "Sent" | "Accepted" | "Declined",
   ) => {
     if (!quotation) return;
     try {
@@ -330,7 +332,9 @@ export default function QuotationViewPrintPage() {
               <div className="flex justify-between sm:justify-end gap-3">
                 <span className="font-medium">Place of Supply:</span>
                 <span className="text-foreground">
-                  {isInterState ? "Inter-State (IGST)" : "Intra-State (CGST + SGST)"}
+                  {isInterState
+                    ? "Inter-State (IGST)"
+                    : "Intra-State (CGST + SGST)"}
                 </span>
               </div>
             </div>
@@ -385,9 +389,13 @@ export default function QuotationViewPrintPage() {
                   <TableHead className="w-[10%] text-right">Rate (₹)</TableHead>
                   <TableHead className="w-[8%] text-right">Qty</TableHead>
                   <TableHead className="w-[10%] text-right">Disc (₹)</TableHead>
-                  <TableHead className="w-[12%] text-right">Taxable (₹)</TableHead>
+                  <TableHead className="w-[12%] text-right">
+                    Taxable (₹)
+                  </TableHead>
                   <TableHead className="w-[8%] text-right">GST %</TableHead>
-                  <TableHead className="w-[12%] text-right">Total (₹)</TableHead>
+                  <TableHead className="w-[12%] text-right">
+                    Total (₹)
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody className="text-xs">
@@ -413,7 +421,9 @@ export default function QuotationViewPrintPage() {
                       {item.quantity}
                     </TableCell>
                     <TableCell className="text-right font-mono text-muted-foreground">
-                      {item.discount > 0 ? `-${formatCurrency(item.discount)}` : "—"}
+                      {item.discount > 0
+                        ? `-${formatCurrency(item.discount)}`
+                        : "—"}
                     </TableCell>
                     <TableCell className="text-right font-mono font-medium">
                       {formatCurrency(item.taxableAmount)}

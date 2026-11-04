@@ -102,9 +102,7 @@ function numberToWordsIndian(num: number): string {
     if (n === 0) return "";
     if (n < 20) return a[n];
     if (n < 100)
-      return (
-        b[Math.floor(n / 10)] + (n % 10 !== 0 ? " " + a[n % 10] : "")
-      );
+      return b[Math.floor(n / 10)] + (n % 10 !== 0 ? " " + a[n % 10] : "");
     if (n < 1000)
       return (
         a[Math.floor(n / 100)] +
@@ -140,7 +138,11 @@ export default function ViewInvoicePage() {
   const invoiceId = (params?.invoiceId as string) || "";
   const { user } = useAuth();
 
-  const { data: invoice, isLoading, error } = useGetInvoiceByIdQuery(invoiceId, {
+  const {
+    data: invoice,
+    isLoading,
+    error,
+  } = useGetInvoiceByIdQuery(invoiceId, {
     skip: !invoiceId,
   });
 
@@ -161,7 +163,9 @@ export default function ViewInvoicePage() {
     return (
       <div className="flex h-[60vh] flex-col items-center justify-center gap-3">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Loading invoice details...</p>
+        <p className="text-sm text-muted-foreground">
+          Loading invoice details...
+        </p>
       </div>
     );
   }
@@ -252,7 +256,7 @@ export default function ViewInvoicePage() {
             </Button>
           )}
           <Button size="sm" onClick={handlePrint} className="gap-1.5">
-            <Printer className="h-4 w-4" /> Print 
+            <Printer className="h-4 w-4" /> Print
           </Button>
         </div>
       </div>
@@ -337,7 +341,10 @@ export default function ViewInvoicePage() {
                 {client.name || "Client Name"}
               </h3>
               {client.entityType && (
-                <Badge variant="secondary" className="text-[10px] py-0 font-normal">
+                <Badge
+                  variant="secondary"
+                  className="text-[10px] py-0 font-normal"
+                >
                   {client.entityType}
                 </Badge>
               )}
@@ -391,8 +398,12 @@ export default function ViewInvoicePage() {
                 </TableHead>
                 <TableHead className="w-20 font-bold">SAC</TableHead>
                 <TableHead className="w-12 text-right font-bold">Qty</TableHead>
-                <TableHead className="w-24 text-right font-bold">Rate</TableHead>
-                <TableHead className="w-16 text-right font-bold">Disc.</TableHead>
+                <TableHead className="w-24 text-right font-bold">
+                  Rate
+                </TableHead>
+                <TableHead className="w-16 text-right font-bold">
+                  Disc.
+                </TableHead>
                 <TableHead className="w-14 text-right font-bold">GST</TableHead>
                 <TableHead className="w-24 text-right font-bold">
                   Total
@@ -491,7 +502,9 @@ export default function ViewInvoicePage() {
           <div className="space-y-2 rounded-xl bg-muted/20 border p-4 text-sm self-start">
             <div className="flex justify-between py-1 text-muted-foreground text-xs">
               <span>Subtotal:</span>
-              <span className="font-mono">{formatCurrency(totals.subtotal)}</span>
+              <span className="font-mono">
+                {formatCurrency(totals.subtotal)}
+              </span>
             </div>
             {totals.totalDiscount > 0 && (
               <div className="flex justify-between py-1 text-success text-xs">
@@ -567,7 +580,9 @@ export default function ViewInvoicePage() {
           <div className="text-center sm:text-right space-y-8 print:space-y-4 print:text-right">
             <p className="font-medium text-foreground">For {firmName}</p>
             <div className="border-t border-muted-foreground/40 pt-1.5 w-44 text-center ml-auto">
-              <p className="font-medium text-foreground">Authorized Signatory</p>
+              <p className="font-medium text-foreground">
+                Authorized Signatory
+              </p>
             </div>
           </div>
         </div>

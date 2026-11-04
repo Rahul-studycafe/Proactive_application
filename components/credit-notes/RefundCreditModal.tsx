@@ -46,7 +46,7 @@ export function RefundCreditModal({
     "Bank Transfer" | "Cash" | "Cheque" | "UPI" | "Other"
   >("Bank Transfer");
   const [refundDate, setRefundDate] = useState(
-    new Date().toISOString().split("T")[0]
+    new Date().toISOString().split("T")[0],
   );
   const [referenceNo, setReferenceNo] = useState("");
   const [refundedAmount, setRefundedAmount] = useState<number>(availableCredit);
@@ -62,7 +62,9 @@ export function RefundCreditModal({
     }
 
     if (refundedAmount > availableCredit) {
-      toast.error(`Refund cannot exceed available balance of ₹${availableCredit}`);
+      toast.error(
+        `Refund cannot exceed available balance of ₹${availableCredit}`,
+      );
       return;
     }
 
@@ -79,13 +81,13 @@ export function RefundCreditModal({
       }).unwrap();
 
       toast.success(
-        `Refund of ₹${refundedAmount.toLocaleString("en-IN")} recorded successfully.`
+        `Refund of ₹${refundedAmount.toLocaleString("en-IN")} recorded successfully.`,
       );
       onOpenChange(false);
       if (onSuccess) onSuccess();
     } catch (err: any) {
       toast.error(
-        err?.data?.message || err?.message || "Failed to record refund"
+        err?.data?.message || err?.message || "Failed to record refund",
       );
     }
   };
@@ -97,8 +99,8 @@ export function RefundCreditModal({
           <DialogHeader>
             <DialogTitle>Record Client Payout / Refund</DialogTitle>
             <DialogDescription>
-              Record a bank transfer, cheque, or cash refund for unallocated balance on{" "}
-              <strong>{creditNote?.creditNoteNo}</strong>.
+              Record a bank transfer, cheque, or cash refund for unallocated
+              balance on <strong>{creditNote?.creditNoteNo}</strong>.
             </DialogDescription>
           </DialogHeader>
 
@@ -109,7 +111,10 @@ export function RefundCreditModal({
                   Eligible Refund Balance:
                 </span>
                 <span className="text-base font-bold text-blue-700 dark:text-blue-300 font-mono">
-                  ₹{availableCredit.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                  ₹
+                  {availableCredit.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                  })}
                 </span>
               </div>
             </div>
@@ -125,7 +130,9 @@ export function RefundCreditModal({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Bank Transfer">Bank Transfer (NEFT/RTGS)</SelectItem>
+                    <SelectItem value="Bank Transfer">
+                      Bank Transfer (NEFT/RTGS)
+                    </SelectItem>
                     <SelectItem value="UPI">UPI</SelectItem>
                     <SelectItem value="Cheque">Cheque</SelectItem>
                     <SelectItem value="Cash">Cash</SelectItem>
@@ -155,7 +162,9 @@ export function RefundCreditModal({
                 max={availableCredit}
                 step="any"
                 value={refundedAmount}
-                onChange={(e) => setRefundedAmount(parseFloat(e.target.value) || 0)}
+                onChange={(e) =>
+                  setRefundedAmount(parseFloat(e.target.value) || 0)
+                }
                 required
               />
             </div>
@@ -191,10 +200,7 @@ export function RefundCreditModal({
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={isRefunding || refundedAmount <= 0}
-            >
+            <Button type="submit" disabled={isRefunding || refundedAmount <= 0}>
               {isRefunding ? "Processing..." : "Confirm Refund"}
             </Button>
           </DialogFooter>

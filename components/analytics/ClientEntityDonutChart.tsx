@@ -1,31 +1,36 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, PieChart as PieChartIcon, Users, Building2 } from "lucide-react";
+import {
+  Loader2,
+  PieChart as PieChartIcon,
+  Users,
+  Building2,
+} from "lucide-react";
 import { ClientEntityDistributionItem } from "@/lib/types/analytics";
 import { useGetClientDistributionQuery } from "@/lib/services/api";
 
 const ENTITY_COLOR_MAP: Record<string, string> = {
   "Private Limited": "#4F46E5", // Deep Indigo
   "Sole Proprietorship": "#10B981", // Emerald
-  "LLP": "#F59E0B", // Amber
+  LLP: "#F59E0B", // Amber
   "Limited Liability Partnership": "#F59E0B",
-  "Individual": "#06B6D4", // Cyan
-  "Partnership": "#8B5CF6", // Violet
+  Individual: "#06B6D4", // Cyan
+  Partnership: "#8B5CF6", // Violet
   "Partnership Firm": "#8B5CF6",
-  "HUF": "#EC4899", // Pink
-  "Trust": "#14B8A6", // Teal
-  "Society": "#F97316", // Orange
-  "Other": "#64748B", // Slate
+  HUF: "#EC4899", // Pink
+  Trust: "#14B8A6", // Teal
+  Society: "#F97316", // Orange
+  Other: "#64748B", // Slate
 };
 
 const FALLBACK_PALETTE = [
@@ -48,10 +53,8 @@ export function ClientEntityDonutChart({
   data: propData,
   isLoading: propLoading,
 }: ClientEntityDonutChartProps) {
-  const { data: fetchedData, isLoading: queryLoading } = useGetClientDistributionQuery(
-    undefined,
-    { skip: !!propData }
-  );
+  const { data: fetchedData, isLoading: queryLoading } =
+    useGetClientDistributionQuery(undefined, { skip: !!propData });
 
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
@@ -166,7 +169,9 @@ export function ClientEntityDonutChart({
                         fill={entry.color}
                         stroke="transparent"
                         opacity={
-                          activeIndex === null || activeIndex === index ? 1 : 0.6
+                          activeIndex === null || activeIndex === index
+                            ? 1
+                            : 0.6
                         }
                         className="transition-opacity duration-200 cursor-pointer"
                       />

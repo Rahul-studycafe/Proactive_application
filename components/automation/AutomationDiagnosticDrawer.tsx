@@ -43,9 +43,12 @@ export function AutomationDiagnosticDrawer({
   onOpenChange,
 }: AutomationDiagnosticDrawerProps) {
   const [copied, setCopied] = useState(false);
-  const [filter, setFilter] = useState<"all" | "Created" | "Skipped" | "Failed">("all");
+  const [filter, setFilter] = useState<
+    "all" | "Created" | "Skipped" | "Failed"
+  >("all");
   const [showRawJson, setShowRawJson] = useState(false);
-  const [triggerAutomation, { isLoading: isRetrying }] = useTriggerTaskAutomationMutation();
+  const [triggerAutomation, { isLoading: isRetrying }] =
+    useTriggerTaskAutomationMutation();
 
   if (!log) return null;
 
@@ -69,7 +72,7 @@ export function AutomationDiagnosticDrawer({
     try {
       const res = await triggerAutomation().unwrap();
       toast.success(
-        `Retry execution finished: ${res.tasksCreated} created, ${res.tasksSkipped} skipped.`
+        `Retry execution finished: ${res.tasksCreated} created, ${res.tasksSkipped} skipped.`,
       );
     } catch (err: any) {
       toast.error(err?.data?.message || "Retry failed");
@@ -101,11 +104,15 @@ export function AutomationDiagnosticDrawer({
                   isFailed
                     ? "border-rose-500/30 bg-rose-500/10 text-rose-600"
                     : isPartial
-                    ? "border-amber-500/30 bg-amber-500/10 text-amber-600"
-                    : "border-emerald-500/30 bg-emerald-500/10 text-emerald-600"
+                      ? "border-amber-500/30 bg-amber-500/10 text-amber-600"
+                      : "border-emerald-500/30 bg-emerald-500/10 text-emerald-600"
                 }
               >
-                {isFailed ? "Failed" : isPartial ? "Partial Success" : "Success"}
+                {isFailed
+                  ? "Failed"
+                  : isPartial
+                    ? "Partial Success"
+                    : "Success"}
               </Badge>
               <Badge variant="secondary" className="text-xs font-mono">
                 {log.runType}
@@ -151,7 +158,9 @@ export function AutomationDiagnosticDrawer({
               </div>
               <div className="text-muted-foreground text-[11px] flex items-center gap-1">
                 <Clock className="h-3 w-3" />
-                <span>Duration: {durationMs > 0 ? `${durationMs} ms` : "< 1 sec"}</span>
+                <span>
+                  Duration: {durationMs > 0 ? `${durationMs} ms` : "< 1 sec"}
+                </span>
               </div>
             </div>
 
@@ -161,7 +170,9 @@ export function AutomationDiagnosticDrawer({
                 <span>Trigger Source</span>
               </div>
               <div className="font-medium text-foreground">
-                {log.triggeredBy ? log.triggeredBy.name : "BullMQ Cron Scheduler"}
+                {log.triggeredBy
+                  ? log.triggeredBy.name
+                  : "BullMQ Cron Scheduler"}
               </div>
               <div className="text-muted-foreground text-[11px]">
                 {log.triggeredBy?.email || "Midnight UTC Recurrence"}
@@ -205,8 +216,8 @@ export function AutomationDiagnosticDrawer({
                 <span>Execution encountered {log.errorCount} issue(s)</span>
               </div>
               <p className="text-[11px] leading-relaxed text-muted-foreground">
-                Check client package subscriptions, missing service blueprints, or
-                validation parameters for the failed items below.
+                Check client package subscriptions, missing service blueprints,
+                or validation parameters for the failed items below.
               </p>
             </div>
           )}
@@ -224,19 +235,21 @@ export function AutomationDiagnosticDrawer({
 
               {/* Status Filter */}
               <div className="flex items-center gap-1">
-                {(["all", "Created", "Skipped", "Failed"] as const).map((st) => (
-                  <button
-                    key={st}
-                    onClick={() => setFilter(st)}
-                    className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${
-                      filter === st
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground hover:bg-muted/80"
-                    }`}
-                  >
-                    {st === "all" ? "All" : st}
-                  </button>
-                ))}
+                {(["all", "Created", "Skipped", "Failed"] as const).map(
+                  (st) => (
+                    <button
+                      key={st}
+                      onClick={() => setFilter(st)}
+                      className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${
+                        filter === st
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground hover:bg-muted/80"
+                      }`}
+                    >
+                      {st === "all" ? "All" : st}
+                    </button>
+                  ),
+                )}
               </div>
             </div>
 
@@ -254,7 +267,8 @@ export function AutomationDiagnosticDrawer({
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <div className="font-medium text-foreground">
-                          {detail.clientId?.name || "Client (Missing Reference)"}
+                          {detail.clientId?.name ||
+                            "Client (Missing Reference)"}
                           {detail.clientId?.fileNo && (
                             <span className="text-[10px] text-muted-foreground ml-1 font-mono">
                               #{detail.clientId.fileNo}
@@ -262,7 +276,8 @@ export function AutomationDiagnosticDrawer({
                           )}
                         </div>
                         <div className="text-muted-foreground text-[11px]">
-                          {detail.serviceId?.name || "Service Blueprint"} · Period:{" "}
+                          {detail.serviceId?.name || "Service Blueprint"} ·
+                          Period:{" "}
                           <span className="font-mono text-foreground">
                             {detail.period}
                           </span>
@@ -274,8 +289,8 @@ export function AutomationDiagnosticDrawer({
                           detail.status === "Created"
                             ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600"
                             : detail.status === "Failed"
-                            ? "border-rose-500/30 bg-rose-500/10 text-rose-600"
-                            : "border-slate-500/30 bg-slate-500/10 text-slate-500"
+                              ? "border-rose-500/30 bg-rose-500/10 text-rose-600"
+                              : "border-slate-500/30 bg-slate-500/10 text-slate-500"
                         }`}
                       >
                         {detail.status}

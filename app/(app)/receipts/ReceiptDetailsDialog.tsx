@@ -95,15 +95,25 @@ export function ReceiptDetailsDialog({
           {/* Metadata Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="rounded-lg border bg-muted/20 p-3">
-              <span className="text-[11px] text-muted-foreground">Receipt Date</span>
-              <p className="mt-0.5 text-xs font-medium">{formatDate(receipt.date)}</p>
+              <span className="text-[11px] text-muted-foreground">
+                Receipt Date
+              </span>
+              <p className="mt-0.5 text-xs font-medium">
+                {formatDate(receipt.date)}
+              </p>
             </div>
             <div className="rounded-lg border bg-muted/20 p-3">
-              <span className="text-[11px] text-muted-foreground">Payment Mode</span>
-              <p className="mt-0.5 text-xs font-medium">{receipt.paymentMode}</p>
+              <span className="text-[11px] text-muted-foreground">
+                Payment Mode
+              </span>
+              <p className="mt-0.5 text-xs font-medium">
+                {receipt.paymentMode}
+              </p>
             </div>
             <div className="rounded-lg border bg-muted/20 p-3">
-              <span className="text-[11px] text-muted-foreground">Reference / UTR</span>
+              <span className="text-[11px] text-muted-foreground">
+                Reference / UTR
+              </span>
               <p className="mt-0.5 text-xs font-mono font-medium">
                 {receipt.referenceNumber || "N/A"}
               </p>
@@ -152,7 +162,9 @@ export function ReceiptDetailsDialog({
             <div className="grid grid-cols-3 gap-3 text-xs">
               <div className="rounded-lg border p-2.5">
                 <span className="text-muted-foreground">TDS Deducted:</span>
-                <p className="font-semibold font-mono">{formatCurrency(receipt.tdsAmount)}</p>
+                <p className="font-semibold font-mono">
+                  {formatCurrency(receipt.tdsAmount)}
+                </p>
               </div>
               <div className="rounded-lg border p-2.5">
                 <span className="text-muted-foreground">Discount Allowed:</span>
@@ -161,7 +173,9 @@ export function ReceiptDetailsDialog({
                 </p>
               </div>
               <div className="rounded-lg border p-2.5">
-                <span className="text-muted-foreground">Advance (Unallocated):</span>
+                <span className="text-muted-foreground">
+                  Advance (Unallocated):
+                </span>
                 <p className="font-semibold font-mono text-emerald-600 dark:text-emerald-400">
                   {formatCurrency(receipt.unallocatedAmount)}
                 </p>
@@ -176,8 +190,8 @@ export function ReceiptDetailsDialog({
             </h4>
             {settlements.length === 0 ? (
               <div className="rounded-lg border border-dashed p-4 text-center text-xs text-muted-foreground">
-                No individual invoices settled. Full amount recorded as an Advance credit in
-                the client ledger.
+                No individual invoices settled. Full amount recorded as an
+                Advance credit in the client ledger.
               </div>
             ) : (
               <div className="rounded-xl border overflow-hidden">
@@ -185,12 +199,17 @@ export function ReceiptDetailsDialog({
                   <TableHeader>
                     <TableRow className="bg-muted/30">
                       <TableHead className="text-xs">Invoice #</TableHead>
-                      <TableHead className="text-xs text-right">Settled Amount (₹)</TableHead>
+                      <TableHead className="text-xs text-right">
+                        Settled Amount (₹)
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {settlements.map((s: any, idx: number) => {
-                      const invId = typeof s.invoiceId === "object" ? s.invoiceId._id : s.invoiceId;
+                      const invId =
+                        typeof s.invoiceId === "object"
+                          ? s.invoiceId._id
+                          : s.invoiceId;
                       const invNo =
                         typeof s.invoiceId === "object"
                           ? s.invoiceId.invoiceNo
@@ -224,7 +243,9 @@ export function ReceiptDetailsDialog({
           {/* Notes */}
           {receipt.notes && (
             <div className="rounded-lg border bg-muted/10 p-3 text-xs">
-              <span className="font-semibold text-muted-foreground">Notes:</span>
+              <span className="font-semibold text-muted-foreground">
+                Notes:
+              </span>
               <p className="mt-0.5 text-foreground">{receipt.notes}</p>
             </div>
           )}

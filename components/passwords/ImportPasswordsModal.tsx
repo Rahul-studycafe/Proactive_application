@@ -41,7 +41,9 @@ export function ImportPasswordsModal({
 }: ImportPasswordsModalProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
-  const [result, setResult] = useState<BulkImportPasswordsResponse | null>(null);
+  const [result, setResult] = useState<BulkImportPasswordsResponse | null>(
+    null,
+  );
   const [showSkipped, setShowSkipped] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -80,7 +82,9 @@ export function ImportPasswordsModal({
     const isValid = validExts.some((ext) => fileName.endsWith(ext));
 
     if (!isValid) {
-      toast.error("Please upload an Excel spreadsheet (.xlsx, .xls) or CSV file");
+      toast.error(
+        "Please upload an Excel spreadsheet (.xlsx, .xls) or CSV file",
+      );
       return;
     }
 
@@ -89,7 +93,8 @@ export function ImportPasswordsModal({
   };
 
   const downloadSampleTemplate = () => {
-    const clientIdentifier = defaultClientFileNo || defaultClientName || "CLI-001";
+    const clientIdentifier =
+      defaultClientFileNo || defaultClientName || "CLI-001";
     const csvContent =
       "Client File No,Portal Name,Username,Password,Portal URL,Notes\n" +
       `${clientIdentifier},GST Portal,27AAAAA0000A1Z5,GstPass@2026,https://services.gst.gov.in,Primary GSTIN\n` +
@@ -122,10 +127,11 @@ export function ImportPasswordsModal({
       const res = await bulkImport(formData).unwrap();
       setResult(res);
       toast.success(
-        `Imported ${res.importedCount} new, updated ${res.updatedCount} credentials`
+        `Imported ${res.importedCount} new, updated ${res.updatedCount} credentials`,
       );
     } catch (err: any) {
-      const msg = err?.data?.message || err?.message || "Failed to process spreadsheet";
+      const msg =
+        err?.data?.message || err?.message || "Failed to process spreadsheet";
       toast.error(msg);
     }
   };
@@ -151,7 +157,8 @@ export function ImportPasswordsModal({
                   Bulk Import Passwords
                 </DialogTitle>
                 <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                  Upload spreadsheet with client credentials for batch encryption.
+                  Upload spreadsheet with client credentials for batch
+                  encryption.
                 </DialogDescription>
               </div>
             </div>
@@ -183,8 +190,8 @@ export function ImportPasswordsModal({
                   dragActive
                     ? "border-emerald-500 bg-emerald-500/10 scale-[0.99]"
                     : selectedFile
-                    ? "border-emerald-500/60 bg-emerald-500/5"
-                    : "border-border/80 hover:border-emerald-500/40 hover:bg-muted/40"
+                      ? "border-emerald-500/60 bg-emerald-500/5"
+                      : "border-border/80 hover:border-emerald-500/40 hover:bg-muted/40"
                 }`}
               >
                 <input
@@ -205,7 +212,8 @@ export function ImportPasswordsModal({
                         {selectedFile.name}
                       </p>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {(selectedFile.size / 1024).toFixed(1)} KB • Ready to ingest
+                        {(selectedFile.size / 1024).toFixed(1)} KB • Ready to
+                        ingest
                       </p>
                     </div>
                     <Button
@@ -246,16 +254,26 @@ export function ImportPasswordsModal({
                   Expected Column Headers:
                 </p>
                 <div className="flex flex-wrap gap-1.5">
-                  {["Client File No / Name", "Portal Name", "Username", "Password", "Portal URL", "Notes"].map(
-                    (col) => (
-                      <Badge key={col} variant="secondary" className="text-[11px] font-mono">
-                        {col}
-                      </Badge>
-                    )
-                  )}
+                  {[
+                    "Client File No / Name",
+                    "Portal Name",
+                    "Username",
+                    "Password",
+                    "Portal URL",
+                    "Notes",
+                  ].map((col) => (
+                    <Badge
+                      key={col}
+                      variant="secondary"
+                      className="text-[11px] font-mono"
+                    >
+                      {col}
+                    </Badge>
+                  ))}
                 </div>
                 <p className="text-[11px] text-muted-foreground pt-1">
-                  Passwords will be encrypted individually at rest using AES-256-CBC.
+                  Passwords will be encrypted individually at rest using
+                  AES-256-CBC.
                 </p>
               </div>
 
@@ -294,7 +312,9 @@ export function ImportPasswordsModal({
                 <div className="h-10 w-10 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto mb-2">
                   <CheckCircle2 className="h-6 w-6" />
                 </div>
-                <h4 className="font-bold text-sm text-foreground">Batch Import Completed</h4>
+                <h4 className="font-bold text-sm text-foreground">
+                  Batch Import Completed
+                </h4>
                 <p className="text-xs text-muted-foreground">
                   Processed {result.totalRows} spreadsheet row(s)
                 </p>
@@ -330,9 +350,15 @@ export function ImportPasswordsModal({
                   >
                     <div className="flex items-center gap-1.5">
                       <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                      <span>{result.skippedErrors.length} Row(s) Skipped / Failed</span>
+                      <span>
+                        {result.skippedErrors.length} Row(s) Skipped / Failed
+                      </span>
                     </div>
-                    {showSkipped ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    {showSkipped ? (
+                      <ChevronUp className="h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4" />
+                    )}
                   </button>
 
                   {showSkipped && (

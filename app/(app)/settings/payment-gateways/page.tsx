@@ -3,69 +3,55 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
-  CreditCard,
   QrCode,
   Shield,
-  KeyRound,
-  Eye,
-  EyeOff,
   Save,
   ArrowLeft,
   CheckCircle2,
-  AlertCircle,
   Loader2,
   Building2,
-  Copy,
-  ExternalLink,
+  Sparkles,
   Smartphone,
+  Banknote,
 } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { toast } from "sonner";
 import {
   useGetGatewayConfigsQuery,
   useUpsertGatewayConfigMutation,
 } from "@/lib/services/api";
 
-const PROVIDERS = [
-  { value: "Razorpay", label: "Razorpay (Cards, NetBanking, UPI, Auto-Settlement)", isGateway: true },
-  { value: "Cashfree", label: "Cashfree Payments (PG + Direct UPI)", isGateway: true },
-  { value: "UPI_Direct", label: "Direct Firm UPI VPA (Zero Gateway Fee)", isGateway: false },
-];
-
 export default function PaymentGatewaysPage() {
   const { data: configs = [], isLoading } = useGetGatewayConfigsQuery();
-  const [upsertConfig, { isLoading: isSaving }] = useUpsertGatewayConfigMutation();
+  const [upsertConfig, { isLoading: isSaving }] =
+    useUpsertGatewayConfigMutation();
 
-  const [provider, setProvider] = useState("Razorpay");
-  const [keyId, setKeyId] = useState("");
-  const [keySecret, setKeySecret] = useState("");
-  const [showKeySecret, setShowKeySecret] = useState(false);
-  const [webhookSecret, setWebhookSecret] = useState("");
   const [upiVpa, setUpiVpa] = useState("");
   const [merchantName, setMerchantName] = useState("");
   const [isEnabled, setIsEnabled] = useState(true);
-  const [acceptedModes, setAcceptedModes] = useState<string[]>(["UPI", "Card", "Netbanking"]);
+  const [acceptedModes, setAcceptedModes] = useState<string[]>([
+    "UPI",
+    "BankTransfer",
+  ]);
 
   // Populate state when configs load
   useEffect(() => {
     if (configs && configs.length > 0) {
-      const active = configs.find((c: any) => c.provider === provider) || configs[0];
+      const active = configs[0];
       if (active) {
-        setProvider(active.provider);
-        setKeyId(active.keyId || "");
         setUpiVpa(active.upiVpa || "");
         setMerchantName(active.merchantName || "");
         setIsEnabled(active.isEnabled ?? true);
@@ -74,14 +60,14 @@ export default function PaymentGatewaysPage() {
         }
       }
     }
-  }, [configs, provider]);
+  }, [configs]);
 
   const handleToggleMode = (mode: string) => {
     if (acceptedModes.includes(mode)) {
       if (acceptedModes.length > 1) {
         setAcceptedModes(acceptedModes.filter((m) => m !== mode));
       } else {
-        toast.error("At least one payment mode must be enabled");
+        toast.error("At least one settlement channel must remain enabled");
       }
     } else {
       setAcceptedModes([...acceptedModes, mode]);
@@ -92,25 +78,23 @@ export default function PaymentGatewaysPage() {
     e.preventDefault();
     try {
       await upsertConfig({
-        provider,
+        provider: "UPI_Direct",
         isEnabled,
-        keyId: keyId.trim(),
-        keySecret: keySecret ? keySecret.trim() : undefined,
-        webhookSecret: webhookSecret ? webhookSecret.trim() : undefined,
+        keyId: "direct_firm_upi",
         upiVpa: upiVpa.trim(),
         merchantName: merchantName.trim(),
         acceptedModes,
       }).unwrap();
 
-      toast.success(`${provider} configuration saved successfully!`);
-      setKeySecret("");
+      toast.success("Firm UPI & settlement settings saved successfully!");
     } catch (err: any) {
-      toast.error(err?.data?.error?.message || err?.data?.message || "Failed to save gateway config");
+      toast.error(
+        err?.data?.error?.message ||
+          err?.data?.message ||
+          "Failed to save UPI settlement settings",
+      );
     }
   };
-
-  const isGateway = provider !== "UPI_Direct";
-  const webhookUrl = typeof window !== "undefined" ? `${window.location.origin}/api/v1/client-payments/webhook` : "/api/v1/client-payments/webhook";
 
   return (
     <div className="space-y-6 pb-12">
@@ -126,10 +110,12 @@ export default function PaymentGatewaysPage() {
             </Link>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <CreditCard className="h-6 w-6 text-primary" /> Payment Gateway & Dynamic UPI Settings
+            <QrCode className="h-6 w-6 text-primary" /> Direct UPI & Settlement
+            Settings
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Configure merchant keys, instant UPI QR generation, and automated webhook reconciliation for client payments.
+            Configure direct firm UPI VPA, dynamic NPCI QR codes, and zero-fee
+            bank settlements for client invoices.
           </p>
         </div>
       </div>
@@ -141,38 +127,36 @@ export default function PaymentGatewaysPage() {
             <Card className="border-border/80 shadow-xs">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center justify-between">
-                  <span>Merchant Provider Configuration</span>
+                  <span>Direct UPI Configuration</span>
                   <div className="flex items-center gap-2">
-                    <Label htmlFor="gateway-enable" className="text-xs font-normal text-muted-foreground">Active</Label>
-                    <Switch id="gateway-enable" checked={isEnabled} onCheckedChange={setIsEnabled} />
+                    <Label
+                      htmlFor="gateway-enable"
+                      className="text-xs font-normal text-muted-foreground"
+                    >
+                      Active
+                    </Label>
+                    <Switch
+                      id="gateway-enable"
+                      checked={isEnabled}
+                      onCheckedChange={setIsEnabled}
+                    />
                   </div>
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  Choose your payment processing channel for digital client invoicing.
+                  Zero intermediary transaction fees (0%). Payments settle
+                  straight into your firm bank account.
                 </CardDescription>
               </CardHeader>
 
               <CardContent className="space-y-4 text-xs">
-                {/* Provider Selector */}
+                {/* Firm Legal / Merchant Name */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold">Gateway / Payment Provider</Label>
-                  <Select value={provider} onValueChange={setProvider}>
-                    <SelectTrigger className="text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PROVIDERS.map((p) => (
-                        <SelectItem key={p.value} value={p.value} className="text-xs">
-                          {p.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Merchant Name */}
-                <div className="space-y-1.5">
-                  <Label htmlFor="merchant-name" className="text-xs font-semibold">Firm / Merchant Legal Name</Label>
+                  <Label
+                    htmlFor="merchant-name"
+                    className="text-xs font-semibold"
+                  >
+                    Firm / Payee Display Name
+                  </Label>
                   <Input
                     id="merchant-name"
                     placeholder="e.g. Sharma & Co. Chartered Accountants"
@@ -182,155 +166,137 @@ export default function PaymentGatewaysPage() {
                     required
                   />
                   <p className="text-[11px] text-muted-foreground">
-                    This business name is displayed on client payment checkout pages and UPI screens.
+                    This payee name is embedded in the NPCI UPI string and shown
+                    on client UPI apps.
                   </p>
                 </div>
 
                 {/* UPI VPA Field */}
                 <div className="space-y-1.5">
-                  <Label htmlFor="upi-vpa" className="text-xs font-semibold">Direct UPI VPA ID</Label>
+                  <Label htmlFor="upi-vpa" className="text-xs font-semibold">
+                    Firm UPI VPA ID (Virtual Payment Address)
+                  </Label>
                   <Input
                     id="upi-vpa"
-                    placeholder="e.g. sharmaca@hdfcbank or 9876543210@upi"
+                    placeholder="e.g. 9625809384@kotakbank or sharmaca@hdfcbank"
                     value={upiVpa}
                     onChange={(e) => setUpiVpa(e.target.value)}
                     className="text-xs font-mono"
                     required
                   />
                   <p className="text-[11px] text-muted-foreground">
-                    Invoices will render a dynamic NPCI QR code linked to this handle for instant zero-fee settlement.
+                    Every generated invoice renders a dynamic QR code pre-filled
+                    with this VPA, invoice number, and exact amount due.
                   </p>
                 </div>
 
-                {/* Gateway Keys (Only for Razorpay / Cashfree) */}
-                {isGateway && (
-                  <div className="space-y-4 pt-3 border-t">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="key-id" className="text-xs font-semibold">{provider} Key ID (API Key)</Label>
-                      <Input
-                        id="key-id"
-                        placeholder="rzp_live_xxxxxxxxxxxxxx"
-                        value={keyId}
-                        onChange={(e) => setKeyId(e.target.value)}
-                        className="text-xs font-mono"
-                        required
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label htmlFor="key-secret" className="text-xs font-semibold">{provider} Key Secret</Label>
-                      <div className="relative">
-                        <Input
-                          id="key-secret"
-                          type={showKeySecret ? "text" : "password"}
-                          placeholder={configs.some((c: any) => c.provider === provider && c.hasSecret) ? "•••••••••••• (Encrypted)" : "Enter secret key"}
-                          value={keySecret}
-                          onChange={(e) => setKeySecret(e.target.value)}
-                          className="text-xs font-mono pr-9"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowKeySecret(!showKeySecret)}
-                          className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
-                        >
-                          {showKeySecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
-                      </div>
-                      <p className="text-[11px] text-muted-foreground">
-                        Secrets are cryptographically encrypted at rest with AES-256-CBC.
-                      </p>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label htmlFor="webhook-secret" className="text-xs font-semibold">Webhook Secret (Optional for HMAC verification)</Label>
-                      <Input
-                        id="webhook-secret"
-                        type="password"
-                        placeholder="Enter webhook secret if configured in gateway dashboard"
-                        value={webhookSecret}
-                        onChange={(e) => setWebhookSecret(e.target.value)}
-                        className="text-xs font-mono"
-                      />
-                    </div>
-                  </div>
-                )}
-
                 {/* Accepted Payment Modes */}
                 <div className="space-y-2 pt-3 border-t">
-                  <Label className="text-xs font-semibold">Accepted Payment Channels</Label>
+                  <Label className="text-xs font-semibold">
+                    Accepted Payment Channels
+                  </Label>
                   <div className="flex flex-wrap gap-4 pt-1">
-                    {["UPI", "Card", "Netbanking"].map((mode) => (
-                      <div key={mode} className="flex items-center gap-2">
-                        <Checkbox
-                          id={`mode-${mode}`}
-                          checked={acceptedModes.includes(mode)}
-                          onCheckedChange={() => handleToggleMode(mode)}
-                        />
-                        <Label htmlFor={`mode-${mode}`} className="text-xs cursor-pointer font-normal">
-                          {mode === "UPI" ? "UPI (GPay / PhonePe / BHIM)" : mode === "Card" ? "Debit / Credit Cards" : "Net Banking"}
-                        </Label>
-                      </div>
-                    ))}
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="mode-upi"
+                        checked={acceptedModes.includes("UPI")}
+                        onCheckedChange={() => handleToggleMode("UPI")}
+                      />
+                      <Label
+                        htmlFor="mode-upi"
+                        className="text-xs cursor-pointer font-normal"
+                      >
+                        Dynamic UPI QR (Google Pay, PhonePe, Paytm, BHIM, Cred)
+                      </Label>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="mode-bank"
+                        checked={acceptedModes.includes("BankTransfer")}
+                        onCheckedChange={() => handleToggleMode("BankTransfer")}
+                      />
+                      <Label
+                        htmlFor="mode-bank"
+                        className="text-xs cursor-pointer font-normal"
+                      >
+                        Direct Bank Transfer (NEFT / RTGS / IMPS)
+                      </Label>
+                    </div>
                   </div>
                 </div>
               </CardContent>
 
               <CardFooter className="pt-2 border-t flex justify-end">
-                <Button type="submit" disabled={isSaving} className="gap-2 text-xs shadow-xs">
-                  {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                  Save Gateway Credentials
+                <Button
+                  type="submit"
+                  disabled={isSaving}
+                  className="gap-2 text-xs shadow-xs"
+                >
+                  {isSaving ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4" />
+                  )}
+                  Save Settlement Settings
                 </Button>
               </CardFooter>
             </Card>
           </form>
 
-          {/* Webhook Configuration Guide Card */}
-          {isGateway && (
-            <Card className="border-border/80 shadow-xs bg-muted/20">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center gap-2 font-bold">
-                  <Shield className="h-4 w-4 text-primary" /> Automated Webhook Settlement Endpoint
-                </CardTitle>
-                <CardDescription className="text-xs">
-                  Copy this public webhook URL to your {provider} dashboard under <strong>Settings → Webhooks</strong>.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2 text-xs">
-                <div className="flex items-center gap-2">
-                  <Input readOnly value={webhookUrl} className="font-mono text-xs bg-background h-8" />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      navigator.clipboard.writeText(webhookUrl);
-                      toast.success("Webhook URL copied to clipboard!");
-                    }}
-                    className="gap-1 h-8 text-xs shrink-0"
-                  >
-                    <Copy className="h-3 w-3" /> Copy
-                  </Button>
-                </div>
-                <p className="text-[11px] text-muted-foreground">
-                  Select events: <code>payment.captured</code> and <code>order.paid</code>. Webhooks are idempotently auto-reconciled under ACID transactions.
-                </p>
-              </CardContent>
-            </Card>
-          )}
+          {/* Benefits Card */}
+          <Card className="border-border/80 shadow-xs bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200/60 dark:border-emerald-800/40">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2 font-bold text-emerald-800 dark:text-emerald-300">
+                <Shield className="h-4 w-4 text-emerald-600" /> Why Direct UPI
+                Settlement?
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-xs text-emerald-900/80 dark:text-emerald-300/80">
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+                <span>
+                  <strong>Zero Gateway Fees (0%):</strong> No 2% transaction
+                  charges or platform cuts. 100% of the funds go straight into
+                  your firm bank account.
+                </span>
+              </div>
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+                <span>
+                  <strong>Instant Settlement:</strong> Client funds are credited
+                  directly to your bank account without multi-day settlement
+                  delays (T+2).
+                </span>
+              </div>
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+                <span>
+                  <strong>No KYC & Aggregators:</strong> No lengthy merchant
+                  onboarding, API credential management, or third-party gateway
+                  contracts.
+                </span>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Live UPI Preview Pane (Right 4/12) */}
         <div className="lg:col-span-4 sticky top-20 space-y-4">
           <Card className="border-border/80 shadow-md bg-card">
             <CardHeader className="pb-3 text-center">
-              <Badge variant="outline" className="mx-auto text-[10px] uppercase font-mono tracking-wider">
+              <Badge
+                variant="outline"
+                className="mx-auto text-[10px] uppercase font-mono tracking-wider"
+              >
                 Live Invoice Preview
               </Badge>
               <CardTitle className="text-sm font-bold mt-2">
                 Dynamic UPI Scan-to-Pay
               </CardTitle>
               <CardDescription className="text-xs">
-                How clients see your payment prompt on generated invoices.
+                How clients see your payment prompt on generated invoices and
+                portal.
               </CardDescription>
             </CardHeader>
 
@@ -339,7 +305,9 @@ export default function PaymentGatewaysPage() {
               <div className="p-4 bg-muted/40 border-2 border-dashed rounded-xl inline-block mx-auto">
                 <div className="h-36 w-36 bg-background rounded-lg border flex flex-col items-center justify-center p-2 shadow-xs">
                   <QrCode className="h-24 w-24 text-foreground/80" />
-                  <span className="text-[9px] font-mono text-muted-foreground mt-1">NPCI UPI Compliant</span>
+                  <span className="text-[9px] font-mono text-muted-foreground mt-1">
+                    NPCI UPI Compliant
+                  </span>
                 </div>
               </div>
 
@@ -369,4 +337,3 @@ export default function PaymentGatewaysPage() {
     </div>
   );
 }
-

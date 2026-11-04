@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
@@ -40,7 +46,11 @@ export function StaffLeaderboardWidget({
       const from = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
       return { from };
     } else if (period === "quarter") {
-      const from = new Date(now.getFullYear(), now.getMonth() - 3, 1).toISOString();
+      const from = new Date(
+        now.getFullYear(),
+        now.getMonth() - 3,
+        1,
+      ).toISOString();
       return { from };
     } else {
       // Indian FY starts on April 1st
@@ -52,10 +62,10 @@ export function StaffLeaderboardWidget({
     }
   }, [period]);
 
-  const { data: fetchedData, isLoading: queryLoading } = useGetStaffPerformanceQuery(
-    propData ? undefined : queryDates,
-    { skip: !!propData }
-  );
+  const { data: fetchedData, isLoading: queryLoading } =
+    useGetStaffPerformanceQuery(propData ? undefined : queryDates, {
+      skip: !!propData,
+    });
 
   const rawData = propData || fetchedData || [];
   const isLoading = propLoading !== undefined ? propLoading : queryLoading;
@@ -85,7 +95,6 @@ export function StaffLeaderboardWidget({
               <CardTitle className="text-base font-semibold">
                 Staff Performance Leaderboard
               </CardTitle>
-             
             </div>
           </div>
 
@@ -171,7 +180,8 @@ export function StaffLeaderboardWidget({
               {topThree[0] ? (
                 <div className="flex flex-col items-center text-center p-3 rounded-xl border-2 border-amber-500/50 bg-amber-500/10 relative shadow-sm">
                   <div className="absolute -top-2.5 flex items-center justify-center h-5 px-2 rounded-full bg-amber-500 text-white text-[10px] font-bold shadow-xs">
-                    <Trophy className="h-3 w-3 mr-1 fill-amber-200" /> #1 Champion
+                    <Trophy className="h-3 w-3 mr-1 fill-amber-200" /> #1
+                    Champion
                   </div>
                   <Avatar className="h-12 w-12 mt-1 border-2 border-amber-500/60 ring-2 ring-amber-500/20">
                     <AvatarFallback className="bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold text-sm">
@@ -182,7 +192,8 @@ export function StaffLeaderboardWidget({
                     {topThree[0].name}
                   </span>
                   <span className="text-[10px] text-muted-foreground font-medium">
-                    {topThree[0].completed}/{topThree[0].totalAssigned} tasks done
+                    {topThree[0].completed}/{topThree[0].totalAssigned} tasks
+                    done
                   </span>
                   <Badge
                     variant="outline"

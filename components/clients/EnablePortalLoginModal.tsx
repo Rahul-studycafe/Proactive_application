@@ -56,14 +56,18 @@ export function EnablePortalLoginModal({
 }: EnablePortalLoginModalProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const isOpen = controlledOpen !== undefined ? controlledOpen : internalOpen;
-  const setOpen = setControlledOpen !== undefined ? setControlledOpen : setInternalOpen;
+  const setOpen =
+    setControlledOpen !== undefined ? setControlledOpen : setInternalOpen;
 
-  const { data: portalData, isLoading: isLoadingUsers } = useGetClientPortalUsersQuery(clientId, {
-    skip: !isOpen,
-  });
+  const { data: portalData, isLoading: isLoadingUsers } =
+    useGetClientPortalUsersQuery(clientId, {
+      skip: !isOpen,
+    });
 
-  const [toggleAccess, { isLoading: isToggling }] = useToggleClientPortalAccessMutation();
-  const [createUser, { isLoading: isCreating }] = useCreateClientPortalUserMutation();
+  const [toggleAccess, { isLoading: isToggling }] =
+    useToggleClientPortalAccessMutation();
+  const [createUser, { isLoading: isCreating }] =
+    useCreateClientPortalUserMutation();
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -79,14 +83,25 @@ export function EnablePortalLoginModal({
 
   const isPortalEnabled = portalData?.allowLogin ?? client?.allowLogin ?? false;
   const portalUsers = portalData?.users || [];
-  const portalUrl = typeof window !== "undefined" ? `${window.location.origin}/portal/login` : "/portal/login";
+  const portalUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/portal/login`
+      : "/portal/login";
 
   const handleToggle = async (checked: boolean) => {
     try {
       await toggleAccess({ clientId, allowLogin: checked }).unwrap();
-      toast.success(checked ? "Client portal access enabled" : "Client portal access disabled");
+      toast.success(
+        checked
+          ? "Client portal access enabled"
+          : "Client portal access disabled",
+      );
     } catch (err: any) {
-      toast.error(err?.data?.error?.message || err?.data?.message || "Failed to toggle portal access");
+      toast.error(
+        err?.data?.error?.message ||
+          err?.data?.message ||
+          "Failed to toggle portal access",
+      );
     }
   };
 
@@ -99,9 +114,12 @@ export function EnablePortalLoginModal({
 
   const handleWhatsAppShare = (userEmail?: string) => {
     const message = encodeURIComponent(
-      `Hello ${formData.name || client?.name},\n\nYour client portal access for ${client?.name} is ready! You can review compliance deadlines, download tax returns, and inspect invoices here:\n\n🔗 ${portalUrl}\n\nLogin with your email or phone number.`
+      `Hello ${formData.name || client?.name},\n\nYour client portal access for ${client?.name} is ready! You can review compliance deadlines, download tax returns, and inspect invoices here:\n\n🔗 ${portalUrl}\n\nLogin with your email or phone number.`,
     );
-    window.open(`https://wa.me/${(formData.phone || client?.mobile || "").replace(/\D/g, "")}?text=${message}`, "_blank");
+    window.open(
+      `https://wa.me/${(formData.phone || client?.mobile || "").replace(/\D/g, "")}?text=${message}`,
+      "_blank",
+    );
   };
 
   const handleCreateUser = async (e: React.FormEvent) => {
@@ -131,7 +149,11 @@ export function EnablePortalLoginModal({
         isPrimaryContact: false,
       });
     } catch (err: any) {
-      toast.error(err?.data?.error?.message || err?.data?.message || "Failed to create portal user");
+      toast.error(
+        err?.data?.error?.message ||
+          err?.data?.message ||
+          "Failed to create portal user",
+      );
     }
   };
 
@@ -155,9 +177,12 @@ export function EnablePortalLoginModal({
               <Globe className="h-5 w-5" />
             </div>
             <div>
-              <DialogTitle className="text-base font-bold">Client Portal Access & Login</DialogTitle>
+              <DialogTitle className="text-base font-bold">
+                Client Portal Access & Login
+              </DialogTitle>
               <DialogDescription className="text-xs">
-                Manage external portal login credentials for <strong>{client?.name}</strong>.
+                Manage external portal login credentials for{" "}
+                <strong>{client?.name}</strong>.
               </DialogDescription>
             </div>
           </div>
@@ -212,7 +237,11 @@ export function EnablePortalLoginModal({
                 onClick={handleCopyLink}
                 className="gap-1.5 shrink-0 text-xs h-8"
               >
-                {copiedLink ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                {copiedLink ? (
+                  <Check className="h-3.5 w-3.5 text-emerald-600" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5" />
+                )}
                 {copiedLink ? "Copied" : "Copy"}
               </Button>
               <Button
@@ -257,7 +286,10 @@ export function EnablePortalLoginModal({
                     <div className="flex items-center gap-1.5 font-medium">
                       <span>{u.name}</span>
                       {u.isPrimaryContact && (
-                        <Badge variant="secondary" className="text-[10px] py-0 px-1.5">
+                        <Badge
+                          variant="secondary"
+                          className="text-[10px] py-0 px-1.5"
+                        >
                           Primary
                         </Badge>
                       )}
@@ -295,9 +327,13 @@ export function EnablePortalLoginModal({
 
             {/* Add User Form (Phase F-125) */}
             {showAddForm && (
-              <form onSubmit={handleCreateUser} className="p-3 rounded-lg border bg-muted/20 space-y-3 mt-2">
+              <form
+                onSubmit={handleCreateUser}
+                className="p-3 rounded-lg border bg-muted/20 space-y-3 mt-2"
+              >
                 <div className="font-semibold text-xs flex items-center gap-1.5">
-                  <UserPlus className="h-3.5 w-3.5 text-primary" /> Invite New Portal User
+                  <UserPlus className="h-3.5 w-3.5 text-primary" /> Invite New
+                  Portal User
                 </div>
 
                 <div className="space-y-1">
@@ -306,7 +342,9 @@ export function EnablePortalLoginModal({
                     required
                     placeholder="e.g. Rahul Sharma"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
                     className="text-xs h-8"
                   />
                 </div>
@@ -319,7 +357,9 @@ export function EnablePortalLoginModal({
                       required
                       placeholder="client@company.com"
                       value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
                       className="text-xs h-8"
                     />
                   </div>
@@ -330,19 +370,25 @@ export function EnablePortalLoginModal({
                       required
                       placeholder="9876543210"
                       value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, phone: e.target.value })
+                      }
                       className="text-xs h-8"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-xs">Initial Password (Optional — OTP login is active)</Label>
+                  <Label className="text-xs">
+                    Initial Password (Optional — OTP login is active)
+                  </Label>
                   <Input
                     type="password"
                     placeholder="Leave blank for OTP-only access"
                     value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
+                    }
                     className="text-xs h-8"
                   />
                 </div>
@@ -351,9 +397,14 @@ export function EnablePortalLoginModal({
                   <Checkbox
                     id="is-primary"
                     checked={formData.isPrimaryContact}
-                    onCheckedChange={(checked) => setFormData({ ...formData, isPrimaryContact: !!checked })}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, isPrimaryContact: !!checked })
+                    }
                   />
-                  <Label htmlFor="is-primary" className="text-xs cursor-pointer">
+                  <Label
+                    htmlFor="is-primary"
+                    className="text-xs cursor-pointer"
+                  >
                     Set as Primary Contact for this organization
                   </Label>
                 </div>
@@ -374,7 +425,9 @@ export function EnablePortalLoginModal({
                     disabled={isCreating}
                     className="text-xs h-8 gap-1"
                   >
-                    {isCreating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+                    {isCreating ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : null}
                     Create & Authorize
                   </Button>
                 </div>
@@ -398,4 +451,3 @@ export function EnablePortalLoginModal({
     </Dialog>
   );
 }
-

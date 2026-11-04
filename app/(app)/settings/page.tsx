@@ -15,6 +15,7 @@ import {
   FolderPlus,
   Globe2,
   CreditCard,
+  QrCode,
   Building,
   Zap,
   History,
@@ -34,6 +35,7 @@ import {
 } from "@/components/ui/table";
 import { HolidaysView } from "@/components/holidays/HolidaysView";
 import { WorkingDaysView } from "@/components/settings/WorkingDaysView";
+import { UsersSettingsView } from "@/components/settings/UsersSettingsView";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { QueueHealthCard } from "@/components/automation/QueueHealthCard";
 import { TriggerAutomationModal } from "@/components/automation/TriggerAutomationModal";
@@ -52,25 +54,31 @@ const SETTING_MODULES: SettingModule[] = [
   {
     id: "subscription",
     title: "SaaS Subscription & Plan",
-    description: "Manage practice subscription tier, user seat limits, client quota, and storage.",
+    description:
+      "Manage practice subscription tier, user seat limits, client quota, and storage.",
     icon: Sparkles,
-    colorClass: "bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400",
+    colorClass:
+      "bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400",
     category: "System",
   },
   {
     id: "website-cms",
     title: "Website & Portal CMS",
-    description: "White-label subdomain, agency branding, custom domain, and client portal layout.",
+    description:
+      "White-label subdomain, agency branding, custom domain, and client portal layout.",
     icon: Globe2,
-    colorClass: "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400",
+    colorClass:
+      "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400",
     category: "System",
   },
   {
     id: "automation-settings",
     title: "Automation & Engine",
-    description: "BullMQ worker health, recurring cron tasks, and Redis queue status.",
+    description:
+      "BullMQ worker health, recurring cron tasks, and Redis queue status.",
     icon: Zap,
-    colorClass: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400",
+    colorClass:
+      "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400",
     category: "System",
   },
   // User Section
@@ -79,23 +87,28 @@ const SETTING_MODULES: SettingModule[] = [
     title: "Users",
     description: "Add or edit the users, user roles, password and more.",
     icon: Users,
-    colorClass: "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400",
+    colorClass:
+      "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400",
     category: "User",
   },
   {
     id: "user-roles",
     title: "User Roles",
-    description: "Create or edit the user roles and allow or restrict control of permissions.",
+    description:
+      "Create or edit the user roles and allow or restrict control of permissions.",
     icon: UserCog,
-    colorClass: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400",
+    colorClass:
+      "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400",
     category: "User",
   },
   {
     id: "user-notifications",
     title: "User Notifications",
-    description: "Update user notifications settings and push notification preferences.",
+    description:
+      "Update user notifications settings and push notification preferences.",
     icon: Bell,
-    colorClass: "bg-teal-50 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400",
+    colorClass:
+      "bg-teal-50 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400",
     category: "User",
   },
   {
@@ -103,13 +116,15 @@ const SETTING_MODULES: SettingModule[] = [
     title: "Attendance Settings",
     description: "You can set weekend days and working hours for attendance.",
     icon: CalendarCheck,
-    colorClass: "bg-orange-50 text-orange-600 dark:bg-orange-950/40 dark:text-orange-400",
+    colorClass:
+      "bg-orange-50 text-orange-600 dark:bg-orange-950/40 dark:text-orange-400",
     category: "User",
   },
   {
     id: "holidays-list",
     title: "Holidays List",
-    description: "Create or change the holidays list for attendance and operations.",
+    description:
+      "Create or change the holidays list for attendance and operations.",
     icon: Palmtree,
     colorClass: "bg-sky-50 text-sky-600 dark:bg-sky-950/40 dark:text-sky-400",
     category: "User",
@@ -119,7 +134,8 @@ const SETTING_MODULES: SettingModule[] = [
     title: "User Replacement",
     description: "Replace user in Tasks, Clients, and assigned Services.",
     icon: ArrowRightLeft,
-    colorClass: "bg-stone-100 text-stone-600 dark:bg-stone-900 dark:text-stone-300",
+    colorClass:
+      "bg-stone-100 text-stone-600 dark:bg-stone-900 dark:text-stone-300",
     category: "User",
   },
 
@@ -129,7 +145,8 @@ const SETTING_MODULES: SettingModule[] = [
     title: "Client Settings",
     description: "Manage client settings and custom fields configuration.",
     icon: Settings2,
-    colorClass: "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400",
+    colorClass:
+      "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400",
     category: "Client",
   },
   {
@@ -137,7 +154,8 @@ const SETTING_MODULES: SettingModule[] = [
     title: "Client Groups",
     description: "Add, edit, or delete the client's management groups.",
     icon: FolderPlus,
-    colorClass: "bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400",
+    colorClass:
+      "bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400",
     category: "Client",
   },
   {
@@ -145,17 +163,20 @@ const SETTING_MODULES: SettingModule[] = [
     title: "Portals List",
     description: "Manage compliance portals or websites e.g. GST, Income Tax.",
     icon: Globe2,
-    colorClass: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400",
+    colorClass:
+      "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400",
     category: "Client",
   },
 
   // Billing Section
   {
     id: "payment-gateways",
-    title: "Payment Gateways & UPI",
-    description: "Configure Razorpay, Cashfree, dynamic NPCI UPI QR, and webhook keys.",
-    icon: CreditCard,
-    colorClass: "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400",
+    title: "Firm Direct UPI & Settlement",
+    description:
+      "Configure direct NPCI UPI QR code, firm UPI VPA handle, and zero-fee bank settlements.",
+    icon: QrCode,
+    colorClass:
+      "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400",
     category: "Billing",
   },
   {
@@ -163,15 +184,18 @@ const SETTING_MODULES: SettingModule[] = [
     title: "Billing Preferences",
     description: "Manage invoice templates, currency, and payment terms.",
     icon: CreditCard,
-    colorClass: "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400",
+    colorClass:
+      "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400",
     category: "Billing",
   },
   {
     id: "billing-entities",
     title: "Billing Entities",
-    description: "Manage organization entities, GSTIN registrations, and bank details.",
+    description:
+      "Manage organization entities, GSTIN registrations, and bank details.",
     icon: Building,
-    colorClass: "bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400",
+    colorClass:
+      "bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400",
     category: "Billing",
   },
 ];
@@ -181,7 +205,9 @@ function SettingsContent() {
   const router = useRouter();
   const initialModule = searchParams.get("module");
 
-  const [activeModule, setActiveModule] = useState<string | null>(initialModule);
+  const [activeModule, setActiveModule] = useState<string | null>(
+    initialModule,
+  );
 
   useEffect(() => {
     const mod = searchParams.get("module");
@@ -243,13 +269,18 @@ function SettingsContent() {
                     <Zap className="h-5 w-5 text-amber-500 fill-amber-500" />
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Configure BullMQ background task workers, inspect Redis queue status, and run manual generation cycles.
+                    Configure BullMQ background task workers, inspect Redis
+                    queue status, and run manual generation cycles.
                   </p>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <Link href="/tasks/automation/logs">
-                    <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5 text-xs"
+                    >
                       <History className="h-4 w-4" />
                       <span>Audit Logs</span>
                     </Button>
@@ -261,59 +292,7 @@ function SettingsContent() {
               <QueueHealthCard />
             </div>
           )}
-          {activeModule === "users" && (
-            <div className="space-y-4">
-              <div>
-                <h1 className="text-2xl font-semibold tracking-tight">Users</h1>
-                <p className="text-sm text-muted-foreground">Add or edit users, user roles, password and more.</p>
-              </div>
-              <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-muted/40">
-                      <TableHead className="font-semibold">User</TableHead>
-                      <TableHead className="font-semibold">Email</TableHead>
-                      <TableHead className="font-semibold">Role</TableHead>
-                      <TableHead className="font-semibold">Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {mockUsers.map((u) => (
-                      <TableRow key={u.id} className="hover:bg-muted/30">
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <div
-                              className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold text-white"
-                              style={{ background: u.avatarColor }}
-                            >
-                              {u.name[0]}
-                            </div>
-                            <span className="font-medium">{u.name}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">{u.email}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{u.role}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant="outline"
-                            className={
-                              u.status === "Active"
-                                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                                : "border-border bg-muted text-muted-foreground"
-                            }
-                          >
-                            {u.status}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </div>
-          )}
+          {activeModule === "users" && <UsersSettingsView />}
           {activeModule !== "holidays-list" &&
             activeModule !== "attendance-settings" &&
             activeModule !== "automation-settings" &&
@@ -322,9 +301,12 @@ function SettingsContent() {
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground mb-3">
                   <Settings2 className="h-6 w-6" />
                 </div>
-                <h3 className="text-base font-semibold">{currentModuleObj?.title}</h3>
+                <h3 className="text-base font-semibold">
+                  {currentModuleObj?.title}
+                </h3>
                 <p className="text-sm text-muted-foreground max-w-sm mx-auto mt-1">
-                  {currentModuleObj?.description} (Coming soon in future module releases).
+                  {currentModuleObj?.description} (Coming soon in future module
+                  releases).
                 </p>
                 <div className="mt-4 flex justify-center">
                   <Button variant="outline" size="sm" onClick={backToSettings}>
@@ -347,7 +329,9 @@ function SettingsContent() {
 
       {/* User Section */}
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold tracking-tight text-foreground">User</h2>
+        <h2 className="text-lg font-semibold tracking-tight text-foreground">
+          User
+        </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {SETTING_MODULES.filter((m) => m.category === "User").map((mod) => {
             const IconComponent = mod.icon;
@@ -379,7 +363,9 @@ function SettingsContent() {
 
       {/* Client Section */}
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold tracking-tight text-foreground">Client</h2>
+        <h2 className="text-lg font-semibold tracking-tight text-foreground">
+          Client
+        </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {SETTING_MODULES.filter((m) => m.category === "Client").map((mod) => {
             const IconComponent = mod.icon;
@@ -411,39 +397,45 @@ function SettingsContent() {
 
       {/* Billing Section */}
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold tracking-tight text-foreground">Billing</h2>
+        <h2 className="text-lg font-semibold tracking-tight text-foreground">
+          Billing
+        </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {SETTING_MODULES.filter((m) => m.category === "Billing").map((mod) => {
-            const IconComponent = mod.icon;
-            return (
-              <button
-                key={mod.id}
-                type="button"
-                onClick={() => selectModule(mod.id)}
-                className="flex items-start gap-4 rounded-xl border bg-card p-4 text-left transition-all hover:bg-muted/30 hover:border-border/80 hover:shadow-sm group focus:outline-none focus:ring-2 focus:ring-primary/20"
-              >
-                <div
-                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform group-hover:scale-105 ${mod.colorClass}`}
+          {SETTING_MODULES.filter((m) => m.category === "Billing").map(
+            (mod) => {
+              const IconComponent = mod.icon;
+              return (
+                <button
+                  key={mod.id}
+                  type="button"
+                  onClick={() => selectModule(mod.id)}
+                  className="flex items-start gap-4 rounded-xl border bg-card p-4 text-left transition-all hover:bg-muted/30 hover:border-border/80 hover:shadow-sm group focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
-                  <IconComponent className="h-6 w-6" />
-                </div>
-                <div className="space-y-1 min-w-0">
-                  <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
-                    {mod.title}
-                  </h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
-                    {mod.description}
-                  </p>
-                </div>
-              </button>
-            );
-          })}
+                  <div
+                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform group-hover:scale-105 ${mod.colorClass}`}
+                  >
+                    <IconComponent className="h-6 w-6" />
+                  </div>
+                  <div className="space-y-1 min-w-0">
+                    <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                      {mod.title}
+                    </h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                      {mod.description}
+                    </p>
+                  </div>
+                </button>
+              );
+            },
+          )}
         </div>
       </div>
 
       {/* System & Automation Section */}
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold tracking-tight text-foreground">System & Automation</h2>
+        <h2 className="text-lg font-semibold tracking-tight text-foreground">
+          System & Automation
+        </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {SETTING_MODULES.filter((m) => m.category === "System").map((mod) => {
             const IconComponent = mod.icon;
@@ -478,7 +470,13 @@ function SettingsContent() {
 
 export default function SettingsPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-sm text-muted-foreground">Loading settings...</div>}>
+    <Suspense
+      fallback={
+        <div className="p-8 text-sm text-muted-foreground">
+          Loading settings...
+        </div>
+      }
+    >
       <SettingsContent />
     </Suspense>
   );

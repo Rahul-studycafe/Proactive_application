@@ -23,13 +23,23 @@ interface DynamicUPIQRCodeProps {
   amountDue?: number;
 }
 
-export function DynamicUPIQRCode({ invoiceId, invoiceNo, amountDue }: DynamicUPIQRCodeProps) {
+export function DynamicUPIQRCode({
+  invoiceId,
+  invoiceNo,
+  amountDue,
+}: DynamicUPIQRCodeProps) {
   const { data: qrData, isLoading, error } = useGetInvoiceUpiQrQuery(invoiceId);
   const [copied, setCopied] = useState(false);
 
+  const qrImageUrl = qrData?.qrDataUrl || (qrData as any)?.qrBase64;
+  const upiId = qrData?.upiId || (qrData as any)?.upiVpa;
+  const npciUri = qrData?.npciUri || (qrData as any)?.upiUri;
+  const payableAmount =
+    amountDue ?? qrData?.amount ?? (qrData as any)?.amountDue ?? 0;
+
   const handleCopyUpi = () => {
-    if (qrData?.upiId) {
-      navigator.clipboard.writeText(qrData.upiId);
+    if (upiId) {
+      navigator.clipboard.writeText(upiId);
       setCopied(true);
       toast.success("UPI ID copied to clipboard");
       setTimeout(() => setCopied(false), 2000);
@@ -37,9 +47,9 @@ export function DynamicUPIQRCode({ invoiceId, invoiceNo, amountDue }: DynamicUPI
   };
 
   const handleDownloadQr = () => {
-    if (qrData?.qrDataUrl) {
+    if (qrImageUrl) {
       const a = document.createElement("a");
-      a.href = qrData.qrDataUrl;
+      a.href = qrImageUrl;
       a.download = `UPI-QR-${invoiceNo || invoiceId}.png`;
       document.body.appendChild(a);
       a.click();
@@ -52,22 +62,24 @@ export function DynamicUPIQRCode({ invoiceId, invoiceNo, amountDue }: DynamicUPI
     return (
       <div className="flex flex-col items-center justify-center p-6 bg-card border rounded-xl space-y-2">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
-        <span className="text-xs text-muted-foreground">Generating Dynamic NPCI UPI QR...</span>
+        <span className="text-xs text-muted-foreground">
+          Generating Dynamic NPCI UPI QR...
+        </span>
       </div>
     );
   }
 
-  if (error || !qrData) {
+  if (error || !qrData || !qrImageUrl) {
     return (
       <div className="p-4 bg-muted/40 border border-dashed rounded-xl text-center text-xs text-muted-foreground space-y-1">
         <QrCode className="h-6 w-6 mx-auto text-muted-foreground/60" />
         <p className="font-medium text-foreground">Direct Bank Transfer</p>
-        <p className="text-[11px]">UPI gateway not yet configured for this billing entity.</p>
+        <p className="text-[11px]">
+          Direct UPI not yet configured for this billing entity.
+        </p>
       </div>
     );
   }
-
-  const payableAmount = amountDue ?? qrData.amount;
 
   return (
     <Card className="border-border/80 shadow-xs bg-card overflow-hidden">
@@ -76,16 +88,19 @@ export function DynamicUPIQRCode({ invoiceId, invoiceNo, amountDue }: DynamicUPI
           <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
             <QrCode className="h-4 w-4 text-primary" /> Scan & Pay via UPI
           </span>
-          <Badge variant="outline" className="text-[10px] bg-primary/5 text-primary border-primary/20">
+          <Badge
+            variant="outline"
+            className="text-[10px] bg-primary/5 text-primary border-primary/20"
+          >
             Zero Gateway Fee
           </Badge>
         </div>
 
         {/* QR Code Image */}
         <div className="p-2 bg-white rounded-xl border inline-block mx-auto shadow-xs">
-          {qrData.qrDataUrl ? (
+          {qrImageUrl ? (
             <img
-              src={qrData.qrDataUrl}
+              src={qrImageUrl}
               alt="UPI QR Code"
               className="h-40 w-40 object-contain mx-auto"
             />
@@ -99,22 +114,31 @@ export function DynamicUPIQRCode({ invoiceId, invoiceNo, amountDue }: DynamicUPI
         {/* Amount & VPA */}
         <div className="space-y-1">
           <span className="text-base font-bold text-foreground block">
-            ₹{payableAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+            ₹
+            {payableAmount.toLocaleString("en-IN", {
+              minimumFractionDigits: 2,
+            })}
           </span>
-          <div className="flex items-center justify-center gap-1.5">
-            <span className="font-mono text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded">
-              {qrData.upiId}
-            </span>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleCopyUpi}
-              className="h-6 w-6 text-muted-foreground hover:text-foreground"
-              title="Copy UPI ID"
-            >
-              {copied ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
-            </Button>
-          </div>
+          {upiId && (
+            <div className="flex items-center justify-center gap-1.5">
+              <span className="font-mono text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded">
+                {upiId}
+              </span>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleCopyUpi}
+                className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                title="Copy UPI ID"
+              >
+                {copied ? (
+                  <Check className="h-3 w-3 text-emerald-600" />
+                ) : (
+                  <Copy className="h-3 w-3" />
+                )}
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Action Buttons */}
@@ -127,14 +151,14 @@ export function DynamicUPIQRCode({ invoiceId, invoiceNo, amountDue }: DynamicUPI
           >
             <Download className="h-3 w-3" /> Save QR
           </Button>
-          {qrData.npciUri && (
+          {npciUri && (
             <Button
               asChild
               size="sm"
               variant="default"
               className="h-7 text-xs gap-1"
             >
-              <a href={qrData.npciUri}>
+              <a href={npciUri}>
                 <Smartphone className="h-3 w-3" /> Pay with App
               </a>
             </Button>
@@ -144,10 +168,11 @@ export function DynamicUPIQRCode({ invoiceId, invoiceNo, amountDue }: DynamicUPI
         {/* Supported Apps Footer */}
         <div className="pt-2 border-t text-[10px] text-muted-foreground flex items-center justify-center gap-2">
           <span>Supported:</span>
-          <span className="font-semibold text-foreground/80">Google Pay • PhonePe • Paytm • BHIM</span>
+          <span className="font-semibold text-foreground/80">
+            Google Pay • PhonePe • Paytm • BHIM
+          </span>
         </div>
       </CardContent>
     </Card>
   );
 }
-

@@ -87,18 +87,27 @@ export function HolidaysView({
   const [selectedYear, setSelectedYear] = useState<string>(String(currentYear));
 
   // Query & Mutations
-  const { data: holidays = [], isLoading, isFetching } = useGetHolidaysQuery({
+  const {
+    data: holidays = [],
+    isLoading,
+    isFetching,
+  } = useGetHolidaysQuery({
     year: selectedYear,
   });
   const [createHoliday, { isLoading: isCreating }] = useCreateHolidayMutation();
   const [updateHoliday, { isLoading: isUpdating }] = useUpdateHolidayMutation();
   const [deleteHoliday, { isLoading: isDeleting }] = useDeleteHolidayMutation();
-  const [seedHolidays, { isLoading: isSeeding }] = useSeedDefaultHolidaysMutation();
+  const [seedHolidays, { isLoading: isSeeding }] =
+    useSeedDefaultHolidaysMutation();
 
   // Dialog States
   const [isAddOpen, setIsAddOpen] = useState(false);
-  const [editingHoliday, setEditingHoliday] = useState<HolidayItem | null>(null);
-  const [deletingHoliday, setDeletingHoliday] = useState<HolidayItem | null>(null);
+  const [editingHoliday, setEditingHoliday] = useState<HolidayItem | null>(
+    null,
+  );
+  const [deletingHoliday, setDeletingHoliday] = useState<HolidayItem | null>(
+    null,
+  );
   const [isSeedConfirmOpen, setIsSeedConfirmOpen] = useState(false);
 
   // Form State
@@ -145,7 +154,11 @@ export function HolidaysView({
       toast.success(`Holiday "${formData.name}" added successfully`);
       setIsAddOpen(false);
     } catch (err: any) {
-      toast.error(err?.data?.error?.message || err?.data?.message || "Failed to create holiday");
+      toast.error(
+        err?.data?.error?.message ||
+          err?.data?.message ||
+          "Failed to create holiday",
+      );
     }
   };
 
@@ -161,7 +174,11 @@ export function HolidaysView({
       toast.success(`Holiday updated successfully`);
       setEditingHoliday(null);
     } catch (err: any) {
-      toast.error(err?.data?.error?.message || err?.data?.message || "Failed to update holiday");
+      toast.error(
+        err?.data?.error?.message ||
+          err?.data?.message ||
+          "Failed to update holiday",
+      );
     }
   };
 
@@ -172,18 +189,31 @@ export function HolidaysView({
       toast.success(`Holiday "${deletingHoliday.name}" deleted`);
       setDeletingHoliday(null);
     } catch (err: any) {
-      toast.error(err?.data?.error?.message || err?.data?.message || "Failed to delete holiday");
+      toast.error(
+        err?.data?.error?.message ||
+          err?.data?.message ||
+          "Failed to delete holiday",
+      );
     }
   };
 
   const handleSeedDefault = async () => {
     try {
-      const res = await seedHolidays({ year: selectedYear, region: "national" }).unwrap();
+      const res = await seedHolidays({
+        year: selectedYear,
+        region: "national",
+      }).unwrap();
       const count = res?.seededCount ?? 5;
-      toast.success(`Successfully seeded ${count} national holidays for ${selectedYear}`);
+      toast.success(
+        `Successfully seeded ${count} national holidays for ${selectedYear}`,
+      );
       setIsSeedConfirmOpen(false);
     } catch (err: any) {
-      toast.error(err?.data?.error?.message || err?.data?.message || "Failed to seed default holidays");
+      toast.error(
+        err?.data?.error?.message ||
+          err?.data?.message ||
+          "Failed to seed default holidays",
+      );
     }
   };
 
@@ -210,9 +240,12 @@ export function HolidaysView({
       {/* Top Header & Actions */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-xl font-semibold tracking-tight">Official Holidays Master</h2>
+          <h2 className="text-xl font-semibold tracking-tight">
+            Official Holidays Master
+          </h2>
           <p className="text-sm text-muted-foreground">
-            Configure gazetted and festive office closures for operational and payroll calculations.
+            Configure gazetted and festive office closures for operational and
+            payroll calculations.
           </p>
         </div>
 
@@ -224,7 +257,12 @@ export function HolidaysView({
               <SelectValue placeholder="Year" />
             </SelectTrigger>
             <SelectContent>
-              {[currentYear - 1, currentYear, currentYear + 1, currentYear + 2].map((y) => (
+              {[
+                currentYear - 1,
+                currentYear,
+                currentYear + 1,
+                currentYear + 2,
+              ].map((y) => (
                 <SelectItem key={y} value={String(y)}>
                   {y}
                 </SelectItem>
@@ -267,12 +305,19 @@ export function HolidaysView({
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground mb-3">
               <CalendarDays className="h-6 w-6" />
             </div>
-            <h3 className="text-base font-semibold">No holidays recorded for {selectedYear}</h3>
+            <h3 className="text-base font-semibold">
+              No holidays recorded for {selectedYear}
+            </h3>
             <p className="text-sm text-muted-foreground max-w-sm mt-1">
-              You haven't defined holidays for this year yet. Use the one-click statutory seeder or add holidays manually.
+              You haven't defined holidays for this year yet. Use the one-click
+              statutory seeder or add holidays manually.
             </p>
             <div className="flex items-center gap-3 mt-4">
-              <Button variant="outline" size="sm" onClick={() => setIsSeedConfirmOpen(true)}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsSeedConfirmOpen(true)}
+              >
                 <Sparkles className="mr-2 h-4 w-4 text-primary" />
                 Seed National Holidays
               </Button>
@@ -290,7 +335,9 @@ export function HolidaysView({
                 <TableHead className="font-semibold">Holiday Name</TableHead>
                 <TableHead className="w-36 font-semibold">Type</TableHead>
                 <TableHead className="font-semibold">Description</TableHead>
-                <TableHead className="w-24 text-right font-semibold">Actions</TableHead>
+                <TableHead className="w-24 text-right font-semibold">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -301,7 +348,10 @@ export function HolidaysView({
                   : h.date;
 
                 return (
-                  <TableRow key={h._id} className="hover:bg-muted/30 transition-colors">
+                  <TableRow
+                    key={h._id}
+                    className="hover:bg-muted/30 transition-colors"
+                  >
                     <TableCell className="font-medium text-foreground">
                       <div className="flex items-center gap-2">
                         <CalendarIcon className="h-4 w-4 text-muted-foreground" />
@@ -362,7 +412,8 @@ export function HolidaysView({
                 {editingHoliday ? "Edit Holiday" : "Add Office Holiday"}
               </DialogTitle>
               <DialogDescription>
-                Holidays are excluded from working day expectations and credited toward payable days.
+                Holidays are excluded from working day expectations and credited
+                toward payable days.
               </DialogDescription>
             </DialogHeader>
 
@@ -373,7 +424,9 @@ export function HolidaysView({
                   id="holiday-name"
                   placeholder="e.g. Republic Day, Diwali"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                   required
                 />
               </div>
@@ -385,7 +438,9 @@ export function HolidaysView({
                     id="holiday-date"
                     type="date"
                     value={formData.date}
-                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, date: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -394,7 +449,9 @@ export function HolidaysView({
                   <Label htmlFor="holiday-type">Category *</Label>
                   <Select
                     value={formData.type}
-                    onValueChange={(val: any) => setFormData({ ...formData, type: val })}
+                    onValueChange={(val: any) =>
+                      setFormData({ ...formData, type: val })
+                    }
                   >
                     <SelectTrigger id="holiday-type">
                       <SelectValue placeholder="Select type" />
@@ -416,7 +473,9 @@ export function HolidaysView({
                   id="holiday-desc"
                   placeholder="e.g. National gazetted office closure"
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
                 />
               </div>
             </div>
@@ -433,7 +492,9 @@ export function HolidaysView({
                 Cancel
               </Button>
               <Button type="submit" disabled={isCreating || isUpdating}>
-                {(isCreating || isUpdating) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {(isCreating || isUpdating) && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 {editingHoliday ? "Save Changes" : "Create Holiday"}
               </Button>
             </DialogFooter>
@@ -451,8 +512,11 @@ export function HolidaysView({
             <AlertDialogTitle>Delete Holiday</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to remove{" "}
-              <span className="font-semibold text-foreground">"{deletingHoliday?.name}"</span> (
-              {deletingHoliday?.date})? This date will no longer count as a paid holiday closure.
+              <span className="font-semibold text-foreground">
+                "{deletingHoliday?.name}"
+              </span>{" "}
+              ({deletingHoliday?.date})? This date will no longer count as a
+              paid holiday closure.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -479,8 +543,9 @@ export function HolidaysView({
             <AlertDialogDescription asChild>
               <div className="text-sm text-muted-foreground space-y-2">
                 <span>
-                  This will automatically pre-populate the 5 official Indian gazetted national holidays
-                  for <strong>{selectedYear}</strong>:
+                  This will automatically pre-populate the 5 official Indian
+                  gazetted national holidays for <strong>{selectedYear}</strong>
+                  :
                 </span>
                 <ul className="list-disc list-inside space-y-1 text-foreground/80">
                   <li>Republic Day (Jan 26)</li>
@@ -490,7 +555,8 @@ export function HolidaysView({
                   <li>Christmas (Dec 25)</li>
                 </ul>
                 <span className="block text-xs text-muted-foreground">
-                  Existing entries on these dates will be updated idempotently without duplication.
+                  Existing entries on these dates will be updated idempotently
+                  without duplication.
                 </span>
               </div>
             </AlertDialogDescription>

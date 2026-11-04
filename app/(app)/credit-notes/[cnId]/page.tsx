@@ -283,9 +283,7 @@ export default function ViewCreditNotePage() {
             <p className="font-semibold uppercase tracking-wider text-muted-foreground text-[11px] mb-1.5">
               Credited To:
             </p>
-            <h3 className="text-sm font-bold text-foreground">
-              {client.name}
-            </h3>
+            <h3 className="text-sm font-bold text-foreground">{client.name}</h3>
             {client.entityType && (
               <p className="text-muted-foreground">{client.entityType}</p>
             )}
@@ -387,11 +385,17 @@ export default function ViewCreditNotePage() {
                   </td>
                   <td className="py-3 px-3 text-center">{it.quantity}</td>
                   <td className="py-3 px-3 text-right font-mono">
-                    ₹{it.rate?.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                    ₹
+                    {it.rate?.toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                    })}
                   </td>
                   <td className="py-3 px-3 text-center">{it.gstPercentage}%</td>
                   <td className="py-3 px-3 text-right font-mono font-semibold">
-                    ₹{it.total?.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                    ₹
+                    {it.total?.toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                    })}
                   </td>
                 </tr>
               ))}
@@ -411,8 +415,12 @@ export default function ViewCreditNotePage() {
 
             {creditNote.notes && (
               <div className="mt-4 p-3 rounded-lg border bg-muted/20">
-                <span className="font-semibold text-foreground/80">Audit Remarks: </span>
-                <span className="text-muted-foreground">{creditNote.notes}</span>
+                <span className="font-semibold text-foreground/80">
+                  Audit Remarks:{" "}
+                </span>
+                <span className="text-muted-foreground">
+                  {creditNote.notes}
+                </span>
               </div>
             )}
           </div>
@@ -421,14 +429,20 @@ export default function ViewCreditNotePage() {
             <div className="flex justify-between sm:justify-end gap-8 py-0.5">
               <span className="text-muted-foreground">Taxable Subtotal:</span>
               <span className="font-mono font-medium">
-                ₹{totals.subtotal?.toLocaleString("en-IN", { minimumFractionDigits: 2 }) || "0.00"}
+                ₹
+                {totals.subtotal?.toLocaleString("en-IN", {
+                  minimumFractionDigits: 2,
+                }) || "0.00"}
               </span>
             </div>
             {totals.cgstTotal > 0 && (
               <div className="flex justify-between sm:justify-end gap-8 py-0.5">
                 <span className="text-muted-foreground">CGST Total:</span>
                 <span className="font-mono font-medium">
-                  ₹{totals.cgstTotal?.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                  ₹
+                  {totals.cgstTotal?.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                  })}
                 </span>
               </div>
             )}
@@ -436,7 +450,10 @@ export default function ViewCreditNotePage() {
               <div className="flex justify-between sm:justify-end gap-8 py-0.5">
                 <span className="text-muted-foreground">SGST Total:</span>
                 <span className="font-mono font-medium">
-                  ₹{totals.sgstTotal?.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                  ₹
+                  {totals.sgstTotal?.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                  })}
                 </span>
               </div>
             )}
@@ -444,20 +461,29 @@ export default function ViewCreditNotePage() {
               <div className="flex justify-between sm:justify-end gap-8 py-0.5">
                 <span className="text-muted-foreground">IGST Total:</span>
                 <span className="font-mono font-medium">
-                  ₹{totals.igstTotal?.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                  ₹
+                  {totals.igstTotal?.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                  })}
                 </span>
               </div>
             )}
             <div className="flex justify-between sm:justify-end gap-8 py-2 border-t border-b text-sm font-bold text-foreground">
               <span>Grand Total Credited:</span>
               <span className="text-purple-600 dark:text-purple-400 font-mono">
-                ₹{totals.grandTotal?.toLocaleString("en-IN", { minimumFractionDigits: 2 }) || "0.00"}
+                ₹
+                {totals.grandTotal?.toLocaleString("en-IN", {
+                  minimumFractionDigits: 2,
+                }) || "0.00"}
               </span>
             </div>
             <div className="flex justify-between sm:justify-end gap-8 py-0.5 text-muted-foreground">
               <span>Unallocated Credit Balance:</span>
               <span className="font-mono font-semibold text-amber-600 dark:text-amber-400">
-                ₹{creditNote.unallocatedCredit?.toLocaleString("en-IN", { minimumFractionDigits: 2 }) || "0.00"}
+                ₹
+                {creditNote.unallocatedCredit?.toLocaleString("en-IN", {
+                  minimumFractionDigits: 2,
+                }) || "0.00"}
               </span>
             </div>
           </div>

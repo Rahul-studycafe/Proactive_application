@@ -36,7 +36,11 @@ export function TaskChecklist({
         isCompleted: !currentStatus,
       }).unwrap();
     } catch (error: any) {
-      toast.error(error?.data?.message || error?.message || "Failed to update step status");
+      toast.error(
+        error?.data?.message ||
+          error?.message ||
+          "Failed to update step status",
+      );
     }
   };
 
@@ -51,7 +55,9 @@ export function TaskChecklist({
       setNewTaskName("");
       toast.success("To-Do added");
     } catch (error: any) {
-      toast.error(error?.data?.message || error?.message || "Failed to add To-Do");
+      toast.error(
+        error?.data?.message || error?.message || "Failed to add To-Do",
+      );
     }
   };
 
@@ -64,7 +70,9 @@ export function TaskChecklist({
       }).unwrap();
       toast.success("To-Do deleted");
     } catch (error: any) {
-      toast.error(error?.data?.message || error?.message || "Failed to delete To-Do");
+      toast.error(
+        error?.data?.message || error?.message || "Failed to delete To-Do",
+      );
     }
   };
 
@@ -89,7 +97,7 @@ export function TaskChecklist({
               <div
                 className={cn(
                   "flex items-center gap-3 flex-1",
-                  isReadOnly ? "cursor-default" : "cursor-pointer"
+                  isReadOnly ? "cursor-default" : "cursor-pointer",
                 )}
                 onClick={() => handleToggle(index, step.isCompleted)}
               >
@@ -99,7 +107,7 @@ export function TaskChecklist({
                     step.isCompleted
                       ? "bg-primary border-primary text-primary-foreground"
                       : "border-input",
-                    isReadOnly && "opacity-75"
+                    isReadOnly && "opacity-75",
                   )}
                 >
                   {step.isCompleted && <Check className="h-3.5 w-3.5" />}

@@ -51,7 +51,9 @@ export function ReceiptViewerDialog({
   })}`;
 
   const clientName =
-    typeof expense.clientId === "object" ? expense.clientId?.name : "Client Outlay";
+    typeof expense.clientId === "object"
+      ? expense.clientId?.name
+      : "Client Outlay";
 
   const handleDownload = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -66,7 +68,9 @@ export function ReceiptViewerDialog({
       a.href = blobUrl;
       const downloadName =
         expense.receiptFileName ||
-        (isPdf ? `Receipt-${expense.expenseNo}.pdf` : `Receipt-${expense.expenseNo}.png`);
+        (isPdf
+          ? `Receipt-${expense.expenseNo}.pdf`
+          : `Receipt-${expense.expenseNo}.png`);
       a.download = downloadName;
       document.body.appendChild(a);
       a.click();
@@ -108,7 +112,9 @@ export function ReceiptViewerDialog({
                   <span>•</span>
                   <span>{expense.categoryName}</span>
                   <span>•</span>
-                  <span className="font-semibold text-foreground">{formattedAmount}</span>
+                  <span className="font-semibold text-foreground">
+                    {formattedAmount}
+                  </span>
                 </DialogDescription>
               </div>
             </div>
@@ -151,9 +157,12 @@ export function ReceiptViewerDialog({
               <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground mx-auto">
                 <FileQuestion className="h-6 w-6" />
               </div>
-              <p className="font-medium text-sm text-foreground">No Receipt Attached</p>
+              <p className="font-medium text-sm text-foreground">
+                No Receipt Attached
+              </p>
               <p className="text-xs text-muted-foreground max-w-xs">
-                No physical receipt or challan file was uploaded for this expense outlay.
+                No physical receipt or challan file was uploaded for this
+                expense outlay.
               </p>
             </div>
           ) : isPdf ? (
@@ -166,7 +175,6 @@ export function ReceiptViewerDialog({
             </div>
           ) : (
             <div className="max-w-full max-h-full flex items-center justify-center p-2">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={fileUrl}
                 alt={`Receipt for ${expense.expenseNo}`}

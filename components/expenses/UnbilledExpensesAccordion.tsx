@@ -45,7 +45,7 @@ export function UnbilledExpensesAccordion({
     `₹${val.toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
 
   const remainingToAdd = unbilledExpenses.filter(
-    (exp) => !alreadyAddedExpenseIds.includes(exp._id)
+    (exp) => !alreadyAddedExpenseIds.includes(exp._id),
   );
 
   return (
@@ -65,11 +65,13 @@ export function UnbilledExpensesAccordion({
                 Unbilled Client Outlays & Reimbursables
               </span>
               <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 text-[10px] font-semibold">
-                {unbilledExpenses.length} Available • {formatCurrency(totalAmount)}
+                {unbilledExpenses.length} Available •{" "}
+                {formatCurrency(totalAmount)}
               </Badge>
             </div>
             <p className="text-[11px] text-muted-foreground">
-              Statutory challans, filing fees, and out-of-pocket costs ready to bill
+              Statutory challans, filing fees, and out-of-pocket costs ready to
+              bill
             </p>
           </div>
         </div>
@@ -95,7 +97,11 @@ export function UnbilledExpensesAccordion({
             onClick={() => setIsOpen(!isOpen)}
             className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
           >
-            {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            {isOpen ? (
+              <ChevronUp className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
           </Button>
         </div>
       </div>

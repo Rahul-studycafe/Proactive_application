@@ -65,15 +65,25 @@ export interface PeriodOption {
 
 export function getPeriodOptionsForFrequency(
   frequencyType?: string,
-  referenceDate: Date = new Date()
+  referenceDate: Date = new Date(),
 ): PeriodOption[] {
   const normFreq = (frequencyType || "").toLowerCase().replace("-", "_");
   const currentYear = referenceDate.getFullYear();
   const currentMonthIdx = referenceDate.getMonth(); // 0 to 11
 
   const MONTH_NAMES = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
   ];
 
   if (normFreq === "monthly") {
@@ -104,14 +114,17 @@ export function getPeriodOptionsForFrequency(
         { label: `Q4 (Jan - Mar ${fy + 1})`, month: 3, year: fy + 1 },
         { label: `Q3 (Oct - Dec ${fy})`, month: 12, year: fy },
         { label: `Q2 (Jul - Sep ${fy})`, month: 9, year: fy },
-        { label: `Q1 (Apr - Jun ${fy})`, month: 6, year: fy }
+        { label: `Q1 (Apr - Jun ${fy})`, month: 6, year: fy },
       );
     }
 
     let currentQLbl = "";
-    if (currentMonthIdx >= 3 && currentMonthIdx <= 5) currentQLbl = `Q1 (Apr - Jun ${fyStart})`;
-    else if (currentMonthIdx >= 6 && currentMonthIdx <= 8) currentQLbl = `Q2 (Jul - Sep ${fyStart})`;
-    else if (currentMonthIdx >= 9 && currentMonthIdx <= 11) currentQLbl = `Q3 (Oct - Dec ${fyStart})`;
+    if (currentMonthIdx >= 3 && currentMonthIdx <= 5)
+      currentQLbl = `Q1 (Apr - Jun ${fyStart})`;
+    else if (currentMonthIdx >= 6 && currentMonthIdx <= 8)
+      currentQLbl = `Q2 (Jul - Sep ${fyStart})`;
+    else if (currentMonthIdx >= 9 && currentMonthIdx <= 11)
+      currentQLbl = `Q3 (Oct - Dec ${fyStart})`;
     else currentQLbl = `Q4 (Jan - Mar ${fyStart + 1})`;
 
     return quarters.map((q) => ({
@@ -126,7 +139,7 @@ export function getPeriodOptionsForFrequency(
     for (const fy of [fyStart + 1, fyStart, fyStart - 1]) {
       halfYears.push(
         { label: `H2 (Oct - Mar ${fy + 1})`, month: 3, year: fy + 1 },
-        { label: `H1 (Apr - Sep ${fy})`, month: 9, year: fy }
+        { label: `H1 (Apr - Sep ${fy})`, month: 9, year: fy },
       );
     }
     const currentHLbl =
@@ -175,7 +188,9 @@ export function CreateTaskDialog({
 
   const clientId = lockedClientId || selectedClientId;
   const [serviceId, setServiceId] = useState("");
-  const [selectedPeriod, setSelectedPeriod] = useState<PeriodOption | null>(null);
+  const [selectedPeriod, setSelectedPeriod] = useState<PeriodOption | null>(
+    null,
+  );
   const [assigneeIds, setAssigneeIds] = useState<string[]>([]);
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<TaskPriority>("Medium");
@@ -271,7 +286,7 @@ export function CreateTaskDialog({
   const isRecurring = Boolean(
     selectedService?.isRecurring &&
     selectedService?.frequency?.type &&
-    selectedService?.frequency?.type !== "one_time"
+    selectedService?.frequency?.type !== "one_time",
   );
 
   const frequencyType = selectedService?.frequency?.type;
@@ -285,7 +300,9 @@ export function CreateTaskDialog({
     if (!clientId || !serviceId || assigneeIds.length === 0) return;
 
     if (isRecurring && !selectedPeriod?.label) {
-      toast.error(`Please select a Period for this ${frequencyType?.replace("_", "-") || "recurring"} service.`);
+      toast.error(
+        `Please select a Period for this ${frequencyType?.replace("_", "-") || "recurring"} service.`,
+      );
       return;
     }
 
@@ -296,15 +313,15 @@ export function CreateTaskDialog({
           label: selectedPeriod.label,
         }
       : dueDate
-      ? {
-          month: new Date(dueDate).getMonth() + 1,
-          year: new Date(dueDate).getFullYear(),
-          label: new Date(dueDate).toLocaleDateString("en-US", {
-            month: "short",
-            year: "numeric",
-          }),
-        }
-      : undefined;
+        ? {
+            month: new Date(dueDate).getMonth() + 1,
+            year: new Date(dueDate).getFullYear(),
+            label: new Date(dueDate).toLocaleDateString("en-US", {
+              month: "short",
+              year: "numeric",
+            }),
+          }
+        : undefined;
 
     try {
       await createTask({
@@ -333,8 +350,8 @@ export function CreateTaskDialog({
       console.error("Failed to create task", err);
       toast.error(
         err?.data?.error?.message ||
-        err?.data?.message ||
-        "Failed to create task"
+          err?.data?.message ||
+          "Failed to create task",
       );
     }
   };
@@ -420,7 +437,8 @@ export function CreateTaskDialog({
                 </Label>
                 {clientId && subscribedServicesList.length > 0 && (
                   <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
-                    {subscribedServicesList.length} Subscribed Service{subscribedServicesList.length > 1 ? "s" : ""}
+                    {subscribedServicesList.length} Subscribed Service
+                    {subscribedServicesList.length > 1 ? "s" : ""}
                   </span>
                 )}
               </div>
@@ -439,11 +457,13 @@ export function CreateTaskDialog({
                     const isRec = Boolean(
                       selected.isRecurring &&
                       selected.frequency?.type &&
-                      selected.frequency?.type !== "one_time"
+                      selected.frequency?.type !== "one_time",
                     );
 
                     if (isRec && selected.frequency?.type) {
-                      const opts = getPeriodOptionsForFrequency(selected.frequency.type);
+                      const opts = getPeriodOptionsForFrequency(
+                        selected.frequency.type,
+                      );
                       const def = opts.find((o) => o.isDefault) || opts[0];
                       if (def) {
                         setSelectedPeriod({
@@ -454,12 +474,19 @@ export function CreateTaskDialog({
 
                         // Auto-populate due date based on service dueDay if empty
                         if (selected.frequency.dueDay) {
-                          const targetMonth = def.month || new Date().getMonth() + 1;
-                          const targetYear = def.year || new Date().getFullYear();
-                          const nextM = targetMonth === 12 ? 1 : targetMonth + 1;
-                          const nextY = targetMonth === 12 ? targetYear + 1 : targetYear;
+                          const targetMonth =
+                            def.month || new Date().getMonth() + 1;
+                          const targetYear =
+                            def.year || new Date().getFullYear();
+                          const nextM =
+                            targetMonth === 12 ? 1 : targetMonth + 1;
+                          const nextY =
+                            targetMonth === 12 ? targetYear + 1 : targetYear;
                           const maxDays = new Date(nextY, nextM, 0).getDate();
-                          const day = Math.min(selected.frequency.dueDay, maxDays);
+                          const day = Math.min(
+                            selected.frequency.dueDay,
+                            maxDays,
+                          );
                           const pad = (n: number) => String(n).padStart(2, "0");
                           setDueDate(`${nextY}-${pad(nextM)}-${pad(day)}`);
                         }
@@ -471,9 +498,12 @@ export function CreateTaskDialog({
                     // Check if client has a custom negotiated price for this service
                     const clientSub = clientData?.subscribedServices?.find(
                       (sub: any) => {
-                        const sId = typeof sub.serviceId === "object" ? sub.serviceId?._id : sub.serviceId;
+                        const sId =
+                          typeof sub.serviceId === "object"
+                            ? sub.serviceId?._id
+                            : sub.serviceId;
                         return String(sId) === val;
-                      }
+                      },
                     );
 
                     if (
@@ -484,30 +514,41 @@ export function CreateTaskDialog({
                       Number(clientSub.customPrice) > 0
                     ) {
                       setBillableAmount(String(clientSub.customPrice));
-                    } else if (selected.defaultBillingRate !== undefined && selected.defaultBillingRate !== null) {
+                    } else if (
+                      selected.defaultBillingRate !== undefined &&
+                      selected.defaultBillingRate !== null
+                    ) {
                       setBillableAmount(String(selected.defaultBillingRate));
                     }
 
                     if (selected.autoDocCollection?.isEnabled) {
                       setDocCollectionRequest(true);
                       if (selected.autoDocCollection.defaultMessage) {
-                        setDocCollectionMessage(selected.autoDocCollection.defaultMessage);
+                        setDocCollectionMessage(
+                          selected.autoDocCollection.defaultMessage,
+                        );
                       }
                     }
                   }
                 }}
                 disabled={!clientId || subscribedServicesList.length === 0}
               >
-                <SelectTrigger className={!clientId || subscribedServicesList.length === 0 ? "opacity-75" : ""}>
+                <SelectTrigger
+                  className={
+                    !clientId || subscribedServicesList.length === 0
+                      ? "opacity-75"
+                      : ""
+                  }
+                >
                   <SelectValue
                     placeholder={
                       !clientId
                         ? "Select Client first"
                         : subscribedServicesList.length === 0
-                        ? "No subscribed services"
-                        : servicesLoading
-                        ? "Loading services..."
-                        : "Select Subscribed Service"
+                          ? "No subscribed services"
+                          : servicesLoading
+                            ? "Loading services..."
+                            : "Select Subscribed Service"
                     }
                   />
                 </SelectTrigger>
@@ -532,7 +573,9 @@ export function CreateTaskDialog({
               </Select>
               {clientId && subscribedServicesList.length === 0 && (
                 <p className="text-[11px] text-amber-600 dark:text-amber-400">
-                  This client has not subscribed to any services. Tasks can only be created for subscribed services. Please subscribe this client under their profile first.
+                  This client has not subscribed to any services. Tasks can only
+                  be created for subscribed services. Please subscribe this
+                  client under their profile first.
                 </p>
               )}
             </div>
@@ -544,7 +587,11 @@ export function CreateTaskDialog({
               <div className="flex items-center justify-between">
                 <Label className="text font-semibold flex items-center gap-2 text-xs text-primary dark:text-primary">
                   <span className="h-2 w-2 rounded-full bg-primary " />
-                  Period ({frequencyType ? frequencyType.replace("_", "-").toUpperCase() : "RECURRING"}) <span className="text-red-500">*</span>
+                  Period (
+                  {frequencyType
+                    ? frequencyType.replace("_", "-").toUpperCase()
+                    : "RECURRING"}
+                  ) <span className="text-red-500">*</span>
                 </Label>
                 <span className="text-[11px] text-muted-foreground font-medium">
                   Select compliance period
@@ -561,12 +608,17 @@ export function CreateTaskDialog({
                       year: found.year,
                     });
                     if (selectedService?.frequency?.dueDay) {
-                      const targetMonth = found.month || new Date().getMonth() + 1;
+                      const targetMonth =
+                        found.month || new Date().getMonth() + 1;
                       const targetYear = found.year || new Date().getFullYear();
                       const nextM = targetMonth === 12 ? 1 : targetMonth + 1;
-                      const nextY = targetMonth === 12 ? targetYear + 1 : targetYear;
+                      const nextY =
+                        targetMonth === 12 ? targetYear + 1 : targetYear;
                       const maxDays = new Date(nextY, nextM, 0).getDate();
-                      const day = Math.min(selectedService.frequency.dueDay, maxDays);
+                      const day = Math.min(
+                        selectedService.frequency.dueDay,
+                        maxDays,
+                      );
                       const pad = (n: number) => String(n).padStart(2, "0");
                       setDueDate(`${nextY}-${pad(nextM)}-${pad(day)}`);
                     }

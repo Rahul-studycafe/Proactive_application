@@ -16,7 +16,10 @@ import {
   Loader2,
 } from "lucide-react";
 
-import type { DailyRosterMember, AttendanceStatus } from "@/lib/types/attendance";
+import type {
+  DailyRosterMember,
+  AttendanceStatus,
+} from "@/lib/types/attendance";
 import { usePermissions } from "@/contexts/PermissionsContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
@@ -50,22 +53,25 @@ export function DailyRosterTable({
   onSelectAll,
 }: DailyRosterTableProps) {
   const [search, setSearch] = useState("");
-  const [editingMember, setEditingMember] = useState<DailyRosterMember | null>(null);
+  const [editingMember, setEditingMember] = useState<DailyRosterMember | null>(
+    null,
+  );
 
   const { can } = usePermissions();
   const { user } = useAuth();
   const canManage = can("attendance.manage");
   const isSelfOnly = !can("attendance.view_all") && can("attendance.view_self");
 
-  const visibleRoster = isSelfOnly && user
-    ? roster.filter(
-        (m) =>
-          m._id === (user as any).id ||
-          m._id === (user as any)._id ||
-          m.email === user.email ||
-          m.username === user.email
-      )
-    : roster;
+  const visibleRoster =
+    isSelfOnly && user
+      ? roster.filter(
+          (m) =>
+            m._id === (user as any).id ||
+            m._id === (user as any)._id ||
+            m.email === user.email ||
+            m.username === user.email,
+        )
+      : roster;
 
   // Filter roster by name, username or role
   const filteredRoster = visibleRoster.filter((member) => {
@@ -167,7 +173,11 @@ export function DailyRosterTable({
           />
         </div>
         <div className="text-xs text-muted-foreground">
-          Showing <span className="font-semibold text-foreground">{filteredRoster.length}</span> staff members
+          Showing{" "}
+          <span className="font-semibold text-foreground">
+            {filteredRoster.length}
+          </span>{" "}
+          staff members
         </div>
       </div>
 
@@ -198,14 +208,19 @@ export function DailyRosterTable({
               <TableHead className="font-semibold">Overtime</TableHead>
               <TableHead className="font-semibold">Notes</TableHead>
               {canManage && (
-                <TableHead className="w-16 text-right font-semibold">Action</TableHead>
+                <TableHead className="w-16 text-right font-semibold">
+                  Action
+                </TableHead>
               )}
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={canManage ? 9 : 7} className="h-40 text-center">
+                <TableCell
+                  colSpan={canManage ? 9 : 7}
+                  className="h-40 text-center"
+                >
                   <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                     <Loader2 className="h-5 w-5 animate-spin text-primary" />
                     Loading daily attendance roster...
@@ -214,7 +229,10 @@ export function DailyRosterTable({
               </TableRow>
             ) : filteredRoster.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={canManage ? 9 : 7} className="h-40 text-center text-sm text-muted-foreground">
+                <TableCell
+                  colSpan={canManage ? 9 : 7}
+                  className="h-40 text-center text-sm text-muted-foreground"
+                >
                   No staff members matched your search criteria.
                 </TableCell>
               </TableRow>

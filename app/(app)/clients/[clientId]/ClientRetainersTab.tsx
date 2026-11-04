@@ -36,7 +36,10 @@ interface ClientRetainersTabProps {
   client: any;
 }
 
-export function ClientRetainersTab({ clientId, client }: ClientRetainersTabProps) {
+export function ClientRetainersTab({
+  clientId,
+  client,
+}: ClientRetainersTabProps) {
   const [packageToDelete, setPackageToDelete] = useState<any | null>(null);
   const [unsubscribePackage, { isLoading: isUnsubscribing }] =
     useUnsubscribeClientFromPackageMutation();
@@ -84,7 +87,9 @@ export function ClientRetainersTab({ clientId, client }: ClientRetainersTabProps
       setPackageToDelete(null);
     } catch (error: any) {
       console.error("Failed to unsubscribe:", error);
-      toast.error(error?.data?.message || "Failed to unsubscribe from retainer");
+      toast.error(
+        error?.data?.message || "Failed to unsubscribe from retainer",
+      );
     }
   };
 
@@ -102,7 +107,8 @@ export function ClientRetainersTab({ clientId, client }: ClientRetainersTabProps
                 Active Retainers
               </p>
               <p className="text-xl font-bold tracking-tight">
-                {retainers.length} {retainers.length === 1 ? "Package" : "Packages"}
+                {retainers.length}{" "}
+                {retainers.length === 1 ? "Package" : "Packages"}
               </p>
             </div>
           </CardContent>
@@ -119,7 +125,9 @@ export function ClientRetainersTab({ clientId, client }: ClientRetainersTabProps
               </p>
               <p className="text-xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
                 ₹{Math.round(totalMonthlyValue).toLocaleString("en-IN")}
-                <span className="text-xs font-normal text-muted-foreground">/mo</span>
+                <span className="text-xs font-normal text-muted-foreground">
+                  /mo
+                </span>
               </p>
             </div>
           </CardContent>
@@ -135,7 +143,8 @@ export function ClientRetainersTab({ clientId, client }: ClientRetainersTabProps
                 Bundled Compliances
               </p>
               <p className="text-xl font-bold tracking-tight">
-                {totalBundledServices} {totalBundledServices === 1 ? "Service" : "Services"}
+                {totalBundledServices}{" "}
+                {totalBundledServices === 1 ? "Service" : "Services"}
               </p>
             </div>
           </CardContent>
@@ -150,7 +159,8 @@ export function ClientRetainersTab({ clientId, client }: ClientRetainersTabProps
               Client Retainer Packages
             </CardTitle>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Recurring commercial packages bundling multiple statutory compliance services under fixed-fee billing.
+              Recurring commercial packages bundling multiple statutory
+              compliance services under fixed-fee billing.
             </p>
           </div>
           <SubscribeDialog
@@ -171,9 +181,13 @@ export function ClientRetainersTab({ clientId, client }: ClientRetainersTabProps
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted/60 text-muted-foreground mb-3">
                 <PackageIcon className="h-6 w-6 opacity-70" />
               </div>
-              <h4 className="text-sm font-semibold">No Active Retainer Packages</h4>
+              <h4 className="text-sm font-semibold">
+                No Active Retainer Packages
+              </h4>
               <p className="text-xs text-muted-foreground max-w-sm mt-1.5 mb-5">
-                This client has not been assigned any recurring retainer contracts. Add a retainer package to bundle GST, TDS, and ROC compliances into regular recurring billing.
+                This client has not been assigned any recurring retainer
+                contracts. Add a retainer package to bundle GST, TDS, and ROC
+                compliances into regular recurring billing.
               </p>
               <SubscribeDialog
                 clientId={clientId}
@@ -194,14 +208,14 @@ export function ClientRetainersTab({ clientId, client }: ClientRetainersTabProps
                   typeof pkg === "object" && pkg.name
                     ? pkg.name
                     : typeof sub.packageId === "string"
-                    ? sub.packageId
-                    : "Retainer Package";
+                      ? sub.packageId
+                      : "Retainer Package";
 
                 const frequency = pkg.frequency || sub.frequency || "monthly";
                 const billingRate =
                   sub.customPrice !== undefined
                     ? sub.customPrice
-                    : pkg.defaultBillingAmount ?? 0;
+                    : (pkg.defaultBillingAmount ?? 0);
 
                 const bundledServices = Array.isArray(pkg.serviceIds)
                   ? pkg.serviceIds
@@ -235,7 +249,9 @@ export function ClientRetainersTab({ clientId, client }: ClientRetainersTabProps
                             <span>
                               Subscribed:{" "}
                               {sub.subscribedAt
-                                ? new Date(sub.subscribedAt).toLocaleDateString()
+                                ? new Date(
+                                    sub.subscribedAt,
+                                  ).toLocaleDateString()
                                 : "N/A"}
                             </span>
                           </div>
@@ -256,7 +272,9 @@ export function ClientRetainersTab({ clientId, client }: ClientRetainersTabProps
                     {/* Pricing & Frequency Bar */}
                     <div className="flex items-center justify-between rounded-lg bg-muted/40 px-3.5 py-2.5 text-xs">
                       <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground font-medium">Billing Cycle:</span>
+                        <span className="text-muted-foreground font-medium">
+                          Billing Cycle:
+                        </span>
                         <RecurrenceBadge frequency={frequency} />
                       </div>
                       <div className="flex items-center gap-1.5">
@@ -276,7 +294,9 @@ export function ClientRetainersTab({ clientId, client }: ClientRetainersTabProps
                     {bundledServices.length > 0 && (
                       <div className="space-y-1.5 pt-1 border-t border-border/50">
                         <div className="flex items-center justify-between text-[11px] text-muted-foreground font-medium">
-                          <span>Included Services ({bundledServices.length})</span>
+                          <span>
+                            Included Services ({bundledServices.length})
+                          </span>
                         </div>
                         <div className="flex flex-wrap gap-1.5">
                           {bundledServices.map((svc: any, sIdx: number) => {
@@ -284,8 +304,8 @@ export function ClientRetainersTab({ clientId, client }: ClientRetainersTabProps
                               typeof svc === "object" && svc.name
                                 ? svc.name
                                 : typeof svc === "string"
-                                ? svc
-                                : "Service";
+                                  ? svc
+                                  : "Service";
                             return (
                               <Badge
                                 key={`svc-${sIdx}`}
@@ -305,7 +325,9 @@ export function ClientRetainersTab({ clientId, client }: ClientRetainersTabProps
                     {(pkg.sacCode || pkg.gstPercentage) && (
                       <div className="flex items-center gap-3 text-[11px] text-muted-foreground/80 pt-1">
                         {pkg.sacCode && <span>SAC: {pkg.sacCode}</span>}
-                        {pkg.gstPercentage && <span>GST: {pkg.gstPercentage}%</span>}
+                        {pkg.gstPercentage && (
+                          <span>GST: {pkg.gstPercentage}%</span>
+                        )}
                       </div>
                     )}
                   </div>
@@ -329,11 +351,14 @@ export function ClientRetainersTab({ clientId, client }: ClientRetainersTabProps
               <strong className="text-foreground">
                 {packageToDelete?.packageId?.name || "this package"}
               </strong>{" "}
-              from this client? Future recurring billing cycles for this retainer will cease.
+              from this client? Future recurring billing cycles for this
+              retainer will cease.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isUnsubscribing}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isUnsubscribing}>
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDelete}
               disabled={isUnsubscribing}

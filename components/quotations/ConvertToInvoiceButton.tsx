@@ -47,20 +47,24 @@ export function ConvertToInvoiceButton({
 }: ConvertToInvoiceButtonProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [initialStatus, setInitialStatus] = useState<"Unpaid" | "Draft">("Unpaid");
+  const [initialStatus, setInitialStatus] = useState<"Unpaid" | "Draft">(
+    "Unpaid",
+  );
 
   const [convertToInvoice, { isLoading }] = useConvertToInvoiceMutation();
 
   const isConverted = quotation.status === "Converted";
   const convertedInvoiceId =
-    typeof quotation.convertedInvoiceId === "object" && quotation.convertedInvoiceId
+    typeof quotation.convertedInvoiceId === "object" &&
+    quotation.convertedInvoiceId
       ? quotation.convertedInvoiceId._id
       : typeof quotation.convertedInvoiceId === "string"
-      ? quotation.convertedInvoiceId
-      : null;
+        ? quotation.convertedInvoiceId
+        : null;
 
   const convertedInvoiceNo =
-    typeof quotation.convertedInvoiceId === "object" && quotation.convertedInvoiceId
+    typeof quotation.convertedInvoiceId === "object" &&
+    quotation.convertedInvoiceId
       ? quotation.convertedInvoiceId.invoiceNo
       : null;
 
@@ -153,7 +157,8 @@ export function ConvertToInvoiceButton({
             <div className="flex justify-between items-center text-muted-foreground">
               <span>Quotation Total:</span>
               <span className="font-semibold text-foreground text-base">
-                ₹{(quotation.totals?.grandTotal || 0).toLocaleString("en-IN", {
+                ₹
+                {(quotation.totals?.grandTotal || 0).toLocaleString("en-IN", {
                   minimumFractionDigits: 2,
                 })}
               </span>
@@ -168,10 +173,14 @@ export function ConvertToInvoiceButton({
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Initial Invoice Status</Label>
+            <Label className="text-sm font-medium">
+              Initial Invoice Status
+            </Label>
             <RadioGroup
               value={initialStatus}
-              onValueChange={(val) => setInitialStatus(val as "Unpaid" | "Draft")}
+              onValueChange={(val) =>
+                setInitialStatus(val as "Unpaid" | "Draft")
+              }
               className="grid grid-cols-2 gap-3"
             >
               <div>

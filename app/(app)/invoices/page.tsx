@@ -38,13 +38,19 @@ import {
 import { toast } from "sonner";
 
 // ─── Types ──────────────────────────────────────────────────────
-type InvoiceStatus = "Draft" | "Unpaid" | "Partially Paid" | "Paid" | "Cancelled";
+type InvoiceStatus =
+  | "Draft"
+  | "Unpaid"
+  | "Partially Paid"
+  | "Paid"
+  | "Cancelled";
 
 // ─── Status badge styling ───────────────────────────────────────
 const statusStyle: Record<InvoiceStatus, string> = {
   Paid: "border-success/30 bg-success/10 text-success",
   Unpaid: "border-warning/30 bg-warning/15 text-warning-foreground",
-  "Partially Paid": "border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400",
+  "Partially Paid":
+    "border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400",
   Draft: "border-border bg-muted text-muted-foreground",
   Cancelled: "border-destructive/30 bg-destructive/10 text-destructive",
 };
@@ -84,7 +90,7 @@ export default function InvoicesPage() {
     return invoices.filter(
       (inv: any) =>
         inv.invoiceNo?.toLowerCase().includes(q) ||
-        inv.clientId?.name?.toLowerCase().includes(q)
+        inv.clientId?.name?.toLowerCase().includes(q),
     );
   }, [invoices, searchTerm]);
 
@@ -92,7 +98,7 @@ export default function InvoicesPage() {
     async (id: string, invoiceNo?: string) => {
       if (
         !confirm(
-          `Are you sure you want to cancel invoice ${invoiceNo || ""}? This will un-bill all linked tasks.`
+          `Are you sure you want to cancel invoice ${invoiceNo || ""}? This will un-bill all linked tasks.`,
         )
       ) {
         return;
@@ -104,7 +110,7 @@ export default function InvoicesPage() {
         toast.error(e?.data?.message || "Failed to cancel invoice");
       }
     },
-    [cancelInvoice]
+    [cancelInvoice],
   );
 
   return (

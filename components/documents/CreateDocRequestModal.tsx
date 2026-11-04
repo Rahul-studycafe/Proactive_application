@@ -45,7 +45,12 @@ interface CreateDocRequestModalProps {
   onOpenChange: (open: boolean) => void;
   defaultClientId?: string;
   defaultTaskId?: string;
-  onSuccess?: (createdRequest: DocumentRequest & { uploadUrl: string; emailDispatched: boolean }) => void;
+  onSuccess?: (
+    createdRequest: DocumentRequest & {
+      uploadUrl: string;
+      emailDispatched: boolean;
+    },
+  ) => void;
 }
 
 interface ChecklistFormItem {
@@ -74,7 +79,7 @@ export function CreateDocRequestModal({
   const clients = clientsRes?.clients || [];
 
   const { data: tasksRes } = useGetTasksQuery(
-    defaultClientId ? { clientId: defaultClientId, limit: 50 } : { limit: 50 }
+    defaultClientId ? { clientId: defaultClientId, limit: 50 } : { limit: 50 },
   );
   const tasks = tasksRes?.tasks || [];
 
@@ -90,7 +95,8 @@ export function CreateDocRequestModal({
     {
       id: "1",
       name: "Bank Statements (Last 12 Months)",
-      description: "PDF statements from netbanking for all active bank accounts",
+      description:
+        "PDF statements from netbanking for all active bank accounts",
       isRequired: true,
       acceptedFormats: [".pdf", ".xlsx", ".csv"],
     },
@@ -139,10 +145,10 @@ export function CreateDocRequestModal({
   const handleItemChange = (
     id: string,
     field: keyof ChecklistFormItem,
-    val: any
+    val: any,
   ) => {
     setItems((prev) =>
-      prev.map((it) => (it.id === id ? { ...it, [field]: val } : it))
+      prev.map((it) => (it.id === id ? { ...it, [field]: val } : it)),
     );
   };
 
@@ -183,7 +189,7 @@ export function CreateDocRequestModal({
       toast.success(
         res.emailDispatched
           ? "Document request created & magic link emailed to client!"
-          : "Document request created successfully with magic upload link!"
+          : "Document request created successfully with magic upload link!",
       );
 
       onOpenChange(false);
@@ -191,7 +197,11 @@ export function CreateDocRequestModal({
         onSuccess(res);
       }
     } catch (err: any) {
-      toast.error(err?.data?.message || err?.message || "Failed to create document request");
+      toast.error(
+        err?.data?.message ||
+          err?.message ||
+          "Failed to create document request",
+      );
     }
   };
 
@@ -204,9 +214,12 @@ export function CreateDocRequestModal({
               <FileUp className="h-5 w-5" />
             </div>
             <div>
-              <DialogTitle className="text-xl">Request Documents from Client</DialogTitle>
+              <DialogTitle className="text-xl">
+                Request Documents from Client
+              </DialogTitle>
               <DialogDescription>
-                Create a customized file upload checklist and generate a secure passwordless magic link for your client.
+                Create a customized file upload checklist and generate a secure
+                passwordless magic link for your client.
               </DialogDescription>
             </div>
           </div>
@@ -216,7 +229,9 @@ export function CreateDocRequestModal({
           {/* Client & Linked Task */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label htmlFor="req-client">Client <span className="text-destructive">*</span></Label>
+              <Label htmlFor="req-client">
+                Client <span className="text-destructive">*</span>
+              </Label>
               <Select
                 value={clientId}
                 onValueChange={setClientId}
@@ -260,7 +275,9 @@ export function CreateDocRequestModal({
           {/* Title & Deadline */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-1.5 sm:col-span-2">
-              <Label htmlFor="req-title">Request Title <span className="text-destructive">*</span></Label>
+              <Label htmlFor="req-title">
+                Request Title <span className="text-destructive">*</span>
+              </Label>
               <Input
                 id="req-title"
                 placeholder="e.g. FY 25-26 Tax Audit & ITR Document Collection"
@@ -307,7 +324,8 @@ export function CreateDocRequestModal({
                   Required Documents Checklist ({items.length})
                 </Label>
                 <p className="text-xs text-muted-foreground">
-                  The client will be asked to upload files for each item specified below.
+                  The client will be asked to upload files for each item
+                  specified below.
                 </p>
               </div>
 
@@ -381,7 +399,11 @@ export function CreateDocRequestModal({
                         placeholder="Guidance or format tip for client (optional)"
                         value={item.description}
                         onChange={(e) =>
-                          handleItemChange(item.id, "description", e.target.value)
+                          handleItemChange(
+                            item.id,
+                            "description",
+                            e.target.value,
+                          )
                         }
                         className="h-7 text-xs text-muted-foreground"
                       />
@@ -406,7 +428,9 @@ export function CreateDocRequestModal({
               id="submit-create-request-btn"
               disabled={isLoading}
             >
-              {isLoading ? "Generating Link..." : "Create & Generate Magic Link"}
+              {isLoading
+                ? "Generating Link..."
+                : "Create & Generate Magic Link"}
             </Button>
           </DialogFooter>
         </form>

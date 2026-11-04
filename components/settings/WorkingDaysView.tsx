@@ -26,7 +26,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -69,7 +75,8 @@ export function WorkingDaysView({
   showBack,
 }: WorkingDaysViewProps = {}) {
   const { data: config, isLoading } = useGetWorkingDaysQuery();
-  const [updateWorkingDays, { isLoading: isSaving }] = useUpdateWorkingDaysMutation();
+  const [updateWorkingDays, { isLoading: isSaving }] =
+    useUpdateWorkingDaysMutation();
   const { refetch: refetchMyIp } = useGetMyIpQuery();
 
   const [weekends, setWeekends] = useState<string[]>(["Sunday"]);
@@ -98,7 +105,10 @@ export function WorkingDaysView({
       if (typeof config.standardWorkHoursPerDay === "number") {
         setStandardHours(config.standardWorkHoursPerDay);
       }
-      if (config.alternateWeekendRules && config.alternateWeekendRules.weeks?.length > 0) {
+      if (
+        config.alternateWeekendRules &&
+        config.alternateWeekendRules.weeks?.length > 0
+      ) {
         setEnableAlternate(true);
         setAlternateDay(config.alternateWeekendRules.day || "Saturday");
         setAlternateWeeks(config.alternateWeekendRules.weeks || [2, 4]);
@@ -111,20 +121,20 @@ export function WorkingDaysView({
         setIpWhitelist(
           Array.isArray(config.officePerimeter.ipWhitelist)
             ? config.officePerimeter.ipWhitelist
-            : []
+            : [],
         );
         setEnforceGeofence(Boolean(config.officePerimeter.enforceGeofence));
         setLatitude(
           config.officePerimeter.latitude !== undefined &&
             config.officePerimeter.latitude !== null
             ? String(config.officePerimeter.latitude)
-            : ""
+            : "",
         );
         setLongitude(
           config.officePerimeter.longitude !== undefined &&
             config.officePerimeter.longitude !== null
             ? String(config.officePerimeter.longitude)
-            : ""
+            : "",
         );
         setGeofenceRadius(config.officePerimeter.geofenceRadiusMeters || 150);
       }
@@ -194,14 +204,16 @@ export function WorkingDaysView({
       (pos) => {
         setLatitude(pos.coords.latitude.toFixed(6));
         setLongitude(pos.coords.longitude.toFixed(6));
-        toast.success("Office GPS coordinates captured from current device location");
+        toast.success(
+          "Office GPS coordinates captured from current device location",
+        );
         setIsDetectingGps(false);
       },
       (err) => {
         toast.error(err.message || "Failed to retrieve GPS location");
         setIsDetectingGps(false);
       },
-      { enableHighAccuracy: true, timeout: 10000 }
+      { enableHighAccuracy: true, timeout: 10000 },
     );
   };
 
@@ -214,8 +226,15 @@ export function WorkingDaysView({
     if (enforceGeofence) {
       const latNum = parseFloat(latitude);
       const lngNum = parseFloat(longitude);
-      if (isNaN(latNum) || isNaN(lngNum) || latitude.trim() === "" || longitude.trim() === "") {
-        toast.error("Please provide valid office latitude and longitude or use GPS auto-detect");
+      if (
+        isNaN(latNum) ||
+        isNaN(lngNum) ||
+        latitude.trim() === "" ||
+        longitude.trim() === ""
+      ) {
+        toast.error(
+          "Please provide valid office latitude and longitude or use GPS auto-detect",
+        );
         return;
       }
     }
@@ -247,10 +266,14 @@ export function WorkingDaysView({
 
     try {
       await updateWorkingDays(payload).unwrap();
-      toast.success("Working days & office perimeter configuration updated successfully");
+      toast.success(
+        "Working days & office perimeter configuration updated successfully",
+      );
     } catch (err: any) {
       toast.error(
-        err?.data?.error?.message || err?.data?.message || "Failed to update configuration"
+        err?.data?.error?.message ||
+          err?.data?.message ||
+          "Failed to update configuration",
       );
     }
   };
@@ -279,12 +302,16 @@ export function WorkingDaysView({
             <h2 className="text-2xl font-bold tracking-tight">
               Working Days & Office Perimeter
             </h2>
-            <Badge variant="outline" className="text-xs bg-primary/5 text-primary border-primary/20">
+            <Badge
+              variant="outline"
+              className="text-xs bg-primary/5 text-primary border-primary/20"
+            >
               Attendance Rules
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            Configure standard shift hours, weekly rest days, alternate weekend rosters, and dual-mode perimeter security.
+            Configure standard shift hours, weekly rest days, alternate weekend
+            rosters, and dual-mode perimeter security.
           </p>
         </div>
 
@@ -328,7 +355,9 @@ export function WorkingDaysView({
           <CardContent className="space-y-4 pt-1">
             {/* Quick Preset Buttons */}
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Quick Presets</Label>
+              <Label className="text-xs text-muted-foreground">
+                Quick Presets
+              </Label>
               <div className="grid grid-cols-4 gap-1.5">
                 {[7.5, 8.0, 8.5, 9.0].map((hrs) => (
                   <button
@@ -360,7 +389,9 @@ export function WorkingDaysView({
                   max="24"
                   step="0.5"
                   value={standardHours}
-                  onChange={(e) => setStandardHours(parseFloat(e.target.value) || 0)}
+                  onChange={(e) =>
+                    setStandardHours(parseFloat(e.target.value) || 0)
+                  }
                   className="pr-16 text-sm font-semibold"
                 />
                 <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
@@ -396,14 +427,18 @@ export function WorkingDaysView({
                   <CalendarDays className="h-4 w-4" />
                 </div>
                 <div>
-                  <CardTitle className="text-base">Weekly Rest Days (Weekends)</CardTitle>
+                  <CardTitle className="text-base">
+                    Weekly Rest Days (Weekends)
+                  </CardTitle>
                   <CardDescription className="text-xs">
-                    Firm-wide non-working days automatically excluded from targets
+                    Firm-wide non-working days automatically excluded from
+                    targets
                   </CardDescription>
                 </div>
               </div>
               <Badge variant="secondary" className="text-xs">
-                {weekends.length} {weekends.length === 1 ? "day" : "days"} / week
+                {weekends.length} {weekends.length === 1 ? "day" : "days"} /
+                week
               </Badge>
             </div>
           </CardHeader>
@@ -427,7 +462,9 @@ export function WorkingDaysView({
                 type="button"
                 onClick={() => setWeekends(["Saturday", "Sunday"])}
                 className={`px-2.5 py-1 rounded-md border text-xs font-medium transition-colors ${
-                  weekends.length === 2 && weekends.includes("Saturday") && weekends.includes("Sunday")
+                  weekends.length === 2 &&
+                  weekends.includes("Saturday") &&
+                  weekends.includes("Sunday")
                     ? "bg-primary text-primary-foreground border-primary"
                     : "bg-muted/30 hover:bg-muted text-foreground border-border/60"
                 }`}
@@ -438,7 +475,9 @@ export function WorkingDaysView({
                 type="button"
                 onClick={() => setWeekends(["Friday", "Saturday"])}
                 className={`px-2.5 py-1 rounded-md border text-xs font-medium transition-colors ${
-                  weekends.length === 2 && weekends.includes("Friday") && weekends.includes("Saturday")
+                  weekends.length === 2 &&
+                  weekends.includes("Friday") &&
+                  weekends.includes("Saturday")
                     ? "bg-primary text-primary-foreground border-primary"
                     : "bg-muted/30 hover:bg-muted text-foreground border-border/60"
                 }`}
@@ -475,7 +514,9 @@ export function WorkingDaysView({
             <div className="rounded-lg bg-muted/40 p-3 border flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
               <span className="text-muted-foreground">
                 Designated weekly off-days:{" "}
-                <strong className="text-foreground">{weekends.join(", ")}</strong>
+                <strong className="text-foreground">
+                  {weekends.join(", ")}
+                </strong>
               </span>
               <span className="text-primary font-medium">
                 {7 - weekends.length} scheduled working days/week
@@ -485,7 +526,9 @@ export function WorkingDaysView({
         </Card>
 
         {/* ─── BENTO ITEM 3: Rotational / Alternate Weekend Rules (12 Cols) ─── */}
-        <Card className={`lg:col-span-12 border shadow-sm transition-all ${enableAlternate ? "border-primary/40 bg-card" : "bg-card/60"}`}>
+        <Card
+          className={`lg:col-span-12 border shadow-sm transition-all ${enableAlternate ? "border-primary/40 bg-card" : "bg-card/60"}`}
+        >
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
@@ -496,17 +539,24 @@ export function WorkingDaysView({
                   <CardTitle className="text-base flex items-center gap-2">
                     <span>Rotational / Alternate Weekend Rules</span>
                     {enableAlternate ? (
-                      <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30"
+                      >
                         Active
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="text-[10px] text-muted-foreground border-border/60">
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] text-muted-foreground border-border/60"
+                      >
                         Disabled
                       </Badge>
                     )}
                   </CardTitle>
                   <CardDescription className="text-xs">
-                    Roster specific weeks of the month as off-days (e.g. Bank / Corporate 2nd & 4th Saturday off).
+                    Roster specific weeks of the month as off-days (e.g. Bank /
+                    Corporate 2nd & 4th Saturday off).
                   </CardDescription>
                 </div>
               </div>
@@ -523,7 +573,10 @@ export function WorkingDaysView({
               <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
                 {/* Rotational Day Selector */}
                 <div className="md:col-span-4 space-y-1.5">
-                  <Label htmlFor="alternate-day" className="text-xs font-medium">
+                  <Label
+                    htmlFor="alternate-day"
+                    className="text-xs font-medium"
+                  >
                     Rotational Day of Week
                   </Label>
                   <Select value={alternateDay} onValueChange={setAlternateDay}>
@@ -583,11 +636,17 @@ export function WorkingDaysView({
               <div className="text-xs bg-muted/40 p-3 rounded-lg border flex items-center justify-between gap-2">
                 <span className="text-muted-foreground">
                   <strong>Effective Rule:</strong> Every month,{" "}
-                  <span className="font-semibold text-foreground">{alternateDay}</span> on{" "}
+                  <span className="font-semibold text-foreground">
+                    {alternateDay}
+                  </span>{" "}
+                  on{" "}
                   <span className="font-semibold text-foreground">
                     {alternateWeeks.length > 0
                       ? alternateWeeks
-                          .map((w) => `${w}${w === 1 ? "st" : w === 2 ? "nd" : w === 3 ? "rd" : "th"}`)
+                          .map(
+                            (w) =>
+                              `${w}${w === 1 ? "st" : w === 2 ? "nd" : w === 3 ? "rd" : "th"}`,
+                          )
                           .join(" & ") + " week"
                       : "no weeks selected"}
                   </span>{" "}
@@ -602,7 +661,9 @@ export function WorkingDaysView({
         </Card>
 
         {/* ─── BENTO ITEM 4: Dual-Mode Office Perimeter (12 Cols) ─── */}
-        <Card className={`lg:col-span-12 border shadow-sm transition-all ${enableIpWhitelist || enforceGeofence ? "border-primary/40 bg-card" : "bg-card/60"}`}>
+        <Card
+          className={`lg:col-span-12 border shadow-sm transition-all ${enableIpWhitelist || enforceGeofence ? "border-primary/40 bg-card" : "bg-card/60"}`}
+        >
           <CardHeader className="pb-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2.5">
@@ -612,12 +673,17 @@ export function WorkingDaysView({
                 <div>
                   <CardTitle className="text-base flex items-center gap-2">
                     <span>Dual-Mode Office Perimeter</span>
-                    <Badge variant="outline" className="text-[10px] bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/30">
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/30"
+                    >
                       Security & Geofence
                     </Badge>
                   </CardTitle>
                   <CardDescription className="text-xs">
-                    Allow staff on office Wi-Fi to punch instantly without GPS prompts, while enforcing GPS geofence for remote/cellular connections.
+                    Allow staff on office Wi-Fi to punch instantly without GPS
+                    prompts, while enforcing GPS geofence for remote/cellular
+                    connections.
                   </CardDescription>
                 </div>
               </div>
@@ -652,12 +718,16 @@ export function WorkingDaysView({
             {/* INNER TWO-PANEL BENTO GRID */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {/* SUB-PANEL A: Wi-Fi / IP Whitelist */}
-              <div className={`rounded-xl border p-4 space-y-3.5 transition-all ${enableIpWhitelist ? "bg-card border-border shadow-xs" : "bg-muted/20 border-dashed"}`}>
+              <div
+                className={`rounded-xl border p-4 space-y-3.5 transition-all ${enableIpWhitelist ? "bg-card border-border shadow-xs" : "bg-muted/20 border-dashed"}`}
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Globe className="h-4 w-4 text-primary" />
                     <div>
-                      <h4 className="text-sm font-semibold">Office Wi-Fi / Static IP Whitelist</h4>
+                      <h4 className="text-sm font-semibold">
+                        Office Wi-Fi / Static IP Whitelist
+                      </h4>
                       <p className="text-[11px] text-muted-foreground">
                         Punches from matching IPs bypass browser GPS prompts.
                       </p>
@@ -722,7 +792,8 @@ export function WorkingDaysView({
                       </Label>
                       {ipWhitelist.length === 0 ? (
                         <p className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 p-2.5 rounded-md border border-amber-200 dark:border-amber-900/50">
-                          No IPs added yet. Click &quot;Detect IP&quot; to auto-whitelist your current office public address.
+                          No IPs added yet. Click &quot;Detect IP&quot; to
+                          auto-whitelist your current office public address.
                         </p>
                       ) : (
                         <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-1">
@@ -751,14 +822,19 @@ export function WorkingDaysView({
               </div>
 
               {/* SUB-PANEL B: GPS Geofence Fallback */}
-              <div className={`rounded-xl border p-4 space-y-3.5 transition-all ${enforceGeofence ? "bg-card border-border shadow-xs" : "bg-muted/20 border-dashed"}`}>
+              <div
+                className={`rounded-xl border p-4 space-y-3.5 transition-all ${enforceGeofence ? "bg-card border-border shadow-xs" : "bg-muted/20 border-dashed"}`}
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-primary" />
                     <div>
-                      <h4 className="text-sm font-semibold">Office GPS Geofence Boundary</h4>
+                      <h4 className="text-sm font-semibold">
+                        Office GPS Geofence Boundary
+                      </h4>
                       <p className="text-[11px] text-muted-foreground">
-                        Fallback coordinate radius check for cellular/remote staff.
+                        Fallback coordinate radius check for cellular/remote
+                        staff.
                       </p>
                     </div>
                   </div>
@@ -773,7 +849,9 @@ export function WorkingDaysView({
                   <div className="space-y-3 pt-2 border-t">
                     <div className="grid grid-cols-3 gap-2">
                       <div className="space-y-1">
-                        <Label htmlFor="office-lat" className="text-[11px]">Latitude</Label>
+                        <Label htmlFor="office-lat" className="text-[11px]">
+                          Latitude
+                        </Label>
                         <Input
                           id="office-lat"
                           type="number"
@@ -785,7 +863,9 @@ export function WorkingDaysView({
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label htmlFor="office-lng" className="text-[11px]">Longitude</Label>
+                        <Label htmlFor="office-lng" className="text-[11px]">
+                          Longitude
+                        </Label>
                         <Input
                           id="office-lng"
                           type="number"
@@ -797,7 +877,9 @@ export function WorkingDaysView({
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label htmlFor="office-radius" className="text-[11px]">Radius (m)</Label>
+                        <Label htmlFor="office-radius" className="text-[11px]">
+                          Radius (m)
+                        </Label>
                         <Input
                           id="office-radius"
                           type="number"
@@ -805,7 +887,11 @@ export function WorkingDaysView({
                           max="5000"
                           step="10"
                           value={geofenceRadius}
-                          onChange={(e) => setGeofenceRadius(parseInt(e.target.value, 10) || 150)}
+                          onChange={(e) =>
+                            setGeofenceRadius(
+                              parseInt(e.target.value, 10) || 150,
+                            )
+                          }
                           className="h-8 text-xs font-mono"
                         />
                       </div>
@@ -840,11 +926,15 @@ export function WorkingDaysView({
             <div className="rounded-lg bg-muted/40 p-3.5 border flex items-start gap-3 text-xs text-muted-foreground">
               <ShieldCheck className="h-4 w-4 text-primary shrink-0 mt-0.5" />
               <div className="space-y-0.5">
-                <span className="font-semibold text-foreground">Dual-Mode Verification Precedence:</span>
+                <span className="font-semibold text-foreground">
+                  Dual-Mode Verification Precedence:
+                </span>
                 <p>
-                  1. If staff is on the whitelisted office Wi-Fi/IP, punches succeed immediately without GPS coordinate prompts.
+                  1. If staff is on the whitelisted office Wi-Fi/IP, punches
+                  succeed immediately without GPS coordinate prompts.
                   <br />
-                  2. If staff is on mobile data or working remotely, the system checks their browser GPS location against the office geofence.
+                  2. If staff is on mobile data or working remotely, the system
+                  checks their browser GPS location against the office geofence.
                 </p>
               </div>
             </div>
@@ -855,7 +945,8 @@ export function WorkingDaysView({
       {/* FOOTER SAVE BAR */}
       <div className="flex items-center justify-between gap-4 pt-4 border-t">
         <div className="text-xs text-muted-foreground hidden sm:block">
-          Changes will apply immediately to next attendance punches and monthly matrix calculations.
+          Changes will apply immediately to next attendance punches and monthly
+          matrix calculations.
         </div>
         <div className="flex items-center gap-3 ml-auto">
           <Button

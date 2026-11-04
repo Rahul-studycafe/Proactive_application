@@ -18,10 +18,16 @@ import {
   Calendar,
   AlertCircle,
   Loader2,
-  User
+  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -51,12 +57,21 @@ interface ClientPortalTabProps {
 }
 
 export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
-  const { data: portalData, isLoading, refetch } = useGetClientPortalUsersQuery(clientId);
-  const [toggleAccess, { isLoading: isToggling }] = useToggleClientPortalAccessMutation();
-  const [createUser, { isLoading: isCreating }] = useCreateClientPortalUserMutation();
-  const [updateUser, { isLoading: isUpdating }] = useUpdateClientPortalUserMutation();
-  const [deleteUser, { isLoading: isDeleting }] = useDeleteClientPortalUserMutation();
-  const [resetPassword, { isLoading: isResetting }] = useResetClientPortalUserPasswordMutation();
+  const {
+    data: portalData,
+    isLoading,
+    refetch,
+  } = useGetClientPortalUsersQuery(clientId);
+  const [toggleAccess, { isLoading: isToggling }] =
+    useToggleClientPortalAccessMutation();
+  const [createUser, { isLoading: isCreating }] =
+    useCreateClientPortalUserMutation();
+  const [updateUser, { isLoading: isUpdating }] =
+    useUpdateClientPortalUserMutation();
+  const [deleteUser, { isLoading: isDeleting }] =
+    useDeleteClientPortalUserMutation();
+  const [resetPassword, { isLoading: isResetting }] =
+    useResetClientPortalUserPasswordMutation();
 
   const [copied, setCopied] = useState(false);
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
@@ -88,9 +103,17 @@ export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
   const handleTogglePortal = async (checked: boolean) => {
     try {
       await toggleAccess({ clientId, allowLogin: checked }).unwrap();
-      toast.success(checked ? "Client portal access enabled" : "Client portal access disabled");
+      toast.success(
+        checked
+          ? "Client portal access enabled"
+          : "Client portal access disabled",
+      );
     } catch (err: any) {
-      toast.error(err?.data?.error?.message || err?.data?.message || "Failed to update portal access");
+      toast.error(
+        err?.data?.error?.message ||
+          err?.data?.message ||
+          "Failed to update portal access",
+      );
     }
   };
 
@@ -122,7 +145,11 @@ export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
       });
       refetch();
     } catch (err: any) {
-      toast.error(err?.data?.error?.message || err?.data?.message || "Failed to create portal user");
+      toast.error(
+        err?.data?.error?.message ||
+          err?.data?.message ||
+          "Failed to create portal user",
+      );
     }
   };
 
@@ -145,7 +172,11 @@ export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
       setEditUserData(null);
       refetch();
     } catch (err: any) {
-      toast.error(err?.data?.error?.message || err?.data?.message || "Failed to update portal user");
+      toast.error(
+        err?.data?.error?.message ||
+          err?.data?.message ||
+          "Failed to update portal user",
+      );
     }
   };
 
@@ -167,7 +198,11 @@ export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
       setResetPasswordUser(null);
       setNewPassword("");
     } catch (err: any) {
-      toast.error(err?.data?.error?.message || err?.data?.message || "Failed to reset password");
+      toast.error(
+        err?.data?.error?.message ||
+          err?.data?.message ||
+          "Failed to reset password",
+      );
     }
   };
 
@@ -184,7 +219,11 @@ export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
       setDeleteTargetUser(null);
       refetch();
     } catch (err: any) {
-      toast.error(err?.data?.error?.message || err?.data?.message || "Failed to delete portal user");
+      toast.error(
+        err?.data?.error?.message ||
+          err?.data?.message ||
+          "Failed to delete portal user",
+      );
     }
   };
 
@@ -204,7 +243,8 @@ export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
                     Client Self-Service Portal Access
                   </CardTitle>
                   <CardDescription className="text-xs">
-                    Allow {client.name} representatives to sign into their secure compliance portal.
+                    Allow {client.name} representatives to sign into their
+                    secure compliance portal.
                   </CardDescription>
                 </div>
               </div>
@@ -218,7 +258,10 @@ export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
                   disabled={isToggling}
                   id="portal-toggle"
                 />
-                <Label htmlFor="portal-toggle" className="text-sm font-medium cursor-pointer">
+                <Label
+                  htmlFor="portal-toggle"
+                  className="text-sm font-medium cursor-pointer"
+                >
                   {isPortalEnabled ? "Portal Active" : "Portal Disabled"}
                 </Label>
               </div>
@@ -250,7 +293,9 @@ export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
             <div className="flex items-center gap-2 text-muted-foreground">
               <span className="font-medium text-foreground">Portal URL:</span>
               <code className="bg-background px-2 py-0.5 rounded border border-border/80 font-mono text-[11px]">
-                {typeof window !== "undefined" ? `${window.location.origin}/portal/login` : "/portal/login"}
+                {typeof window !== "undefined"
+                  ? `${window.location.origin}/portal/login`
+                  : "/portal/login"}
               </code>
             </div>
 
@@ -260,7 +305,11 @@ export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
               className="h-8 gap-1.5 shrink-0 self-start sm:self-auto"
               onClick={handleCopyLink}
             >
-              {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+              {copied ? (
+                <Check className="h-3.5 w-3.5 text-emerald-500" />
+              ) : (
+                <Copy className="h-3.5 w-3.5" />
+              )}
               {copied ? "Copied" : "Copy Portal Link"}
             </Button>
           </div>
@@ -272,10 +321,12 @@ export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
         <CardHeader className="p-5 pb-3 flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <UserCheck className="h-4 w-4 text-primary" /> Authorized Login Representatives
+              <UserCheck className="h-4 w-4 text-primary" /> Authorized Login
+              Representatives
             </CardTitle>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Individuals with login rights to view filing status, tax records, and invoices for {client.name}.
+              Individuals with login rights to view filing status, tax records,
+              and invoices for {client.name}.
             </p>
           </div>
 
@@ -301,7 +352,9 @@ export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
               </div>
               <h4 className="text-sm font-semibold">No Portal Users Added</h4>
               <p className="text-xs text-muted-foreground max-w-sm mt-1 mb-4">
-                No user credentials have been created for this client yet. Add the director, proprietor, or accountant to grant them self-service access.
+                No user credentials have been created for this client yet. Add
+                the director, proprietor, or accountant to grant them
+                self-service access.
               </p>
               <Button
                 size="sm"
@@ -326,7 +379,9 @@ export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-semibold text-foreground">{user.name}</span>
+                        <span className="text-sm font-semibold text-foreground">
+                          {user.name}
+                        </span>
                         {user.isPrimaryContact && (
                           <Badge
                             variant="secondary"
@@ -359,7 +414,9 @@ export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
                         <span className="flex items-center gap-1.5">
                           <Calendar className="h-3.5 w-3.5 opacity-70" />
                           Last login:{" "}
-                          {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString() : "Never"}
+                          {user.lastLoginAt
+                            ? new Date(user.lastLoginAt).toLocaleDateString()
+                            : "Never"}
                         </span>
                       </div>
                     </div>
@@ -405,7 +462,8 @@ export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
             <DialogHeader>
               <DialogTitle>Add Portal User</DialogTitle>
               <DialogDescription>
-                Create credentials for a client representative to log in to the portal.
+                Create credentials for a client representative to log in to the
+                portal.
               </DialogDescription>
             </DialogHeader>
 
@@ -417,7 +475,9 @@ export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
                   required
                   placeholder="e.g. Rahul Sharma"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                 />
               </div>
 
@@ -429,7 +489,9 @@ export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
                   required
                   placeholder="name@company.com"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
                 />
               </div>
 
@@ -440,21 +502,28 @@ export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
                   required
                   placeholder="+91 98765 43210"
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, phone: e.target.value })
+                  }
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="user-password">Initial Password (Optional)</Label>
+                <Label htmlFor="user-password">
+                  Initial Password (Optional)
+                </Label>
                 <Input
                   id="user-password"
                   type="text"
                   placeholder="Leave blank for default: Client@123"
                   value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
                 />
                 <p className="text-[11px] text-muted-foreground">
-                  The user can also sign in friction-free using 6-digit OTP to mobile/email.
+                  The user can also sign in friction-free using 6-digit OTP to
+                  mobile/email.
                 </p>
               </div>
 
@@ -466,18 +535,27 @@ export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
                     setFormData({ ...formData, isPrimaryContact: !!checked })
                   }
                 />
-                <Label htmlFor="primary-contact" className="text-xs font-normal cursor-pointer">
+                <Label
+                  htmlFor="primary-contact"
+                  className="text-xs font-normal cursor-pointer"
+                >
                   Designate as Primary Client Representative
                 </Label>
               </div>
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsAddUserOpen(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsAddUserOpen(false)}
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={isCreating}>
-                {isCreating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                {isCreating ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : null}
                 Create Portal User
               </Button>
             </DialogFooter>
@@ -486,13 +564,18 @@ export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
       </Dialog>
 
       {/* Edit Portal User Dialog */}
-      <Dialog open={!!editUserData} onOpenChange={(open) => !open && setEditUserData(null)}>
+      <Dialog
+        open={!!editUserData}
+        onOpenChange={(open) => !open && setEditUserData(null)}
+      >
         <DialogContent className="sm:max-w-[440px]">
           {editUserData && (
             <form onSubmit={handleUpdateUser}>
               <DialogHeader>
                 <DialogTitle>Edit Portal User</DialogTitle>
-                <DialogDescription>Update user contact details and access status.</DialogDescription>
+                <DialogDescription>
+                  Update user contact details and access status.
+                </DialogDescription>
               </DialogHeader>
 
               <div className="space-y-4 py-4">
@@ -501,7 +584,9 @@ export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
                   <Input
                     id="edit-name"
                     value={editUserData.name}
-                    onChange={(e) => setEditUserData({ ...editUserData, name: e.target.value })}
+                    onChange={(e) =>
+                      setEditUserData({ ...editUserData, name: e.target.value })
+                    }
                   />
                 </div>
 
@@ -511,7 +596,12 @@ export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
                     id="edit-email"
                     type="email"
                     value={editUserData.email}
-                    onChange={(e) => setEditUserData({ ...editUserData, email: e.target.value })}
+                    onChange={(e) =>
+                      setEditUserData({
+                        ...editUserData,
+                        email: e.target.value,
+                      })
+                    }
                   />
                 </div>
 
@@ -520,7 +610,12 @@ export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
                   <Input
                     id="edit-phone"
                     value={editUserData.phone}
-                    onChange={(e) => setEditUserData({ ...editUserData, phone: e.target.value })}
+                    onChange={(e) =>
+                      setEditUserData({
+                        ...editUserData,
+                        phone: e.target.value,
+                      })
+                    }
                   />
                 </div>
 
@@ -530,10 +625,16 @@ export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
                       id="edit-active"
                       checked={editUserData.isActive}
                       onCheckedChange={(checked) =>
-                        setEditUserData({ ...editUserData, isActive: !!checked })
+                        setEditUserData({
+                          ...editUserData,
+                          isActive: !!checked,
+                        })
                       }
                     />
-                    <Label htmlFor="edit-active" className="text-xs cursor-pointer">
+                    <Label
+                      htmlFor="edit-active"
+                      className="text-xs cursor-pointer"
+                    >
                       User Account Active
                     </Label>
                   </div>
@@ -543,10 +644,16 @@ export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
                       id="edit-primary"
                       checked={editUserData.isPrimaryContact}
                       onCheckedChange={(checked) =>
-                        setEditUserData({ ...editUserData, isPrimaryContact: !!checked })
+                        setEditUserData({
+                          ...editUserData,
+                          isPrimaryContact: !!checked,
+                        })
                       }
                     />
-                    <Label htmlFor="edit-primary" className="text-xs cursor-pointer">
+                    <Label
+                      htmlFor="edit-primary"
+                      className="text-xs cursor-pointer"
+                    >
                       Primary Contact
                     </Label>
                   </div>
@@ -554,11 +661,17 @@ export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
               </div>
 
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setEditUserData(null)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setEditUserData(null)}
+                >
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isUpdating}>
-                  {isUpdating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                  {isUpdating ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : null}
                   Save Changes
                 </Button>
               </DialogFooter>
@@ -577,13 +690,16 @@ export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
             <DialogHeader>
               <DialogTitle>Reset Portal Password</DialogTitle>
               <DialogDescription>
-                Set a new password for {resetPasswordUser?.name} ({resetPasswordUser?.email}).
+                Set a new password for {resetPasswordUser?.name} (
+                {resetPasswordUser?.email}).
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4 py-4">
               <div className="space-y-1.5">
-                <Label htmlFor="new-password">New Password (Min. 6 chars)</Label>
+                <Label htmlFor="new-password">
+                  New Password (Min. 6 chars)
+                </Label>
                 <Input
                   id="new-password"
                   type="text"
@@ -596,11 +712,17 @@ export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setResetPasswordUser(null)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setResetPasswordUser(null)}
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={isResetting}>
-                {isResetting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                {isResetting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : null}
                 Reset Password
               </Button>
             </DialogFooter>
@@ -618,12 +740,17 @@ export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
             <DialogTitle>Remove Portal User</DialogTitle>
             <DialogDescription>
               Are you sure you want to delete portal access for{" "}
-              <strong>{deleteTargetUser?.name}</strong>? They will no longer be able to sign in.
+              <strong>{deleteTargetUser?.name}</strong>? They will no longer be
+              able to sign in.
             </DialogDescription>
           </DialogHeader>
 
           <DialogFooter className="mt-4">
-            <Button type="button" variant="outline" onClick={() => setDeleteTargetUser(null)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDeleteTargetUser(null)}
+            >
               Cancel
             </Button>
             <Button
@@ -632,7 +759,9 @@ export function ClientPortalTab({ clientId, client }: ClientPortalTabProps) {
               onClick={handleDeleteUser}
               disabled={isDeleting}
             >
-              {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              {isDeleting ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
               Delete User
             </Button>
           </DialogFooter>

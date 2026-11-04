@@ -18,7 +18,14 @@ import {
   Star,
   FileText,
 } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,9 +49,12 @@ import {
 
 export default function BillingEntitiesPage() {
   const { data: entities = [], isLoading } = useGetBillingEntitiesQuery();
-  const [createEntity, { isLoading: isCreating }] = useCreateBillingEntityMutation();
-  const [updateEntity, { isLoading: isUpdating }] = useUpdateBillingEntityMutation();
-  const [deleteEntity, { isLoading: isDeleting }] = useDeleteBillingEntityMutation();
+  const [createEntity, { isLoading: isCreating }] =
+    useCreateBillingEntityMutation();
+  const [updateEntity, { isLoading: isUpdating }] =
+    useUpdateBillingEntityMutation();
+  const [deleteEntity, { isLoading: isDeleting }] =
+    useDeleteBillingEntityMutation();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEntity, setEditingEntity] = useState<any | null>(null);
@@ -148,17 +158,27 @@ export default function BillingEntitiesPage() {
       }
       setIsModalOpen(false);
     } catch (err: any) {
-      toast.error(err?.data?.error?.message || err?.data?.message || "Failed to save billing entity");
+      toast.error(
+        err?.data?.error?.message ||
+          err?.data?.message ||
+          "Failed to save billing entity",
+      );
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to remove this billing entity branch?")) {
+    if (
+      confirm("Are you sure you want to remove this billing entity branch?")
+    ) {
       try {
         await deleteEntity(id).unwrap();
         toast.success("Billing entity removed");
       } catch (err: any) {
-        toast.error(err?.data?.error?.message || err?.data?.message || "Failed to delete billing entity");
+        toast.error(
+          err?.data?.error?.message ||
+            err?.data?.message ||
+            "Failed to delete billing entity",
+        );
       }
     }
   };
@@ -166,7 +186,9 @@ export default function BillingEntitiesPage() {
   const handleSetDefault = async (entity: any) => {
     try {
       await updateEntity({ id: entity._id, isDefault: true }).unwrap();
-      toast.success(`${entity.branchName || entity.name} is now the default billing entity`);
+      toast.success(
+        `${entity.branchName || entity.name} is now the default billing entity`,
+      );
     } catch (err: any) {
       toast.error("Failed to update default billing entity");
     }
@@ -186,10 +208,13 @@ export default function BillingEntitiesPage() {
             </Link>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <Building2 className="h-6 w-6 text-primary" /> Multi-Branch & Regional Billing Entities
+            <Building2 className="h-6 w-6 text-primary" /> Multi-Branch &
+            Regional Billing Entities
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Configure regional office branches (e.g. Mumbai, Bengaluru, Delhi) with distinct GSTIN, state codes, bank accounts, and isolated invoice serial numbering.
+            Configure regional office branches (e.g. Mumbai, Bengaluru, Delhi)
+            with distinct GSTIN, state codes, bank accounts, and isolated
+            invoice serial numbering.
           </p>
         </div>
 
@@ -206,11 +231,19 @@ export default function BillingEntitiesPage() {
       ) : entities.length === 0 ? (
         <Card className="p-16 text-center border-dashed">
           <Building2 className="h-10 w-10 text-muted-foreground/50 mx-auto mb-3" />
-          <h3 className="text-sm font-semibold">No Regional Branches Configured</h3>
+          <h3 className="text-sm font-semibold">
+            No Regional Branches Configured
+          </h3>
           <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
-            Add your primary practice entity and any regional branches to enable branch-isolated serial invoicing.
+            Add your primary practice entity and any regional branches to enable
+            branch-isolated serial invoicing.
           </p>
-          <Button onClick={handleOpenCreate} variant="outline" size="sm" className="mt-4 gap-1.5 text-xs">
+          <Button
+            onClick={handleOpenCreate}
+            variant="outline"
+            size="sm"
+            className="mt-4 gap-1.5 text-xs"
+          >
             <Plus className="h-3.5 w-3.5" /> Register First Entity
           </Button>
         </Card>
@@ -257,7 +290,9 @@ export default function BillingEntitiesPage() {
                 <div className="p-2.5 rounded-lg border bg-muted/20 space-y-1 font-mono text-[11px]">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">GSTIN:</span>
-                    <span className="font-semibold text-foreground">{entity.gstin || "Not Registered"}</span>
+                    <span className="font-semibold text-foreground">
+                      {entity.gstin || "Not Registered"}
+                    </span>
                   </div>
                   {entity.pan && (
                     <div className="flex justify-between">
@@ -269,12 +304,20 @@ export default function BillingEntitiesPage() {
 
                 {/* Sequence Prefixes */}
                 <div className="space-y-1 text-[11px] pt-1">
-                  <span className="text-muted-foreground block font-semibold">Atomic Number Sequences:</span>
+                  <span className="text-muted-foreground block font-semibold">
+                    Atomic Number Sequences:
+                  </span>
                   <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="font-mono text-[10px]">
+                    <Badge
+                      variant="secondary"
+                      className="font-mono text-[10px]"
+                    >
                       Invoice: {entity.invoicePrefix || "INV/"}
                     </Badge>
-                    <Badge variant="secondary" className="font-mono text-[10px]">
+                    <Badge
+                      variant="secondary"
+                      className="font-mono text-[10px]"
+                    >
                       Receipt: {entity.receiptPrefix || "RCT/"}
                     </Badge>
                   </div>
@@ -284,10 +327,12 @@ export default function BillingEntitiesPage() {
                 {entity.bankDetails?.bankName && (
                   <div className="p-2 rounded-lg border bg-card text-[11px] space-y-0.5">
                     <span className="font-semibold text-foreground flex items-center gap-1">
-                      <CreditCard className="h-3 w-3 text-primary" /> {entity.bankDetails.bankName}
+                      <CreditCard className="h-3 w-3 text-primary" />{" "}
+                      {entity.bankDetails.bankName}
                     </span>
                     <p className="font-mono text-muted-foreground">
-                      A/C: {entity.bankDetails.accountNumber} ({entity.bankDetails.ifsc})
+                      A/C: {entity.bankDetails.accountNumber} (
+                      {entity.bankDetails.ifsc})
                     </p>
                   </div>
                 )}
@@ -324,10 +369,13 @@ export default function BillingEntitiesPage() {
           <DialogHeader>
             <DialogTitle className="text-base font-bold flex items-center gap-2">
               <Building2 className="h-4 w-4 text-primary" />
-              {editingEntity ? "Edit Regional Billing Entity" : "Add Regional Branch Billing Entity"}
+              {editingEntity
+                ? "Edit Regional Billing Entity"
+                : "Add Regional Branch Billing Entity"}
             </DialogTitle>
             <DialogDescription className="text-xs">
-              Configure branch name, GSTIN, legal registration, and sequence prefixes for this office.
+              Configure branch name, GSTIN, legal registration, and sequence
+              prefixes for this office.
             </DialogDescription>
           </DialogHeader>
 
@@ -345,7 +393,9 @@ export default function BillingEntitiesPage() {
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-semibold">Legal Entity Name *</Label>
+                <Label className="text-xs font-semibold">
+                  Legal Entity Name *
+                </Label>
                 <Input
                   required
                   placeholder="e.g. Sharma & Co. Chartered Accountants"
@@ -403,7 +453,9 @@ export default function BillingEntitiesPage() {
                     onChange={(e) => setInvoicePrefix(e.target.value)}
                     className="text-xs font-mono"
                   />
-                  <p className="text-[10px] text-muted-foreground">Generates: {invoicePrefix}001, {invoicePrefix}002</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    Generates: {invoicePrefix}001, {invoicePrefix}002
+                  </p>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-[11px]">Receipt Prefix</Label>
@@ -413,14 +465,18 @@ export default function BillingEntitiesPage() {
                     onChange={(e) => setReceiptPrefix(e.target.value)}
                     className="text-xs font-mono"
                   />
-                  <p className="text-[10px] text-muted-foreground">Generates: {receiptPrefix}001, {receiptPrefix}002</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    Generates: {receiptPrefix}001, {receiptPrefix}002
+                  </p>
                 </div>
               </div>
             </div>
 
             {/* Bank Details */}
             <div className="space-y-2 pt-2 border-t">
-              <span className="font-semibold text-xs text-foreground block">Branch Bank Account & UPI</span>
+              <span className="font-semibold text-xs text-foreground block">
+                Branch Bank Account & UPI
+              </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label className="text-[11px]">Bank Name</Label>
@@ -476,9 +532,12 @@ export default function BillingEntitiesPage() {
             {/* Set as Default */}
             <div className="flex items-center justify-between pt-2 border-t">
               <div className="space-y-0.5">
-                <Label className="text-xs font-semibold">Default Billing Entity</Label>
+                <Label className="text-xs font-semibold">
+                  Default Billing Entity
+                </Label>
                 <p className="text-[11px] text-muted-foreground">
-                  New invoices and quotations will automatically route to this entity by default.
+                  New invoices and quotations will automatically route to this
+                  entity by default.
                 </p>
               </div>
               <Switch checked={isDefault} onCheckedChange={setIsDefault} />
@@ -500,7 +559,9 @@ export default function BillingEntitiesPage() {
                 disabled={isCreating || isUpdating}
                 className="text-xs shadow-xs"
               >
-                {isCreating || isUpdating ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
+                {isCreating || isUpdating ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
+                ) : null}
                 Save Branch Entity
               </Button>
             </DialogFooter>
@@ -510,4 +571,3 @@ export default function BillingEntitiesPage() {
     </div>
   );
 }
-

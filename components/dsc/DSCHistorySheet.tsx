@@ -33,12 +33,13 @@ export function DSCHistorySheet({
   onOpenChange,
   dsc,
 }: DSCHistorySheetProps) {
-  const { data: history = [], isLoading, isFetching } = useGetDscHistoryQuery(
-    dsc?._id || "",
-    {
-      skip: !dsc || !open,
-    }
-  );
+  const {
+    data: history = [],
+    isLoading,
+    isFetching,
+  } = useGetDscHistoryQuery(dsc?._id || "", {
+    skip: !dsc || !open,
+  });
 
   const getActionBadge = (action: string) => {
     switch (action) {
@@ -78,7 +79,9 @@ export function DSCHistorySheet({
           </SheetDescription>
           {dsc && (
             <div className="mt-2 text-xs text-muted-foreground flex items-center justify-between">
-              <span>Token: {dsc.tokenType} (#{dsc.tokenSerialNumber || "N/A"})</span>
+              <span>
+                Token: {dsc.tokenType} (#{dsc.tokenSerialNumber || "N/A"})
+              </span>
               <span>Shelf: {dsc.physicalLocation}</span>
             </div>
           )}
@@ -98,9 +101,12 @@ export function DSCHistorySheet({
           ) : history.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <Clock className="mx-auto h-8 w-8 mb-2 opacity-50" />
-              <p className="text-sm font-medium">No custody handovers recorded</p>
+              <p className="text-sm font-medium">
+                No custody handovers recorded
+              </p>
               <p className="text-xs mt-1">
-                This physical USB token has remained in its initial registered custody.
+                This physical USB token has remained in its initial registered
+                custody.
               </p>
             </div>
           ) : (
@@ -114,11 +120,14 @@ export function DSCHistorySheet({
                   minute: "2-digit",
                 });
                 const expectedReturn = log.expectedReturnDate
-                  ? new Date(log.expectedReturnDate).toLocaleDateString("en-IN", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })
+                  ? new Date(log.expectedReturnDate).toLocaleDateString(
+                      "en-IN",
+                      {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      },
+                    )
                   : null;
 
                 return (
@@ -146,7 +155,9 @@ export function DSCHistorySheet({
                       </div>
 
                       <div className="text-xs text-muted-foreground bg-muted/40 p-2 rounded border border-border/40">
-                        <span className="font-semibold text-foreground/80">Reason: </span>
+                        <span className="font-semibold text-foreground/80">
+                          Reason:{" "}
+                        </span>
                         {log.reason}
                       </div>
 

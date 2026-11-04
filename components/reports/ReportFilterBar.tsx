@@ -72,7 +72,7 @@ export function ReportFilterBar({
   // Queries for dynamic dropdowns
   const { data: clientsData } = useGetClientsQuery(
     { limit: 200 },
-    { skip: !showClientFilter }
+    { skip: !showClientFilter },
   );
   const clients = clientsData?.clients || [];
 
@@ -81,7 +81,9 @@ export function ReportFilterBar({
   });
   const services: any[] = Array.isArray(servicesResponse)
     ? servicesResponse
-    : (servicesResponse as any)?.data || (servicesResponse as any)?.services || [];
+    : (servicesResponse as any)?.data ||
+      (servicesResponse as any)?.services ||
+      [];
 
   const { data: usersData } = useGetUsersQuery(undefined, {
     skip: !showUserFilter,
@@ -152,13 +154,13 @@ export function ReportFilterBar({
   const hasActiveFilters = useMemo(() => {
     return Boolean(
       (filters.datePreset && filters.datePreset !== "all") ||
-        filters.startDate ||
-        filters.endDate ||
-        (filters.clientId && filters.clientId !== "all") ||
-        (filters.serviceId && filters.serviceId !== "all") ||
-        (filters.assignedUserId && filters.assignedUserId !== "all") ||
-        (filters.status && filters.status !== "all") ||
-        (filters.priority && filters.priority !== "all")
+      filters.startDate ||
+      filters.endDate ||
+      (filters.clientId && filters.clientId !== "all") ||
+      (filters.serviceId && filters.serviceId !== "all") ||
+      (filters.assignedUserId && filters.assignedUserId !== "all") ||
+      (filters.status && filters.status !== "all") ||
+      (filters.priority && filters.priority !== "all"),
     );
   }, [filters]);
 
@@ -195,7 +197,11 @@ export function ReportFilterBar({
         <div className="flex flex-wrap items-center gap-1.5 text-xs">
           <Button
             type="button"
-            variant={filters.datePreset === "all" || !filters.datePreset ? "default" : "outline"}
+            variant={
+              filters.datePreset === "all" || !filters.datePreset
+                ? "default"
+                : "outline"
+            }
             size="sm"
             onClick={() => handlePresetChange("all")}
             className="h-7 px-2.5 text-xs"
@@ -204,7 +210,9 @@ export function ReportFilterBar({
           </Button>
           <Button
             type="button"
-            variant={filters.datePreset === "this-month" ? "default" : "outline"}
+            variant={
+              filters.datePreset === "this-month" ? "default" : "outline"
+            }
             size="sm"
             onClick={() => handlePresetChange("this-month")}
             className="h-7 px-2.5 text-xs"
@@ -213,7 +221,9 @@ export function ReportFilterBar({
           </Button>
           <Button
             type="button"
-            variant={filters.datePreset === "last-month" ? "default" : "outline"}
+            variant={
+              filters.datePreset === "last-month" ? "default" : "outline"
+            }
             size="sm"
             onClick={() => handlePresetChange("last-month")}
             className="h-7 px-2.5 text-xs"
@@ -222,7 +232,9 @@ export function ReportFilterBar({
           </Button>
           <Button
             type="button"
-            variant={filters.datePreset === "this-quarter" ? "default" : "outline"}
+            variant={
+              filters.datePreset === "this-quarter" ? "default" : "outline"
+            }
             size="sm"
             onClick={() => handlePresetChange("this-quarter")}
             className="h-7 px-2.5 text-xs"
@@ -283,7 +295,10 @@ export function ReportFilterBar({
             <Select
               value={filters.clientId || "all"}
               onValueChange={(val) =>
-                onChange({ ...filters, clientId: val === "all" ? undefined : val })
+                onChange({
+                  ...filters,
+                  clientId: val === "all" ? undefined : val,
+                })
               }
             >
               <SelectTrigger className="h-8 text-xs">
@@ -308,7 +323,10 @@ export function ReportFilterBar({
             <Select
               value={filters.serviceId || "all"}
               onValueChange={(val) =>
-                onChange({ ...filters, serviceId: val === "all" ? undefined : val })
+                onChange({
+                  ...filters,
+                  serviceId: val === "all" ? undefined : val,
+                })
               }
             >
               <SelectTrigger className="h-8 text-xs">
@@ -329,7 +347,9 @@ export function ReportFilterBar({
         {/* Assignee / User Filter */}
         {showUserFilter && (
           <div className="space-y-1">
-            <Label className="text-[11px] text-muted-foreground">Staff Assignee</Label>
+            <Label className="text-[11px] text-muted-foreground">
+              Staff Assignee
+            </Label>
             <Select
               value={filters.assignedUserId || "all"}
               onValueChange={(val) =>
@@ -361,7 +381,10 @@ export function ReportFilterBar({
             <Select
               value={filters.status || "all"}
               onValueChange={(val) =>
-                onChange({ ...filters, status: val === "all" ? undefined : val })
+                onChange({
+                  ...filters,
+                  status: val === "all" ? undefined : val,
+                })
               }
             >
               <SelectTrigger className="h-8 text-xs">

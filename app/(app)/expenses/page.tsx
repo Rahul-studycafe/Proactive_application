@@ -69,9 +69,13 @@ export default function ExpensesDirectoryPage() {
 
   // Modals
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [editingExpense, setEditingExpense] = useState<ClientExpense | null>(null);
+  const [editingExpense, setEditingExpense] = useState<ClientExpense | null>(
+    null,
+  );
 
-  const [previewExpense, setPreviewExpense] = useState<ClientExpense | null>(null);
+  const [previewExpense, setPreviewExpense] = useState<ClientExpense | null>(
+    null,
+  );
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const [deleteTarget, setDeleteTarget] = useState<ClientExpense | null>(null);
@@ -88,7 +92,8 @@ export default function ExpensesDirectoryPage() {
     };
   }, [clientFilter, categoryFilter, billingFilter, search, page]);
 
-  const { data, isLoading, isFetching, refetch } = useGetExpensesQuery(queryParams);
+  const { data, isLoading, isFetching, refetch } =
+    useGetExpensesQuery(queryParams);
   const { data: analyticsData } = useGetExpenseAnalyticsQuery();
   const { data: clientsData } = useGetClientsQuery({ limit: 200 });
   const { data: categories = [] } = useGetExpenseCategoriesQuery();
@@ -97,8 +102,17 @@ export default function ExpensesDirectoryPage() {
 
   const expenses: ClientExpense[] = data?.expenses || [];
   const clients = clientsData?.clients || [];
-  const summary = data?.summary || { totalAmount: 0, billedAmount: 0, unbilledAmount: 0 };
-  const pagination = data?.pagination || { total: 0, page: 1, limit: 50, pages: 1 };
+  const summary = data?.summary || {
+    totalAmount: 0,
+    billedAmount: 0,
+    unbilledAmount: 0,
+  };
+  const pagination = data?.pagination || {
+    total: 0,
+    page: 1,
+    limit: 50,
+    pages: 1,
+  };
 
   // Analytics KPI Overview (from practice-wide analytics endpoint or fallback to table summary)
   const overview = analyticsData?.overview || {
@@ -122,7 +136,9 @@ export default function ExpensesDirectoryPage() {
 
   const handleOpenEdit = (exp: ClientExpense) => {
     if (exp.isBilled) {
-      toast.error("Cannot edit an expense that has already been billed on an invoice");
+      toast.error(
+        "Cannot edit an expense that has already been billed on an invoice",
+      );
       return;
     }
     setEditingExpense(exp);
@@ -141,7 +157,9 @@ export default function ExpensesDirectoryPage() {
       toast.success(`Expense ${deleteTarget.expenseNo} deleted successfully`);
       setDeleteTarget(null);
     } catch (err: any) {
-      toast.error(err?.data?.message || err?.message || "Failed to delete expense");
+      toast.error(
+        err?.data?.message || err?.message || "Failed to delete expense",
+      );
     }
   };
 
@@ -154,7 +172,11 @@ export default function ExpensesDirectoryPage() {
         </Badge>
       );
     }
-    if (lower.includes("stamping") || lower.includes("court") || lower.includes("legal")) {
+    if (
+      lower.includes("stamping") ||
+      lower.includes("court") ||
+      lower.includes("legal")
+    ) {
       return (
         <Badge className="bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-500/30 font-medium">
           {name}
@@ -192,7 +214,8 @@ export default function ExpensesDirectoryPage() {
             <span>Reimbursable Expenses & Outlays</span>
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Manage out-of-pocket client outlays, government challans, and track billing recovery.
+            Manage out-of-pocket client outlays, government challans, and track
+            billing recovery.
           </p>
         </div>
 
@@ -205,7 +228,9 @@ export default function ExpensesDirectoryPage() {
             className="h-9 w-9 border-border"
             title="Refresh list"
           >
-            <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
+            />
           </Button>
 
           <Button
@@ -339,22 +364,39 @@ export default function ExpensesDirectoryPage() {
           <Table>
             <TableHeader className="bg-muted/40">
               <TableRow>
-                <TableHead className="w-[110px] text-xs font-semibold">Expense #</TableHead>
-                <TableHead className="text-xs font-semibold">Client Entity</TableHead>
-                <TableHead className="w-[100px] text-xs font-semibold">Date</TableHead>
-                <TableHead className="text-xs font-semibold">Category</TableHead>
+                <TableHead className="w-[110px] text-xs font-semibold">
+                  Expense #
+                </TableHead>
+                <TableHead className="text-xs font-semibold">
+                  Client Entity
+                </TableHead>
+                <TableHead className="w-[100px] text-xs font-semibold">
+                  Date
+                </TableHead>
+                <TableHead className="text-xs font-semibold">
+                  Category
+                </TableHead>
                 <TableHead className="text-xs font-semibold">Amount</TableHead>
-                <TableHead className="text-xs font-semibold">Payment Mode</TableHead>
-                <TableHead className="text-xs font-semibold">Billing Status</TableHead>
+                <TableHead className="text-xs font-semibold">
+                  Payment Mode
+                </TableHead>
+                <TableHead className="text-xs font-semibold">
+                  Billing Status
+                </TableHead>
                 <TableHead className="text-xs font-semibold">Receipt</TableHead>
                 <TableHead className="text-xs font-semibold">Notes</TableHead>
-                <TableHead className="text-right text-xs font-semibold w-[90px]">Actions</TableHead>
+                <TableHead className="text-right text-xs font-semibold w-[90px]">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={10} className="text-center py-12 text-sm text-muted-foreground">
+                  <TableCell
+                    colSpan={10}
+                    className="text-center py-12 text-sm text-muted-foreground"
+                  >
                     <div className="flex items-center justify-center gap-2">
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
                       <span>Loading practice expenses...</span>
@@ -369,9 +411,12 @@ export default function ExpensesDirectoryPage() {
                         <Receipt className="h-6 w-6" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-sm text-foreground">No Expenses Found</h4>
+                        <h4 className="font-semibold text-sm text-foreground">
+                          No Expenses Found
+                        </h4>
                         <p className="text-xs text-muted-foreground mt-1">
-                          No out-of-pocket client outlays match your active query filters.
+                          No out-of-pocket client outlays match your active
+                          query filters.
                         </p>
                       </div>
                       <Button
@@ -387,10 +432,14 @@ export default function ExpensesDirectoryPage() {
                 </TableRow>
               ) : (
                 expenses.map((exp) => {
-                  const clientObj = typeof exp.clientId === "object" ? exp.clientId : null;
+                  const clientObj =
+                    typeof exp.clientId === "object" ? exp.clientId : null;
 
                   return (
-                    <TableRow key={exp._id} className="hover:bg-muted/40 transition-colors">
+                    <TableRow
+                      key={exp._id}
+                      className="hover:bg-muted/40 transition-colors"
+                    >
                       {/* Expense No */}
                       <TableCell className="align-middle">
                         <span className="font-mono text-xs font-bold text-foreground">
@@ -415,7 +464,9 @@ export default function ExpensesDirectoryPage() {
                             )}
                           </div>
                         ) : (
-                          <span className="text-xs text-muted-foreground">—</span>
+                          <span className="text-xs text-muted-foreground">
+                            —
+                          </span>
                         )}
                       </TableCell>
 
@@ -440,7 +491,9 @@ export default function ExpensesDirectoryPage() {
 
                       {/* Payment Mode */}
                       <TableCell className="align-middle text-xs">
-                        <span className="text-muted-foreground">{exp.paymentMode}</span>
+                        <span className="text-muted-foreground">
+                          {exp.paymentMode}
+                        </span>
                         {exp.paidFromAccount && (
                           <span className="block text-[10px] text-muted-foreground/70 truncate max-w-[120px]">
                             {exp.paidFromAccount}
@@ -457,7 +510,9 @@ export default function ExpensesDirectoryPage() {
                             </Badge>
                             {exp.invoiceId && (
                               <p className="text-[10px] text-muted-foreground font-mono">
-                                {typeof exp.invoiceId === "object" ? exp.invoiceId.invoiceNo : "Invoiced"}
+                                {typeof exp.invoiceId === "object"
+                                  ? exp.invoiceId.invoiceNo
+                                  : "Invoiced"}
                               </p>
                             )}
                           </div>
@@ -483,18 +538,25 @@ export default function ExpensesDirectoryPage() {
                             <span>Receipt</span>
                           </Button>
                         ) : (
-                          <span className="text-xs text-muted-foreground/50 italic">—</span>
+                          <span className="text-xs text-muted-foreground/50 italic">
+                            —
+                          </span>
                         )}
                       </TableCell>
 
                       {/* Notes */}
                       <TableCell className="align-middle max-w-[180px]">
                         {exp.notes ? (
-                          <p className="text-xs text-muted-foreground line-clamp-2" title={exp.notes}>
+                          <p
+                            className="text-xs text-muted-foreground line-clamp-2"
+                            title={exp.notes}
+                          >
                             {exp.notes}
                           </p>
                         ) : (
-                          <span className="text-xs text-muted-foreground/50 italic">—</span>
+                          <span className="text-xs text-muted-foreground/50 italic">
+                            —
+                          </span>
                         )}
                       </TableCell>
 
@@ -521,7 +583,11 @@ export default function ExpensesDirectoryPage() {
                                 ? "opacity-30 cursor-not-allowed"
                                 : "text-muted-foreground hover:text-primary"
                             }`}
-                            title={exp.isBilled ? "Billed expenses cannot be edited" : "Edit outlay"}
+                            title={
+                              exp.isBilled
+                                ? "Billed expenses cannot be edited"
+                                : "Edit outlay"
+                            }
                           >
                             <Pencil className="h-3.5 w-3.5" />
                           </Button>
@@ -536,7 +602,11 @@ export default function ExpensesDirectoryPage() {
                                 ? "opacity-30 cursor-not-allowed"
                                 : "text-muted-foreground hover:text-destructive"
                             }`}
-                            title={exp.isBilled ? "Billed expenses cannot be deleted" : "Delete outlay"}
+                            title={
+                              exp.isBilled
+                                ? "Billed expenses cannot be deleted"
+                                : "Delete outlay"
+                            }
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
@@ -578,9 +648,11 @@ export default function ExpensesDirectoryPage() {
             </AlertDialogTitle>
             <AlertDialogDescription className="text-sm">
               Are you sure you want to permanently delete outlay{" "}
-              <strong className="text-foreground">{deleteTarget?.expenseNo}</strong> (
-              {formatCurrency(deleteTarget?.amount || 0)} • {deleteTarget?.categoryName})? This action
-              cannot be undone.
+              <strong className="text-foreground">
+                {deleteTarget?.expenseNo}
+              </strong>{" "}
+              ({formatCurrency(deleteTarget?.amount || 0)} •{" "}
+              {deleteTarget?.categoryName})? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

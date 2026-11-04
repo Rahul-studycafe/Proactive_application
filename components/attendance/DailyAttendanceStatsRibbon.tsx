@@ -1,6 +1,13 @@
 "use client";
 
-import { Users, CheckCircle, Clock, CalendarOff, UserX, AlertCircle } from "lucide-react";
+import {
+  Users,
+  CheckCircle,
+  Clock,
+  CalendarOff,
+  UserX,
+  AlertCircle,
+} from "lucide-react";
 import type { DailyRosterSummary } from "@/lib/types/attendance";
 import { Card, CardContent } from "@/components/ui/card";
 

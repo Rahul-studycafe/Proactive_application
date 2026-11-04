@@ -1,4 +1,9 @@
-export type QuotationStatus = 'Draft' | 'Sent' | 'Accepted' | 'Declined' | 'Converted';
+export type QuotationStatus =
+  | "Draft"
+  | "Sent"
+  | "Accepted"
+  | "Declined"
+  | "Converted";
 
 export interface QuotationItem {
   serviceId?: string | { _id: string; name: string };
@@ -82,13 +87,15 @@ export interface Quotation {
   notes?: string;
   status: QuotationStatus;
   sentAt?: string;
-  convertedInvoiceId?: string | {
-    _id: string;
-    invoiceNo: string;
-    date: string;
-    status: string;
-    totals: { grandTotal: number };
-  };
+  convertedInvoiceId?:
+    | string
+    | {
+        _id: string;
+        invoiceNo: string;
+        date: string;
+        status: string;
+        totals: { grandTotal: number };
+      };
   convertedAt?: string;
   createdBy: string | { _id: string; name: string };
   createdAt: string;

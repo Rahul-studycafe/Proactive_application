@@ -28,13 +28,17 @@ export default function AttendanceDeskPage() {
   const canManage = can("attendance.manage");
 
   const [selectedDate, setSelectedDate] = useState<string>(
-    format(new Date(), "yyyy-MM-dd")
+    format(new Date(), "yyyy-MM-dd"),
   );
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [punchModalOpen, setPunchModalOpen] = useState<boolean>(false);
 
   // Fetch daily attendance roster
-  const { data: rosterResult, isLoading, isFetching } = useGetDailyAttendanceQuery({
+  const {
+    data: rosterResult,
+    isLoading,
+    isFetching,
+  } = useGetDailyAttendanceQuery({
     date: selectedDate,
   });
 
@@ -59,7 +63,9 @@ export default function AttendanceDeskPage() {
 
   const toggleSelectUser = (userId: string) => {
     setSelectedUserIds((prev) =>
-      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId],
     );
   };
 
@@ -80,7 +86,8 @@ export default function AttendanceDeskPage() {
             Attendance Operations Desk
           </h1>
           <p className="text-sm text-muted-foreground">
-            Live operations roster, biometric punch status, and manual adjustments.
+            Live operations roster, biometric punch status, and manual
+            adjustments.
           </p>
         </div>
 
@@ -180,10 +187,7 @@ export default function AttendanceDeskPage() {
       )}
 
       {/* Web Punch Modal */}
-      <WebPunchModal
-        open={punchModalOpen}
-        onOpenChange={setPunchModalOpen}
-      />
+      <WebPunchModal open={punchModalOpen} onOpenChange={setPunchModalOpen} />
     </div>
   );
 }

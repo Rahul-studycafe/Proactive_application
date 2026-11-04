@@ -86,7 +86,7 @@ export function SubscribeDialog({
     return client?.subscribedPackages?.some(
       (p: any) =>
         ((p.packageId as any)?._id || p.packageId || p._id)?.toString() ===
-        pkgId?.toString()
+        pkgId?.toString(),
     );
   };
 
@@ -94,7 +94,7 @@ export function SubscribeDialog({
     return client?.subscribedServices?.some(
       (s: any) =>
         ((s.serviceId as any)?._id || s.serviceId || s._id)?.toString() ===
-        svcId?.toString()
+        svcId?.toString(),
     );
   };
 
@@ -222,11 +222,19 @@ export function SubscribeDialog({
                                 key={pkg._id}
                                 value={pkg._id}
                                 disabled={isSubscribed}
-                                className={isSubscribed ? "opacity-60 cursor-not-allowed" : ""}
+                                className={
+                                  isSubscribed
+                                    ? "opacity-60 cursor-not-allowed"
+                                    : ""
+                                }
                               >
                                 <div className="flex items-center justify-between w-full gap-2">
                                   <span>
-                                    {pkg.name} (₹{pkg.defaultBillingAmount?.toLocaleString("en-IN")})
+                                    {pkg.name} (₹
+                                    {pkg.defaultBillingAmount?.toLocaleString(
+                                      "en-IN",
+                                    )}
+                                    )
                                   </span>
                                   {isSubscribed && (
                                     <span className="text-[10px] font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-800 shrink-0">
@@ -254,11 +262,19 @@ export function SubscribeDialog({
                               key={svc._id}
                               value={svc._id}
                               disabled={isSubscribed}
-                              className={isSubscribed ? "opacity-60 cursor-not-allowed" : ""}
+                              className={
+                                isSubscribed
+                                  ? "opacity-60 cursor-not-allowed"
+                                  : ""
+                              }
                             >
                               <div className="flex items-center justify-between w-full gap-2">
                                 <span>
-                                  {svc.name} (₹{svc.defaultBillingRate?.toLocaleString("en-IN")})
+                                  {svc.name} (₹
+                                  {svc.defaultBillingRate?.toLocaleString(
+                                    "en-IN",
+                                  )}
+                                  )
                                 </span>
                                 {isSubscribed && (
                                   <span className="text-[10px] font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-800 shrink-0">
