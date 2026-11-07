@@ -9,8 +9,15 @@ import { Mutex } from "async-mutex";
 
 const mutex = new Mutex();
 
+const getBaseApiUrl = (): string => {
+  const envUrl =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+  const cleanUrl = envUrl.trim().replace(/\/+$/, "");
+  return cleanUrl.endsWith("/api/v1") ? cleanUrl : `${cleanUrl}/api/v1`;
+};
+
 const baseQuery = fetchBaseQuery({
-  baseUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1",
+  baseUrl: getBaseApiUrl(),
   credentials: "include", // Send HttpOnly cookies globally (like refreshToken)
   prepareHeaders: (headers) => {
     if (typeof window !== "undefined") {

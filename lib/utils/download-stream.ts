@@ -5,8 +5,12 @@ export async function downloadAttendanceCsv(
   month: string | number,
   year: string | number,
 ): Promise<void> {
-  const baseUrl =
+  const envUrl =
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+  const cleanUrl = envUrl.trim().replace(/\/+$/, "");
+  const baseUrl = cleanUrl.endsWith("/api/v1")
+    ? cleanUrl
+    : `${cleanUrl}/api/v1`;
   const token =
     typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
 
