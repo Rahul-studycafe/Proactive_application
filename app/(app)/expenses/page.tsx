@@ -59,8 +59,10 @@ import {
   Building2,
   Calendar,
 } from "lucide-react";
+import { withPermission } from "@/components/shared/withPermission";
+import { Can } from "@/contexts/PermissionsContext";
 
-export default function ExpensesDirectoryPage() {
+function ExpensesDirectoryPage() {
   const [search, setSearch] = useState("");
   const [clientFilter, setClientFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -233,14 +235,16 @@ export default function ExpensesDirectoryPage() {
             />
           </Button>
 
-          <Button
-            size="sm"
-            onClick={handleOpenAdd}
-            className="text-xs h-9 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Record Outlay</span>
-          </Button>
+          <Can do="expense:create">
+            <Button
+              size="sm"
+              onClick={handleOpenAdd}
+              className="text-xs h-9 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Record Outlay</span>
+            </Button>
+          </Can>
         </div>
       </div>
 
@@ -573,43 +577,47 @@ export default function ExpensesDirectoryPage() {
                             <FileText className="h-3.5 w-3.5" />
                           </Button>
 
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleOpenEdit(exp)}
-                            disabled={exp.isBilled}
-                            className={`h-8 w-8 ${
-                              exp.isBilled
-                                ? "opacity-30 cursor-not-allowed"
-                                : "text-muted-foreground hover:text-primary"
-                            }`}
-                            title={
-                              exp.isBilled
-                                ? "Billed expenses cannot be edited"
-                                : "Edit outlay"
-                            }
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
+                          <Can do="expense:edit">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleOpenEdit(exp)}
+                              disabled={exp.isBilled}
+                              className={`h-8 w-8 ${
+                                exp.isBilled
+                                  ? "opacity-30 cursor-not-allowed"
+                                  : "text-muted-foreground hover:text-primary"
+                              }`}
+                              title={
+                                exp.isBilled
+                                  ? "Billed expenses cannot be edited"
+                                  : "Edit outlay"
+                              }
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                          </Can>
 
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setDeleteTarget(exp)}
-                            disabled={exp.isBilled}
-                            className={`h-8 w-8 ${
-                              exp.isBilled
-                                ? "opacity-30 cursor-not-allowed"
-                                : "text-muted-foreground hover:text-destructive"
-                            }`}
-                            title={
-                              exp.isBilled
-                                ? "Billed expenses cannot be deleted"
-                                : "Delete outlay"
-                            }
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
+                          <Can do="expense:delete">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setDeleteTarget(exp)}
+                              disabled={exp.isBilled}
+                              className={`h-8 w-8 ${
+                                exp.isBilled
+                                  ? "opacity-30 cursor-not-allowed"
+                                  : "text-muted-foreground hover:text-destructive"
+                              }`}
+                              title={
+                                exp.isBilled
+                                  ? "Billed expenses cannot be deleted"
+                                  : "Delete outlay"
+                              }
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </Can>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -670,3 +678,11 @@ export default function ExpensesDirectoryPage() {
     </div>
   );
 }
+
+export default withPermission(ExpensesDirectoryPage, "expense:view", {
+  title: "Expenses Access Restricted",
+  description:
+    "You do not have permission to view reimbursable client expenses. Please contact your Practice Administrator.",
+  backHref: "/",
+  backLabel: "Return to Dashboard",
+});

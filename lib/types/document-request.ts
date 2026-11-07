@@ -7,13 +7,20 @@ export type DocumentRequestStatus =
 
 export type RequestedFileStatus = "Pending" | "Uploaded" | "Rejected";
 
+export interface UploadedDocumentRef {
+  _id: string;
+  fileName: string;
+  fileUrl: string;
+  createdAt?: string;
+}
+
 export interface RequestedFileItem {
   _id?: string;
   name: string;
   description?: string;
   isRequired: boolean;
   acceptedFormats?: string[];
-  uploadedDocumentId?: string;
+  uploadedDocumentId?: string | UploadedDocumentRef;
   uploadedAt?: string;
   status: RequestedFileStatus;
 }
@@ -23,6 +30,7 @@ export interface DocumentRequestClient {
   name: string;
   email?: string;
   mobile?: string;
+  clientNumber?: string;
   fileNo?: string;
 }
 

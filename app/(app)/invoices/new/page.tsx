@@ -35,6 +35,7 @@ import {
 import { toast } from "sonner";
 import { UnbilledExpensesAccordion } from "@/components/expenses";
 import { UnbilledExpenseItem } from "@/lib/types/expenses";
+import { withPermission } from "@/components/shared/withPermission";
 
 interface InvoiceItem {
   referenceType: "Task" | "Expense" | "Manual";
@@ -675,7 +676,7 @@ function NewInvoiceContent() {
   );
 }
 
-export default function NewInvoicePage() {
+function NewInvoicePage() {
   return (
     <Suspense
       fallback={
@@ -688,3 +689,11 @@ export default function NewInvoicePage() {
     </Suspense>
   );
 }
+
+export default withPermission(NewInvoicePage, ["invoice:create", "invoice:edit"], {
+  title: "Invoice Access Restricted",
+  description:
+    "You do not have permission to create or edit invoices. Please contact your Practice Administrator.",
+  backHref: "/invoices",
+  backLabel: "Return to Invoices",
+});

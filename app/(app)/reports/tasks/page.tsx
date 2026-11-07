@@ -34,8 +34,9 @@ import {
   ExcelExportButton,
   type ReportFilterValues,
 } from "@/components/reports";
+import { withPermission } from "@/components/shared/withPermission";
 
-export default function TasksReportPage() {
+function TasksReportPage() {
   const [filters, setFilters] = useState<ReportFilterValues>({
     datePreset: "this-month",
   });
@@ -307,7 +308,7 @@ export default function TasksReportPage() {
                               {clientObj?.name || "Client Name"}
                             </span>
                             <span className="text-[11px] text-muted-foreground">
-                              File: {clientObj?.fileNo || "—"}
+                              Client No: {clientObj?.clientNumber || clientObj?.fileNo || "—"}
                             </span>
                           </div>
                         </TableCell>
@@ -460,3 +461,11 @@ export default function TasksReportPage() {
     </ReportLayout>
   );
 }
+
+export default withPermission(TasksReportPage, "report:view", {
+  title: "Reports Access Restricted",
+  description:
+    "You do not have permission to view analytical practice reports. Please contact your Practice Administrator.",
+  backHref: "/",
+  backLabel: "Return to Dashboard",
+});

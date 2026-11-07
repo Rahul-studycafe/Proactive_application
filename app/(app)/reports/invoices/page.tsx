@@ -32,8 +32,9 @@ import {
   ExcelExportButton,
   type ReportFilterValues,
 } from "@/components/reports";
+import { withPermission } from "@/components/shared/withPermission";
 
-export default function InvoicesReportPage() {
+function InvoicesReportPage() {
   const [filters, setFilters] = useState<ReportFilterValues>({
     datePreset: "this-month",
   });
@@ -395,3 +396,11 @@ export default function InvoicesReportPage() {
     </ReportLayout>
   );
 }
+
+export default withPermission(InvoicesReportPage, "report:view", {
+  title: "Reports Access Restricted",
+  description:
+    "You do not have permission to view analytical practice reports. Please contact your Practice Administrator.",
+  backHref: "/",
+  backLabel: "Return to Dashboard",
+});

@@ -35,6 +35,8 @@ import {
 } from "@/lib/services/api";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { usePermissions } from "@/contexts/PermissionsContext";
+import { AccessRestricted } from "@/components/shared/AccessRestricted";
 
 interface PlanTierDef {
   id: "Starter" | "Professional" | "Enterprise";
@@ -112,6 +114,8 @@ const PLAN_TIERS: PlanTierDef[] = [
 ];
 
 export default function SubscriptionSettingsPage() {
+  const { isSuperAdmin } = usePermissions();
+
   const [billingCycle, setBillingCycle] = useState<"Monthly" | "Annual">(
     "Annual",
   );
@@ -122,6 +126,25 @@ export default function SubscriptionSettingsPage() {
   const { data: usage, isLoading: loadingUsage } = useGetTenantUsageQuery();
   const [updateSubscription, { isLoading: isUpdating }] =
     useUpdateTenantSubscriptionMutation();
+
+  if (!isSuperAdmin) {
+    return (
+      <div className="space-y-6">
+        <Breadcrumbs
+          items={[
+            { label: "Settings", href: "/settings" },
+            { label: "SaaS Subscription & Plan" },
+          ]}
+        />
+        <AccessRestricted
+          title="Subscription Management Restricted"
+          description="Only the Practice Owner / Super Admin can view, upgrade, or manage the SaaS subscription and seat quotas."
+          backHref="/settings"
+          backLabel="Return to Settings"
+        />
+      </div>
+    );
+  }
 
   const currentPlan = subscription?.planTier || usage?.planTier || "Starter";
 
@@ -253,12 +276,26 @@ export default function SubscriptionSettingsPage() {
               </CardDescription>
             </div>
 
-            {usage?.daysUntilRenewal !== undefined && (
+            {usage?.currentPeriodEnd && (
               <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-lg border">
                 <Clock className="h-3.5 w-3.5 text-primary" />
                 <span>
-                  Renewal in {usage.daysUntilRenewal} day
-                  {usage.daysUntilRenewal === 1 ? "" : "s"}
+                  Renews on{" "}
+                  <strong className="text-foreground">
+                    {new Date(usage.currentPeriodEnd).toLocaleDateString(
+                      "en-US",
+                      {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      },
+                    )}
+                  </strong>
+                  {usage?.daysUntilRenewal !== undefined && (
+                    <span className="ml-1 text-muted-foreground">
+                      ({usage.daysUntilRenewal} days remaining)
+                    </span>
+                  )}
                 </span>
               </div>
             )}

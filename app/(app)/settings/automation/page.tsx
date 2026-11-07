@@ -13,8 +13,30 @@ import {
 } from "@/components/ui/card";
 import { Zap, ShieldCheck, History, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { usePermissions } from "@/contexts/PermissionsContext";
+import { AccessRestricted } from "@/components/shared/AccessRestricted";
 
 export default function AutomationSettingsPage() {
+  const { isSuperAdmin, can } = usePermissions();
+
+  if (!isSuperAdmin && !can("settings:manage")) {
+    return (
+      <div className="space-y-6">
+        <Breadcrumbs
+          items={[
+            { label: "Settings", href: "/settings" },
+            { label: "Automation & Queue Settings" },
+          ]}
+        />
+        <AccessRestricted
+          title="Automation Engine Access Restricted"
+          description="Only Practice Super Admins and authorized Administrators can configure BullMQ workers and Redis task queues."
+          backHref="/settings"
+          backLabel="Return to Settings"
+        />
+      </div>
+    );
+  }
   return (
     <div className="space-y-6">
       <Breadcrumbs

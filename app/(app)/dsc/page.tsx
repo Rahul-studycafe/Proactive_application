@@ -59,8 +59,10 @@ import { CreateDSCModal } from "@/components/dsc/CreateDSCModal";
 import { DSCHandoverModal } from "@/components/dsc/DSCHandoverModal";
 import { DSCHistorySheet } from "@/components/dsc/DSCHistorySheet";
 import { DSCExpiryRibbon } from "@/components/dsc/DSCExpiryRibbon";
+import { withPermission } from "@/components/shared/withPermission";
+import { Can } from "@/contexts/PermissionsContext";
 
-export default function DSCDirectoryPage() {
+function DSCDirectoryPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [expiryFilter, setExpiryFilter] = useState<string>("all");
@@ -254,17 +256,19 @@ export default function DSCDirectoryPage() {
             Refresh
           </Button>
 
-          <Button
-            size="sm"
-            onClick={() => {
-              setEditingDsc(null);
-              setIsCreateModalOpen(true);
-            }}
-            className="gap-1.5 shadow-sm"
-          >
-            <Plus className="h-4 w-4" />
-            Register DSC
-          </Button>
+          <Can do="dsc:create">
+            <Button
+              size="sm"
+              onClick={() => {
+                setEditingDsc(null);
+                setIsCreateModalOpen(true);
+              }}
+              className="gap-1.5 shadow-sm"
+            >
+              <Plus className="h-4 w-4" />
+              Register DSC
+            </Button>
+          </Can>
         </div>
       </div>
 
@@ -639,16 +643,18 @@ export default function DSCDirectoryPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setHandoverDsc(dsc);
-                              setIsHandoverModalOpen(true);
-                            }}
-                            className="gap-2 text-xs"
-                          >
-                            <ArrowRightLeft className="h-3.5 w-3.5 text-blue-600" />
-                            Log Handover
-                          </DropdownMenuItem>
+                          <Can do="dsc:transfer">
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setHandoverDsc(dsc);
+                                setIsHandoverModalOpen(true);
+                              }}
+                              className="gap-2 text-xs"
+                            >
+                              <ArrowRightLeft className="h-3.5 w-3.5 text-blue-600" />
+                              Log Handover
+                            </DropdownMenuItem>
+                          </Can>
 
                           <DropdownMenuItem
                             onClick={() => {
@@ -663,24 +669,28 @@ export default function DSCDirectoryPage() {
 
                           <DropdownMenuSeparator />
 
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setEditingDsc(dsc);
-                              setIsCreateModalOpen(true);
-                            }}
-                            className="gap-2 text-xs"
-                          >
-                            <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                            Edit Details
-                          </DropdownMenuItem>
+                          <Can do="dsc:edit">
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setEditingDsc(dsc);
+                                setIsCreateModalOpen(true);
+                              }}
+                              className="gap-2 text-xs"
+                            >
+                              <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                              Edit Details
+                            </DropdownMenuItem>
+                          </Can>
 
-                          <DropdownMenuItem
-                            onClick={() => handleDelete(dsc)}
-                            className="gap-2 text-xs text-destructive focus:text-destructive"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                            Decommission
-                          </DropdownMenuItem>
+                          <Can do="dsc:delete">
+                            <DropdownMenuItem
+                              onClick={() => handleDelete(dsc)}
+                              className="gap-2 text-xs text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                              Decommission
+                            </DropdownMenuItem>
+                          </Can>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -730,3 +740,11 @@ export default function DSCDirectoryPage() {
     </div>
   );
 }
+
+export default withPermission(DSCDirectoryPage, "dsc:view", {
+  title: "DSC Vault Access Restricted",
+  description:
+    "You do not have permission to view digital signature tokens. Please contact your Practice Administrator.",
+  backHref: "/",
+  backLabel: "Return to Dashboard",
+});

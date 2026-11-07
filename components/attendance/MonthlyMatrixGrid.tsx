@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 
 import { useGetMonthlyMatrixQuery } from "@/lib/services/api";
-import { usePermissions } from "@/contexts/PermissionsContext";
+import { usePermissions, Can } from "@/contexts/PermissionsContext";
 import { useAuth } from "@/contexts/AuthContext";
 import type {
   MonthlyMatrixStaffMember,
@@ -62,10 +62,14 @@ export function MonthlyMatrixGrid() {
   );
   const [search, setSearch] = useState("");
 
-  const { can } = usePermissions();
+  const { can, isSuperAdmin } = usePermissions();
   const { user } = useAuth();
-  const canManage = can("attendance.manage");
-  const isSelfOnly = !can("attendance.view_all") && can("attendance.view_self");
+  const canManualEntry = isSuperAdmin || can("attendance:manual_entry") || can("attendance:manage");
+  const canViewAllMatrix =
+    isSuperAdmin ||
+    can("attendance:matrix_view") ||
+    can("attendance:view_all");
+  const isSelfOnly = !canViewAllMatrix;
 
   // Selection states for Modals & Drawer
   const [selectedStaffForSummary, setSelectedStaffForSummary] =
@@ -115,7 +119,7 @@ export function MonthlyMatrixGrid() {
     staff: MonthlyMatrixStaffMember,
     day: MonthlyMatrixDay,
   ) => {
-    if (!canManage) return;
+    if (!canManualEntry) return;
 
     // Adapt to DailyRosterMember interface for MarkAttendanceModal
     const rec = staff.records?.[day.day] || null;
@@ -189,11 +193,13 @@ export function MonthlyMatrixGrid() {
 
         {/* Export Button (Phase F-60) */}
         <div className="flex items-center gap-2">
-          <ExportAttendanceButton
-            month={selectedMonth}
-            year={selectedYear}
-            variant="outline"
-          />
+          <Can do="attendance:export_payroll">
+            <ExportAttendanceButton
+              month={selectedMonth}
+              year={selectedYear}
+              variant="outline"
+            />
+          </Can>
         </div>
       </div>
 
@@ -302,7 +308,7 @@ export function MonthlyMatrixGrid() {
                             dayInfo={day}
                             record={rec}
                             employeeName={staff.name}
-                            canEdit={canManage}
+                            canEdit={canManualEntry}
                             onClick={() => handleCellClick(staff, day)}
                           />
                         </td>

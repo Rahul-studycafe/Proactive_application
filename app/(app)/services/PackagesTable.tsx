@@ -2,6 +2,7 @@
 
 import { useGetPackagesQuery } from "@/lib/services/api";
 import { Loader2, MoreVertical, Edit2, Trash2 } from "lucide-react";
+import { usePermissions, Can } from "@/contexts/PermissionsContext";
 import {
   Table,
   TableBody,
@@ -21,6 +22,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function PackagesTable() {
+  const { can, isSuperAdmin } = usePermissions();
+  const canEdit = isSuperAdmin || can("package:edit");
+  const canDelete = isSuperAdmin || can("package:delete");
+  const hasRowActions = canEdit || canDelete;
+
   const { data: response, isLoading } = useGetPackagesQuery(undefined);
   const packages = Array.isArray(response) ? response : [];
 
@@ -49,7 +55,7 @@ export function PackagesTable() {
             <TableHead>Frequency</TableHead>
             <TableHead>Services Included</TableHead>
             <TableHead>Price</TableHead>
-            <TableHead className="w-[50px]"></TableHead>
+            {hasRowActions && <TableHead className="w-[50px]"></TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -96,23 +102,29 @@ export function PackagesTable() {
                   )}
                 </div>
               </TableCell>
-              <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
-                      <Edit2 className="mr-2 h-4 w-4" /> Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive">
-                      <Trash2 className="mr-2 h-4 w-4" /> Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
+              {hasRowActions && (
+                <TableCell>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <Can do="package:edit">
+                        <DropdownMenuItem>
+                          <Edit2 className="mr-2 h-4 w-4" /> Edit
+                        </DropdownMenuItem>
+                      </Can>
+                      <Can do="package:delete">
+                        <DropdownMenuItem className="text-destructive">
+                          <Trash2 className="mr-2 h-4 w-4" /> Delete
+                        </DropdownMenuItem>
+                      </Can>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>

@@ -78,8 +78,10 @@ import {
   QuotationPipelineFunnel,
   CreateQuotationModal,
 } from "@/components/quotations";
+import { withPermission } from "@/components/shared/withPermission";
+import { Can } from "@/contexts/PermissionsContext";
 
-export default function QuotationsPage() {
+function QuotationsPage() {
   const router = useRouter();
 
   // Filter States
@@ -229,14 +231,16 @@ export default function QuotationsPage() {
             Refresh
           </Button>
 
-          <Button
-            onClick={() => setIsCreateModalOpen(true)}
-            size="sm"
-            className="h-9 gap-1.5 bg-primary text-primary-foreground font-semibold shadow-sm"
-          >
-            <Plus className="h-4 w-4" />
-            New Quotation
-          </Button>
+          <Can do="quotation:create">
+            <Button
+              onClick={() => setIsCreateModalOpen(true)}
+              size="sm"
+              className="h-9 gap-1.5 bg-primary text-primary-foreground font-semibold shadow-sm"
+            >
+              <Plus className="h-4 w-4" />
+              New Quotation
+            </Button>
+          </Can>
         </div>
       </div>
 
@@ -395,14 +399,16 @@ export default function QuotationsPage() {
                           Clear Filters
                         </Button>
                       ) : (
-                        <Button
-                          size="sm"
-                          onClick={() => setIsCreateModalOpen(true)}
-                          className="text-xs gap-1.5"
-                        >
-                          <Plus className="h-3.5 w-3.5" />
-                          Create First Quotation
-                        </Button>
+                        <Can do="quotation:create">
+                          <Button
+                            size="sm"
+                            onClick={() => setIsCreateModalOpen(true)}
+                            className="text-xs gap-1.5"
+                          >
+                            <Plus className="h-3.5 w-3.5" />
+                            Create First Quotation
+                          </Button>
+                        </Can>
                       )}
                     </div>
                   </TableCell>
@@ -496,12 +502,14 @@ export default function QuotationsPage() {
                           {/* Quick Convert Button for Accepted or Sent */}
                           {(quote.status === "Accepted" ||
                             quote.status === "Sent") && (
-                            <ConvertToInvoiceButton
-                              quotation={quote}
-                              size="sm"
-                              showText={false}
-                              className="h-7 w-7 p-0"
-                            />
+                            <Can do="invoice:create">
+                              <ConvertToInvoiceButton
+                                quotation={quote}
+                                size="sm"
+                                showText={false}
+                                className="h-7 w-7 p-0"
+                              />
+                            </Can>
                           )}
 
                           <DropdownMenu>
@@ -529,16 +537,18 @@ export default function QuotationsPage() {
                                 View / Print Proposal
                               </DropdownMenuItem>
 
-                              <DropdownMenuItem
-                                onClick={() => handleSendEmail(quote)}
-                                className="cursor-pointer"
-                              >
-                                <Send className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
-                                Send via Email
-                              </DropdownMenuItem>
+                              <Can do="quotation:send">
+                                <DropdownMenuItem
+                                  onClick={() => handleSendEmail(quote)}
+                                  className="cursor-pointer"
+                                >
+                                  <Send className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
+                                  Send via Email
+                                </DropdownMenuItem>
+                              </Can>
 
                               {!isConverted && (
-                                <>
+                                <Can do="quotation:edit">
                                   <DropdownMenuSeparator />
                                   <DropdownMenuLabel>
                                     Change Status
@@ -593,7 +603,11 @@ export default function QuotationsPage() {
                                       Mark as Declined
                                     </DropdownMenuItem>
                                   )}
+                                </Can>
+                              )}
 
+                              {!isConverted && (
+                                <Can do="quotation:delete">
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem
                                     onClick={() => setQuoteToDelete(quote)}
@@ -602,7 +616,7 @@ export default function QuotationsPage() {
                                     <Trash2 className="h-3.5 w-3.5 mr-2" />
                                     Delete Quotation
                                   </DropdownMenuItem>
-                                </>
+                                </Can>
                               )}
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -688,3 +702,11 @@ export default function QuotationsPage() {
     </div>
   );
 }
+
+export default withPermission(QuotationsPage, "quotation:view", {
+  title: "Quotations Access Restricted",
+  description:
+    "You do not have permission to view quotations and proposals. Please contact your Practice Administrator.",
+  backHref: "/",
+  backLabel: "Return to Dashboard",
+});

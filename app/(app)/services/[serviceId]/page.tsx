@@ -88,6 +88,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { withPermission } from "@/components/shared/withPermission";
+import { Can } from "@/contexts/PermissionsContext";
 
 // DB types mapping
 const FREQUENCIES = [
@@ -157,7 +159,7 @@ function ToggleField({
 
 const FIELD_TYPES = ["text", "number", "select", "date"];
 
-export default function ServiceDetailPage() {
+function ServiceDetailPage() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -327,38 +329,42 @@ export default function ServiceDetailPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button onClick={handleSave} disabled={isUpdating || !hasChanges}>
-            {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save Changes
-          </Button>
+          <Can do="service:edit">
+            <Button onClick={handleSave} disabled={isUpdating || !hasChanges}>
+              {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Save Changes
+            </Button>
+          </Can>
 
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="outline"
-                className="border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/15 hover:text-destructive"
-              >
-                Delete
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete service?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will remove "{formData.name}" from your workspace.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleDelete}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          <Can do="service:delete">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/15 hover:text-destructive"
                 >
                   Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete service?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will remove &quot;{formData.name}&quot; from your workspace.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </Can>
         </div>
       </div>
 
@@ -1857,3 +1863,11 @@ function Empty({ title, description }: { title: string; description: string }) {
     </div>
   );
 }
+
+export default withPermission(ServiceDetailPage, "service:view", {
+  title: "Service Details Restricted",
+  description:
+    "You do not have permission to view service blueprints. Please contact your Practice Administrator.",
+  backHref: "/services",
+  backLabel: "Return to Services",
+});

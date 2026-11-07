@@ -36,6 +36,8 @@ import {
   useCancelInvoiceMutation,
 } from "@/lib/services/api";
 import { toast } from "sonner";
+import { withPermission } from "@/components/shared/withPermission";
+import { Can } from "@/contexts/PermissionsContext";
 
 // ─── Types ──────────────────────────────────────────────────────
 type InvoiceStatus =
@@ -69,7 +71,7 @@ function formatDate(d: string) {
 }
 
 // ─── Main Page ──────────────────────────────────────────────────
-export default function InvoicesPage() {
+function InvoicesPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
@@ -126,11 +128,13 @@ export default function InvoicesPage() {
           </p>
         </div>
 
-        <Button asChild>
-          <Link href="/invoices/new">
-            <Plus className="mr-2 h-4 w-4" /> New Invoice
-          </Link>
-        </Button>
+        <Can do="invoice:create">
+          <Button asChild>
+            <Link href="/invoices/new">
+              <Plus className="mr-2 h-4 w-4" /> New Invoice
+            </Link>
+          </Button>
+        </Can>
       </div>
 
       {/* ─── Search & Filter Bar ────────────────────────────── */}
@@ -233,28 +237,32 @@ export default function InvoicesPage() {
                         </Link>
                       </Button>
                       {inv.status === "Draft" && (
-                        <Button
-                          asChild
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7"
-                          title="Edit draft"
-                        >
-                          <Link href={`/invoices/new?id=${inv._id}`}>
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Link>
-                        </Button>
+                        <Can do="invoice:edit">
+                          <Button
+                            asChild
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            title="Edit draft"
+                          >
+                            <Link href={`/invoices/new?id=${inv._id}`}>
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Link>
+                          </Button>
+                        </Can>
                       )}
                       {(inv.status === "Draft" || inv.status === "Unpaid") && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-destructive hover:text-destructive"
-                          title="Cancel invoice"
-                          onClick={() => handleCancel(inv._id, inv.invoiceNo)}
-                        >
-                          <Ban className="h-3.5 w-3.5" />
-                        </Button>
+                        <Can do="invoice:delete">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-destructive hover:text-destructive"
+                            title="Cancel invoice"
+                            onClick={() => handleCancel(inv._id, inv.invoiceNo)}
+                          >
+                            <Ban className="h-3.5 w-3.5" />
+                          </Button>
+                        </Can>
                       )}
                     </div>
                   </TableCell>
@@ -297,3 +305,11 @@ export default function InvoicesPage() {
     </div>
   );
 }
+
+export default withPermission(InvoicesPage, "invoice:view", {
+  title: "Invoices Access Restricted",
+  description:
+    "You do not have permission to view invoices. Please contact your Practice Administrator.",
+  backHref: "/",
+  backLabel: "Return to Dashboard",
+});

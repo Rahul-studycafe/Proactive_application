@@ -53,8 +53,10 @@ import { CreditNote, CreditNoteStatus } from "@/lib/types/credit-note";
 import { IssueCreditNoteModal } from "@/components/credit-notes/IssueCreditNoteModal";
 import { ApplyCreditModal } from "@/components/credit-notes/ApplyCreditModal";
 import { RefundCreditModal } from "@/components/credit-notes/RefundCreditModal";
+import { withPermission } from "@/components/shared/withPermission";
+import { Can } from "@/contexts/PermissionsContext";
 
-export default function CreditNotesDirectoryPage() {
+function CreditNotesDirectoryPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [fromDate, setFromDate] = useState<string>("");
@@ -181,15 +183,17 @@ export default function CreditNotesDirectoryPage() {
             Refresh
           </Button>
 
-          <Button
-            id="issue-credit-note-btn"
-            size="sm"
-            onClick={() => setIsIssueModalOpen(true)}
-            className="gap-1.5 bg-purple-600 hover:bg-purple-700 text-white shadow-sm"
-          >
-            <Plus className="h-4 w-4" />
-            Issue Credit Note
-          </Button>
+          <Can do="credit_note:create">
+            <Button
+              id="issue-credit-note-btn"
+              size="sm"
+              onClick={() => setIsIssueModalOpen(true)}
+              className="gap-1.5 bg-purple-600 hover:bg-purple-700 text-white shadow-sm"
+            >
+              <Plus className="h-4 w-4" />
+              Issue Credit Note
+            </Button>
+          </Can>
         </div>
       </div>
 
@@ -555,27 +559,31 @@ export default function CreditNotesDirectoryPage() {
                           {cn.unallocatedCredit > 0 && (
                             <>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  setSelectedCnForApply(cn);
-                                  setIsApplyModalOpen(true);
-                                }}
-                                className="gap-2 text-xs font-medium text-purple-600 dark:text-purple-400"
-                              >
-                                <ArrowRightLeft className="h-3.5 w-3.5" />
-                                Apply to Invoice
-                              </DropdownMenuItem>
+                              <Can do="credit_note:apply">
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setSelectedCnForApply(cn);
+                                    setIsApplyModalOpen(true);
+                                  }}
+                                  className="gap-2 text-xs font-medium text-purple-600 dark:text-purple-400"
+                                >
+                                  <ArrowRightLeft className="h-3.5 w-3.5" />
+                                  Apply to Invoice
+                                </DropdownMenuItem>
+                              </Can>
 
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  setSelectedCnForRefund(cn);
-                                  setIsRefundModalOpen(true);
-                                }}
-                                className="gap-2 text-xs font-medium text-blue-600 dark:text-blue-400"
-                              >
-                                <Banknote className="h-3.5 w-3.5" />
-                                Record Refund
-                              </DropdownMenuItem>
+                              <Can do="credit_note:refund">
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setSelectedCnForRefund(cn);
+                                    setIsRefundModalOpen(true);
+                                  }}
+                                  className="gap-2 text-xs font-medium text-blue-600 dark:text-blue-400"
+                                >
+                                  <Banknote className="h-3.5 w-3.5" />
+                                  Record Refund
+                                </DropdownMenuItem>
+                              </Can>
                             </>
                           )}
                         </DropdownMenuContent>
@@ -629,3 +637,11 @@ export default function CreditNotesDirectoryPage() {
     </div>
   );
 }
+
+export default withPermission(CreditNotesDirectoryPage, "credit_note:view", {
+  title: "Credit Notes Access Restricted",
+  description:
+    "You do not have permission to view credit notes. Please contact your Practice Administrator.",
+  backHref: "/invoices",
+  backLabel: "Return to Invoices",
+});

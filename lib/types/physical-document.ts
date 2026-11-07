@@ -17,6 +17,7 @@ export interface PhysicalDocClient {
   email?: string;
   mobile?: string;
   entityType?: string;
+  clientNumber?: string;
   fileNo?: string;
 }
 

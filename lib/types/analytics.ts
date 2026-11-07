@@ -26,16 +26,23 @@ export interface AttendanceKPIOverview {
 }
 
 export interface DashboardOverviewData {
+  isStaffWorkspace?: boolean;
   quickStats: {
-    totalClients: number;
+    totalClients?: number | null;
     pendingTasks: number;
-    overdueInvoices: number;
-    totalReceivables: number;
-    totalUnbilled: number;
+    overdueInvoices?: number | null;
+    totalReceivables?: number | null;
+    totalUnbilled?: number | null;
   };
   clientDistribution: ClientEntityDistributionItem[];
   staffLeaderboard: StaffPerformanceItem[];
-  attendanceOverview: AttendanceKPIOverview;
+  attendanceOverview?: AttendanceKPIOverview | null;
+  myAttendanceToday?: {
+    status: string;
+    checkIn?: string | Date | null;
+    checkOut?: string | Date | null;
+    totalMinutes?: number;
+  } | null;
   upcomingHolidays?: Array<{
     _id: string;
     name: string;

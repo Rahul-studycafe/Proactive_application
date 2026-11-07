@@ -14,6 +14,7 @@ import { type Task, type TaskPriority, type TaskStatus } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Circle, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { TaskAssigneeSelector } from "./TaskAssigneeSelector";
 
 export interface TasksTableProps {
   tasks: Task[];
@@ -182,25 +183,12 @@ export function TasksTable({
                 onClick={() => onTaskClick?.(task)}
               >
                 {visibleColumns.includes("assignee") && (
-                  <TableCell>
-                    {task.assigneeIds && task.assigneeIds.length > 0 ? (
-                      <div className="flex items-center gap-1 pl-4">
-                        {task.assigneeIds.map((assignee, idx) => (
-                          <div
-                            key={assignee._id}
-                            className="h-6 w-6 rounded-full bg-primary flex items-center justify-center text-[10px] font-medium text-primary-foreground shadow-sm"
-                            title={assignee.name}
-                            style={{ marginLeft: idx > 0 ? "-0.5rem" : "0" }}
-                          >
-                            {assignee.name?.charAt(0).toUpperCase()}
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground text-xs">
-                        Unassigned
-                      </span>
-                    )}
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <TaskAssigneeSelector
+                      taskId={task._id}
+                      assignees={task.assigneeIds || []}
+                      variant="table"
+                    />
                   </TableCell>
                 )}
                 {visibleColumns.includes("title") && (

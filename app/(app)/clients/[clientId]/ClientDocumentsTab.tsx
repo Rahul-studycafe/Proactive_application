@@ -68,8 +68,10 @@ import {
 import { DocumentRequest } from "@/lib/types/document-request";
 import { CreateDocRequestModal } from "@/components/documents/CreateDocRequestModal";
 import { MagicLinkShareDialog } from "@/components/documents/MagicLinkShareDialog";
+import { ViewReceivedFilesModal } from "@/components/documents/ViewReceivedFilesModal";
 import { ClientDocsInOutTab } from "./ClientDocsInOutTab";
 import { formatDate } from "@/lib/utils";
+import { usePermissions, Can } from "@/contexts/PermissionsContext";
 
 interface ClientDocumentsTabProps {
   clientId: string;
@@ -146,10 +148,26 @@ const getRequestStatusBadge = (status: DocumentRequest["status"]) => {
 export function ClientDocumentsTab({
   clientId,
   clientName,
-  initialSubTab = "vault",
+  initialSubTab,
 }: ClientDocumentsTabProps) {
+  const { can, isSuperAdmin } = usePermissions();
+
+  const canViewVault = isSuperAdmin || can("document:view") || can("document:create");
+  const canRequestDocs = isSuperAdmin || can("document:request");
+  const canPhysicalManage = isSuperAdmin || can("document:physical_manage");
+
+  const defaultSubTab =
+    initialSubTab ||
+    (canViewVault
+      ? "vault"
+      : canRequestDocs
+        ? "requests"
+        : canPhysicalManage
+          ? "physical"
+          : "vault");
+
   const [subTab, setSubTab] = useState<"vault" | "requests" | "physical">(
-    initialSubTab,
+    defaultSubTab,
   );
 
   // --- 1. Digital Vault Queries & Mutations ---
@@ -221,6 +239,9 @@ export function ClientDocumentsTab({
   const [shareDialogRequest, setShareDialogRequest] =
     useState<DocumentRequest | null>(null);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [viewFilesRequest, setViewFilesRequest] =
+    useState<DocumentRequest | null>(null);
+  const [isViewFilesModalOpen, setIsViewFilesModalOpen] = useState(false);
 
   const requestQueryParams = useMemo(() => {
     return {
@@ -316,111 +337,121 @@ export function ClientDocumentsTab({
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2 text-xs font-medium"
-            onClick={() => setIsCreateModalOpen(true)}
-          >
-            <Send className="h-3.5 w-3.5 text-primary" />
-            Request from Client
-          </Button>
+          <Can do="document:request">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 text-xs font-medium"
+              onClick={() => setIsCreateModalOpen(true)}
+            >
+              <Send className="h-3.5 w-3.5 text-primary" />
+              Request from Client
+            </Button>
+          </Can>
 
-          <Button
-            size="sm"
-            className="gap-2 text-xs font-medium"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isUploading}
-          >
-            {isUploading ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Plus className="h-3.5 w-3.5" />
-            )}
-            Upload Document
-          </Button>
+          <Can do="document:create">
+            <Button
+              size="sm"
+              className="gap-2 text-xs font-medium"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+            >
+              {isUploading ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Plus className="h-3.5 w-3.5" />
+              )}
+              Upload Document
+            </Button>
+          </Can>
         </div>
       </div>
 
       {/* Sub-Navigation Pills */}
       <div className="flex items-center gap-2 border-b pb-3">
-        <button
-          type="button"
-          onClick={() => setSubTab("vault")}
-          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
-            subTab === "vault"
-              ? "bg-primary text-primary-foreground shadow-sm"
-              : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
-          }`}
-        >
-          <FileText className="h-3.5 w-3.5" />
-          <span>Digital Vault</span>
-          <span
-            className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+        {canViewVault && (
+          <button
+            type="button"
+            onClick={() => setSubTab("vault")}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
               subTab === "vault"
-                ? "bg-primary-foreground/20 text-primary-foreground"
-                : "bg-background text-muted-foreground border"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
-            {rawDocuments.length}
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setSubTab("requests")}
-          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
-            subTab === "requests"
-              ? "bg-primary text-primary-foreground shadow-sm"
-              : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
-          }`}
-        >
-          <FileUp className="h-3.5 w-3.5" />
-          <span>Client Requests</span>
-          {activeRequestsCount > 0 ? (
+            <FileText className="h-3.5 w-3.5" />
+            <span>Digital Vault</span>
             <span
               className={`px-1.5 py-0.2 rounded-full text-[10px] ${
-                subTab === "requests"
-                  ? "bg-primary-foreground/20 text-primary-foreground"
-                  : "bg-amber-100 text-amber-900 border border-amber-200"
-              }`}
-            >
-              {activeRequestsCount} Active
-            </span>
-          ) : (
-            <span
-              className={`px-1.5 py-0.2 rounded-full text-[10px] ${
-                subTab === "requests"
+                subTab === "vault"
                   ? "bg-primary-foreground/20 text-primary-foreground"
                   : "bg-background text-muted-foreground border"
               }`}
             >
-              {requests.length}
+              {rawDocuments.length}
             </span>
-          )}
-        </button>
+          </button>
+        )}
 
-        <button
-          type="button"
-          onClick={() => setSubTab("physical")}
-          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
-            subTab === "physical"
-              ? "bg-primary text-primary-foreground shadow-sm"
-              : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
-          }`}
-        >
-          <FolderSync className="h-3.5 w-3.5" />
-          <span>Physical In-Out Register</span>
-          <span
-            className={`px-1.5 py-0.2 rounded-full text-[10px] ${
-              subTab === "physical"
-                ? "bg-primary-foreground/20 text-primary-foreground"
-                : "bg-background text-muted-foreground border"
+        {canRequestDocs && (
+          <button
+            type="button"
+            onClick={() => setSubTab("requests")}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              subTab === "requests"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
-            {inCustodyCount} in custody
-          </span>
-        </button>
+            <FileUp className="h-3.5 w-3.5" />
+            <span>Client Requests</span>
+            {activeRequestsCount > 0 ? (
+              <span
+                className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                  subTab === "requests"
+                    ? "bg-primary-foreground/20 text-primary-foreground"
+                    : "bg-amber-100 text-amber-900 border border-amber-200"
+                }`}
+              >
+                {activeRequestsCount} Active
+              </span>
+            ) : (
+              <span
+                className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                  subTab === "requests"
+                    ? "bg-primary-foreground/20 text-primary-foreground"
+                    : "bg-background text-muted-foreground border"
+                }`}
+              >
+                {requests.length}
+              </span>
+            )}
+          </button>
+        )}
+
+        {canPhysicalManage && (
+          <button
+            type="button"
+            onClick={() => setSubTab("physical")}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              subTab === "physical"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
+            }`}
+          >
+            <FolderSync className="h-3.5 w-3.5" />
+            <span>Physical In-Out Register</span>
+            <span
+              className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                subTab === "physical"
+                  ? "bg-primary-foreground/20 text-primary-foreground"
+                  : "bg-background text-muted-foreground border"
+              }`}
+            >
+              {inCustodyCount} in custody
+            </span>
+          </button>
+        )}
       </div>
 
       {/* SUB-TAB 1: DIGITAL VAULT */}
@@ -489,21 +520,25 @@ export function ClientDocumentsTab({
                 </div>
                 {!vaultSearch && (
                   <div className="flex items-center gap-2.5 mt-2">
-                    <Button
-                      size="sm"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="gap-2 text-xs"
-                    >
-                      <Plus className="h-3.5 w-3.5" /> Upload Document
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setIsCreateModalOpen(true)}
-                      className="gap-2 text-xs"
-                    >
-                      <Send className="h-3.5 w-3.5" /> Request from Client
-                    </Button>
+                    <Can do="document:create">
+                      <Button
+                        size="sm"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="gap-2 text-xs"
+                      >
+                        <Plus className="h-3.5 w-3.5" /> Upload Document
+                      </Button>
+                    </Can>
+                    <Can do="document:request">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="gap-2 text-xs"
+                      >
+                        <Send className="h-3.5 w-3.5" /> Request from Client
+                      </Button>
+                    </Can>
                   </div>
                 )}
               </div>
@@ -555,15 +590,17 @@ export function ClientDocumentsTab({
                         <Eye className="h-3.5 w-3.5" />
                         View
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => handleDeleteDocument(doc._id)}
-                        title="Delete Document"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
+                      <Can do="document:delete">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => handleDeleteDocument(doc._id)}
+                          title="Delete Document"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </Can>
                     </div>
                   </div>
                 ))}
@@ -615,13 +652,15 @@ export function ClientDocumentsTab({
               </Select>
             </div>
 
-            <Button
-              size="sm"
-              className="gap-2 text-xs"
-              onClick={() => setIsCreateModalOpen(true)}
-            >
-              <Send className="h-3.5 w-3.5" /> New Request
-            </Button>
+            <Can do="document:request">
+              <Button
+                size="sm"
+                className="gap-2 text-xs"
+                onClick={() => setIsCreateModalOpen(true)}
+              >
+                <Send className="h-3.5 w-3.5" /> New Request
+              </Button>
+            </Can>
           </div>
 
           <CardContent className="p-0">
@@ -647,13 +686,15 @@ export function ClientDocumentsTab({
                     magic link to collect files from this client.
                   </p>
                 </div>
-                <Button
-                  size="sm"
-                  onClick={() => setIsCreateModalOpen(true)}
-                  className="gap-2 text-xs mt-2"
-                >
-                  <Send className="h-3.5 w-3.5" /> Request Documents Now
-                </Button>
+                <Can do="document:request">
+                  <Button
+                    size="sm"
+                    onClick={() => setIsCreateModalOpen(true)}
+                    className="gap-2 text-xs mt-2"
+                  >
+                    <Send className="h-3.5 w-3.5" /> Request Documents Now
+                  </Button>
+                </Can>
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -673,7 +714,7 @@ export function ClientDocumentsTab({
                       <TableHead className="w-[120px] text-xs">
                         Status
                       </TableHead>
-                      <TableHead className="w-[60px] text-right text-xs">
+                      <TableHead className="w-[130px] text-right text-xs">
                         Action
                       </TableHead>
                     </TableRow>
@@ -692,14 +733,31 @@ export function ClientDocumentsTab({
                       return (
                         <TableRow key={req._id} className="hover:bg-muted/40">
                           <TableCell className="font-mono text-xs font-semibold text-primary">
-                            #{req.requestNo}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setViewFilesRequest(req);
+                                setIsViewFilesModalOpen(true);
+                              }}
+                              className="hover:underline cursor-pointer focus:outline-none"
+                              title="Click to view details & files"
+                            >
+                              #{req.requestNo}
+                            </button>
                           </TableCell>
 
                           <TableCell>
                             <div>
-                              <p className="text-sm font-medium text-foreground">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setViewFilesRequest(req);
+                                  setIsViewFilesModalOpen(true);
+                                }}
+                                className="text-sm font-medium text-foreground hover:text-primary transition-colors text-left cursor-pointer"
+                              >
                                 {req.title}
-                              </p>
+                              </button>
                               {req.instructions && (
                                 <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
                                   {req.instructions}
@@ -707,13 +765,23 @@ export function ClientDocumentsTab({
                               )}
                               <div className="flex flex-wrap gap-1 mt-1.5">
                                 {req.items.slice(0, 3).map((it, idx) => (
-                                  <span
+                                  <button
+                                    type="button"
                                     key={idx}
-                                    className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border ${
+                                    onClick={() => {
+                                      setViewFilesRequest(req);
+                                      setIsViewFilesModalOpen(true);
+                                    }}
+                                    className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border transition-colors hover:opacity-80 cursor-pointer ${
                                       it.status === "Uploaded"
-                                        ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300"
+                                        ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 font-medium"
                                         : "bg-muted text-muted-foreground"
                                     }`}
+                                    title={
+                                      it.status === "Uploaded"
+                                        ? "Click to view received file"
+                                        : "Awaiting client upload"
+                                    }
                                   >
                                     {it.status === "Uploaded" ? (
                                       <CheckCircle2 className="h-2.5 w-2.5 text-emerald-600" />
@@ -723,7 +791,7 @@ export function ClientDocumentsTab({
                                     <span className="truncate max-w-[120px]">
                                       {it.name}
                                     </span>
-                                  </span>
+                                  </button>
                                 ))}
                                 {req.items.length > 3 && (
                                   <span className="text-[10px] text-muted-foreground self-center">
@@ -757,66 +825,114 @@ export function ClientDocumentsTab({
                           </TableCell>
 
                           <TableCell className="text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
+                            <div className="flex items-center justify-end gap-1">
+                              {uploadedItems > 0 ? (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7 px-2.5 gap-1.5 text-xs text-primary border-primary/30 hover:bg-primary/10 hover:border-primary font-medium"
+                                  onClick={() => {
+                                    setViewFilesRequest(req);
+                                    setIsViewFilesModalOpen(true);
+                                  }}
+                                  title="View uploaded documents"
+                                >
+                                  <Eye className="h-3.5 w-3.5" />
+                                  View Files
+                                </Button>
+                              ) : (
                                 <Button
                                   variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8"
-                                >
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-48">
-                                <DropdownMenuItem
+                                  size="sm"
+                                  className="h-7 px-2 gap-1 text-xs text-muted-foreground hover:text-foreground"
                                   onClick={() => {
-                                    setShareDialogRequest(req);
-                                    setIsShareDialogOpen(true);
+                                    setViewFilesRequest(req);
+                                    setIsViewFilesModalOpen(true);
                                   }}
-                                  className="gap-2 cursor-pointer"
+                                  title="View checklist & status"
                                 >
-                                  <Share2 className="h-4 w-4 text-primary" />
-                                  Share / Copy Link
-                                </DropdownMenuItem>
+                                  <Eye className="h-3.5 w-3.5" />
+                                  Details
+                                </Button>
+                              )}
 
-                                {req.token && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7"
+                                  >
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-52">
                                   <DropdownMenuItem
-                                    onClick={() =>
-                                      window.open(
-                                        `/public/upload/${req.token}`,
-                                        "_blank",
-                                      )
-                                    }
+                                    onClick={() => {
+                                      setViewFilesRequest(req);
+                                      setIsViewFilesModalOpen(true);
+                                    }}
+                                    className="gap-2 cursor-pointer font-medium"
+                                  >
+                                    <Eye className="h-4 w-4 text-primary" />
+                                    {uploadedItems > 0
+                                      ? "View Received Files"
+                                      : "View Request Checklist"}
+                                  </DropdownMenuItem>
+
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setShareDialogRequest(req);
+                                      setIsShareDialogOpen(true);
+                                    }}
                                     className="gap-2 cursor-pointer"
                                   >
-                                    <ExternalLink className="h-4 w-4" />
-                                    Open Portal
+                                    <Share2 className="h-4 w-4 text-primary" />
+                                    Share / Copy Link
                                   </DropdownMenuItem>
-                                )}
 
-                                <DropdownMenuItem
-                                  onClick={() => handleResend(req)}
-                                  className="gap-2 cursor-pointer"
-                                >
-                                  <Send className="h-4 w-4" />
-                                  Send Reminder
-                                </DropdownMenuItem>
-
-                                {req.status !== "Completed" &&
-                                  req.status !== "Cancelled" && (
-                                    <>
-                                      <DropdownMenuSeparator />
-                                      <DropdownMenuItem
-                                        onClick={() => handleCancel(req)}
-                                        className="gap-2 text-destructive focus:text-destructive cursor-pointer"
-                                      >
-                                        <Ban className="h-4 w-4" />
-                                        Cancel Request
-                                      </DropdownMenuItem>
-                                    </>
+                                  {req.token && (
+                                    <DropdownMenuItem
+                                      onClick={() =>
+                                        window.open(
+                                          `/public/upload/${req.token}`,
+                                          "_blank",
+                                        )
+                                      }
+                                      className="gap-2 cursor-pointer"
+                                    >
+                                      <ExternalLink className="h-4 w-4" />
+                                      Open Portal
+                                    </DropdownMenuItem>
                                   )}
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+
+                                  {canRequestDocs && (
+                                    <DropdownMenuItem
+                                      onClick={() => handleResend(req)}
+                                      className="gap-2 cursor-pointer"
+                                    >
+                                      <Send className="h-4 w-4" />
+                                      Send Reminder
+                                    </DropdownMenuItem>
+                                  )}
+
+                                  {canRequestDocs &&
+                                    req.status !== "Completed" &&
+                                    req.status !== "Cancelled" && (
+                                      <>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem
+                                          onClick={() => handleCancel(req)}
+                                          className="gap-2 text-destructive focus:text-destructive cursor-pointer"
+                                        >
+                                          <Ban className="h-4 w-4" />
+                                          Cancel Request
+                                        </DropdownMenuItem>
+                                      </>
+                                    )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
                           </TableCell>
                         </TableRow>
                       );
@@ -845,6 +961,13 @@ export function ClientDocumentsTab({
         open={isShareDialogOpen}
         onOpenChange={setIsShareDialogOpen}
         request={shareDialogRequest}
+      />
+
+      {/* View Received Files Modal */}
+      <ViewReceivedFilesModal
+        open={isViewFilesModalOpen}
+        onOpenChange={setIsViewFilesModalOpen}
+        request={viewFilesRequest}
       />
     </div>
   );

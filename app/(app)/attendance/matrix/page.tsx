@@ -1,13 +1,12 @@
+"use client";
+
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { MonthlyMatrixGrid } from "@/components/attendance/MonthlyMatrixGrid";
+import { MyAttendanceDesk } from "@/components/attendance/MyAttendanceDesk";
+import { usePermissions } from "@/contexts/PermissionsContext";
+import { withPermission } from "@/components/shared/withPermission";
 
-export const metadata = {
-  title: "Monthly Attendance Matrix | Proactive SaaS",
-  description:
-    "31-day visual attendance matrix, staff payable days breakdown, and payroll export.",
-};
-
-export default function MonthlyMatrixPage() {
+function MonthlyMatrixPage() {
   return (
     <div className="space-y-6 pb-20">
       <Breadcrumbs
@@ -31,3 +30,35 @@ export default function MonthlyMatrixPage() {
     </div>
   );
 }
+
+function MonthlyMatrixGateway() {
+  const { can, isSuperAdmin } = usePermissions();
+  const canViewMatrix =
+    isSuperAdmin ||
+    can("attendance:matrix_view") ||
+    can("attendance:matrix_view_self") ||
+    can("attendance:view_all");
+
+  if (!canViewMatrix) {
+    return <MyAttendanceDesk />;
+  }
+
+  return <MonthlyMatrixPage />;
+}
+
+export default withPermission(
+  MonthlyMatrixGateway,
+  [
+    "attendance:matrix_view",
+    "attendance:matrix_view_self",
+    "attendance:view_all",
+    "attendance:view_self",
+  ],
+  {
+    title: "Attendance Matrix Restricted",
+    description:
+      "You do not have permission to view the monthly attendance matrix. Please contact your Practice Administrator.",
+    backHref: "/attendance",
+    backLabel: "Return to Attendance",
+  }
+);

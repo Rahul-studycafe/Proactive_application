@@ -1,12 +1,10 @@
+"use client";
+
 import { WorkingDaysView } from "@/components/settings/WorkingDaysView";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
+import { withPermission } from "@/components/shared/withPermission";
 
-export const metadata = {
-  title: "Working Days & Weekends | Proactive SaaS",
-  description: "Configure standard working hours and alternate weekend rules.",
-};
-
-export default function WorkingDaysPage() {
+function WorkingDaysPage() {
   return (
     <div className="space-y-6">
       <Breadcrumbs
@@ -19,3 +17,11 @@ export default function WorkingDaysPage() {
     </div>
   );
 }
+
+export default withPermission(WorkingDaysPage, "settings:manage", {
+  title: "Working Days Settings Restricted",
+  description:
+    "You do not have permission to configure working hours and attendance policies. Please contact your Practice Administrator.",
+  backHref: "/settings",
+  backLabel: "Return to Settings",
+});

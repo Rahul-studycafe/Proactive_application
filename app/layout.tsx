@@ -27,7 +27,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      className="h-full overflow-hidden print:h-auto print:overflow-visible"
+      suppressHydrationWarning
+    >
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -51,7 +55,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${inter.variable} ${poppins.variable} font-sans antialiased bg-background text-foreground min-h-screen`}
+        className={`${inter.variable} ${poppins.variable} font-sans antialiased bg-background text-foreground h-full overflow-hidden print:h-auto print:overflow-visible`}
         suppressHydrationWarning
       >
         <Providers>{children}</Providers>

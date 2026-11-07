@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import Link from "next/link";
 import {
   Globe,
@@ -42,6 +43,8 @@ import {
   useGetWebsiteSettingsQuery,
   useUpdateWebsiteSettingsMutation,
 } from "@/lib/services/api";
+import { usePermissions } from "@/contexts/PermissionsContext";
+import { AccessRestricted } from "@/components/shared/AccessRestricted";
 
 const COLOR_PRESETS = [
   { name: "Classic Blue", hex: "#2563eb" },
@@ -53,9 +56,24 @@ const COLOR_PRESETS = [
 ];
 
 export default function WebsiteSettingsPage() {
+  const { isSuperAdmin, can } = usePermissions();
+
   const { data: websiteData, isLoading } = useGetWebsiteSettingsQuery();
   const [updateWebsite, { isLoading: isSaving }] =
     useUpdateWebsiteSettingsMutation();
+
+  if (!isSuperAdmin && !can("settings:manage")) {
+    return (
+      <div className="space-y-6">
+        <AccessRestricted
+          title="Website CMS Access Restricted"
+          description="Only practice administrators can configure the firm portal, custom domains, and branding."
+          backHref="/settings"
+          backLabel="Return to Settings"
+        />
+      </div>
+    );
+  }
 
   const [subdomain, setSubdomain] = useState("");
   const [customDomain, setCustomDomain] = useState("");
@@ -177,15 +195,16 @@ export default function WebsiteSettingsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <Link
-              href="/settings"
-              className="text-muted-foreground hover:text-foreground text-xs flex items-center gap-1 transition-colors"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" /> Back to Settings
-            </Link>
+            <Breadcrumbs
+          items={[
+            { label: "Settings", href: "/settings" },
+            { label: "Website", href: "/settings/website" },
+          ]}
+        />
+
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <Globe className="h-6 w-6 text-primary" /> White-Label Website &
+          <h1 className="text-2xl font-semibold tracking-tight pt-4">
+             White-Label Website &
             Portal CMS
           </h1>
           <p className="text-xs text-muted-foreground max-w-2xl">

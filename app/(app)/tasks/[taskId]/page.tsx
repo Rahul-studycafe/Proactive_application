@@ -42,6 +42,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TaskCustomFieldsCard } from "./TaskCustomFieldsCard";
 import { TaskChecklist } from "./TaskChecklist";
 import { TaskSubtasks } from "./TaskSubtasks";
+import { TaskAssigneeSelector } from "../TaskAssigneeSelector";
 import {
   Select,
   SelectContent,
@@ -49,6 +50,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { withPermission } from "@/components/shared/withPermission";
 
 const getFileIcon = (fileName: string) => {
   if (!fileName) return <File className="h-5 w-5 text-muted-foreground" />;
@@ -96,7 +98,7 @@ const getStatusColor = (status: string) => {
   }
 };
 
-export default function TaskDashboard() {
+function TaskDashboard() {
   const { taskId } = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -419,30 +421,12 @@ export default function TaskDashboard() {
                   <span className="text-sm text-muted-foreground mt-1">
                     Assignees
                   </span>
-                  {task.assigneeIds && task.assigneeIds.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {task.assigneeIds.map((assignee: any) => (
-                        <div
-                          key={assignee._id}
-                          className="flex items-center gap-2 bg-accent px-2 py-1 rounded-md border"
-                        >
-                          <Avatar className="h-5 w-5">
-                            <AvatarImage src={assignee.photoUrl} />
-                            <AvatarFallback className="text-[10px] bg-primary text-primary-foreground">
-                              {assignee.name.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="text-xs font-medium">
-                            {assignee.name}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <span className="text-sm text-muted-foreground mt-1">
-                      No users assigned
-                    </span>
-                  )}
+                  <TaskAssigneeSelector
+                    taskId={taskId as string}
+                    assignees={task.assigneeIds || []}
+                    isReadOnly={isReadOnly}
+                    variant="card"
+                  />
                 </div>
                 <div className="grid grid-cols-[120px_1fr] gap-4 items-center">
                   <span className="text-sm text-muted-foreground">Tags</span>
@@ -868,3 +852,11 @@ export default function TaskDashboard() {
     </div>
   );
 }
+
+export default withPermission(TaskDashboard, "task:view", {
+  title: "Task Access Restricted",
+  description:
+    "You do not have permission to view task details. Please contact your Practice Administrator.",
+  backHref: "/tasks",
+  backLabel: "Return to Tasks",
+});

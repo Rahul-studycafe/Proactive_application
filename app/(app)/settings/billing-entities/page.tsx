@@ -46,13 +46,32 @@ import {
   useUpdateBillingEntityMutation,
   useDeleteBillingEntityMutation,
 } from "@/lib/services/api";
+import { usePermissions } from "@/contexts/PermissionsContext";
+import { AccessRestricted } from "@/components/shared/AccessRestricted";
+import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
+
 
 export default function BillingEntitiesPage() {
+  const { isSuperAdmin, can } = usePermissions();
+
   const { data: entities = [], isLoading } = useGetBillingEntitiesQuery();
   const [createEntity, { isLoading: isCreating }] =
     useCreateBillingEntityMutation();
   const [updateEntity, { isLoading: isUpdating }] =
     useUpdateBillingEntityMutation();
+
+  if (!isSuperAdmin && !can("billing:manage")) {
+    return (
+      <div className="space-y-6">
+        <AccessRestricted
+          title="Billing Entities Access Restricted"
+          description="Only practice administrators or billing managers can configure GSTIN entities and bank accounts."
+          backHref="/settings"
+          backLabel="Return to Settings"
+        />
+      </div>
+    );
+  }
   const [deleteEntity, { isLoading: isDeleting }] =
     useDeleteBillingEntityMutation();
 
@@ -200,15 +219,16 @@ export default function BillingEntitiesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Link
-              href="/settings"
-              className="text-muted-foreground hover:text-foreground text-xs flex items-center gap-1 transition-colors"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" /> Back to Settings
-            </Link>
+
+             <Breadcrumbs
+          items={[
+            { label: "Settings", href: "/settings" },
+            { label: "Billing Entities", href: "/settings/billing-entities" },
+          ]}
+        />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <Building2 className="h-6 w-6 text-primary" /> Multi-Branch &
+          <h1 className="text-2xl font-semibold tracking-tight pt-4">
+             Multi-Branch &
             Regional Billing Entities
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">

@@ -30,6 +30,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -77,6 +78,7 @@ export function UsersSettingsView() {
   const [email, setEmail] = useState("");
   const [mobile, setMobile] = useState("");
   const [roleId, setRoleId] = useState("");
+  const [secondaryRoleIds, setSecondaryRoleIds] = useState<string[]>([]);
 
   const {
     data: usersData,
@@ -101,11 +103,19 @@ export function UsersSettingsView() {
   const filteredUsers = users.filter((u) => {
     if (!searchTerm) return true;
     const term = searchTerm.toLowerCase();
+    const roleNames = [
+      u.roleId?.name,
+      ...(Array.isArray(u.roleIds) ? u.roleIds.map((r: any) => r?.name) : []),
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
     return (
       u.name?.toLowerCase().includes(term) ||
       u.username?.toLowerCase().includes(term) ||
       u.email?.toLowerCase().includes(term) ||
-      u.roleId?.name?.toLowerCase().includes(term)
+      roleNames.includes(term)
     );
   });
 
@@ -115,6 +125,7 @@ export function UsersSettingsView() {
     setEmail("");
     setMobile("");
     setRoleId(assignableRoles[0]?._id || "");
+    setSecondaryRoleIds([]);
     setIsInviteOpen(true);
   };
 
@@ -135,6 +146,10 @@ export function UsersSettingsView() {
       return;
     }
 
+    const combinedRoleIds = Array.from(
+      new Set([roleId, ...secondaryRoleIds.filter((id) => id !== roleId)])
+    );
+
     try {
       await createUser({
         name,
@@ -142,6 +157,7 @@ export function UsersSettingsView() {
         email,
         mobile,
         roleId,
+        roleIds: combinedRoleIds,
       }).unwrap();
 
       toast.success(`Invitation link successfully emailed to ${email}!`);
@@ -156,7 +172,16 @@ export function UsersSettingsView() {
     setSelectedUser(user);
     setName(user.name || "");
     setMobile(user.mobile || "");
-    setRoleId(user.roleId?._id || user.roleId || "");
+    const pRoleId = user.roleId?._id || user.roleId || "";
+    setRoleId(pRoleId);
+
+    let sRoleIds: string[] = [];
+    if (Array.isArray(user.roleIds)) {
+      sRoleIds = user.roleIds
+        .map((r: any) => (typeof r === "object" ? r._id : r))
+        .filter((id: string) => id && id !== pRoleId);
+    }
+    setSecondaryRoleIds(sRoleIds);
     setIsEditOpen(true);
   };
 
@@ -164,12 +189,17 @@ export function UsersSettingsView() {
     e.preventDefault();
     if (!selectedUser) return;
 
+    const combinedRoleIds = Array.from(
+      new Set([roleId, ...secondaryRoleIds.filter((id) => id !== roleId)])
+    );
+
     try {
       await updateUser({
         id: selectedUser._id,
         name,
         mobile,
         roleId: selectedUser.isOwner ? undefined : roleId,
+        roleIds: selectedUser.isOwner ? undefined : combinedRoleIds,
       }).unwrap();
 
       toast.success("User updated successfully.");
@@ -199,7 +229,7 @@ export function UsersSettingsView() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            <h1 className="text-2xl font-semibold tracking-tight">
               Team & Staff Management
             </h1>
             <Badge variant="secondary" className="font-mono text-xs">
@@ -320,16 +350,42 @@ export function UsersSettingsView() {
                     </TableCell>
 
                     <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={
-                          isOwner
-                            ? "border-amber-400 bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400"
-                            : "border-primary/30 bg-primary/5 text-primary"
-                        }
-                      >
-                        {roleName}
-                      </Badge>
+                      {isOwner ? (
+                        <Badge
+                          variant="outline"
+                          className="border-amber-400 bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 font-medium"
+                        >
+                          Super Admin
+                        </Badge>
+                      ) : (
+                        <div className="flex flex-wrap gap-1 max-w-[240px]">
+                          <Badge
+                            variant="outline"
+                            className="border-primary/30 bg-primary/5 text-primary text-xs"
+                          >
+                            {u.roleId?.name || "Staff"}
+                          </Badge>
+                          {Array.isArray(u.roleIds) &&
+                            u.roleIds
+                              .filter((r: any) => {
+                                const rId = typeof r === "object" ? r?._id : r;
+                                const pId =
+                                  typeof u.roleId === "object"
+                                    ? u.roleId?._id
+                                    : u.roleId;
+                                return rId && rId !== pId;
+                              })
+                              .map((r: any) => (
+                                <Badge
+                                  key={typeof r === "object" ? r._id : r}
+                                  variant="secondary"
+                                  className="text-[11px] py-0 px-1.5 font-normal bg-muted text-muted-foreground border"
+                                >
+                                  +{typeof r === "object" ? r.name : "Role"}
+                                </Badge>
+                              ))}
+                        </div>
+                      )}
                     </TableCell>
 
                     <TableCell>
@@ -472,7 +528,7 @@ export function UsersSettingsView() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="inv-role">Assigned Role *</Label>
+              <Label htmlFor="inv-role">Primary Role *</Label>
               <Select value={roleId} onValueChange={setRoleId}>
                 <SelectTrigger id="inv-role">
                   <SelectValue placeholder="Select member role" />
@@ -486,6 +542,50 @@ export function UsersSettingsView() {
                 </SelectContent>
               </Select>
             </div>
+
+            {assignableRoles.filter((r) => r._id !== roleId).length > 0 && (
+              <div className="space-y-2 pt-1 border-t border-border/50">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-medium text-foreground">
+                    Additional Secondary Roles (Optional)
+                  </Label>
+                  <span className="text-[10px] text-muted-foreground font-mono">
+                    Union evaluation
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 bg-muted/20 p-2.5 rounded-lg border">
+                  {assignableRoles
+                    .filter((r) => r._id !== roleId)
+                    .map((r) => {
+                      const isChecked = secondaryRoleIds.includes(r._id);
+                      return (
+                        <label
+                          key={r._id}
+                          className={`flex items-center gap-2 p-1.5 rounded cursor-pointer text-xs transition-colors ${
+                            isChecked
+                              ? "bg-primary/10 text-primary font-medium"
+                              : "hover:bg-muted text-foreground"
+                          }`}
+                        >
+                          <Checkbox
+                            checked={isChecked}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSecondaryRoleIds([...secondaryRoleIds, r._id]);
+                              } else {
+                                setSecondaryRoleIds(
+                                  secondaryRoleIds.filter((id) => id !== r._id)
+                                );
+                              }
+                            }}
+                          />
+                          <span className="truncate">{r.name}</span>
+                        </label>
+                      );
+                    })}
+                </div>
+              </div>
+            )}
 
             <div className="space-y-1.5">
               <Label htmlFor="inv-mobile">Mobile Number (Optional)</Label>
@@ -548,7 +648,7 @@ export function UsersSettingsView() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="edit-role">Assigned Role</Label>
+              <Label htmlFor="edit-role">Primary Role</Label>
               {selectedUser?.isOwner ? (
                 <div className="p-2.5 rounded-lg border bg-muted/40 text-sm flex items-center justify-between text-muted-foreground">
                   <span className="font-medium text-foreground">
@@ -563,18 +663,69 @@ export function UsersSettingsView() {
                   </Badge>
                 </div>
               ) : (
-                <Select value={roleId} onValueChange={setRoleId}>
-                  <SelectTrigger id="edit-role">
-                    <SelectValue placeholder="Select member role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {assignableRoles.map((r) => (
-                      <SelectItem key={r._id} value={r._id}>
-                        {r.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <>
+                  <Select value={roleId} onValueChange={setRoleId}>
+                    <SelectTrigger id="edit-role">
+                      <SelectValue placeholder="Select member role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {assignableRoles.map((r) => (
+                        <SelectItem key={r._id} value={r._id}>
+                          {r.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  {assignableRoles.filter((r) => r._id !== roleId).length > 0 && (
+                    <div className="space-y-2 pt-2 border-t border-border/50">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-medium text-foreground">
+                          Additional Secondary Roles (Optional)
+                        </Label>
+                        <span className="text-[10px] text-muted-foreground font-mono">
+                          Union evaluation
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 bg-muted/20 p-2.5 rounded-lg border">
+                        {assignableRoles
+                          .filter((r) => r._id !== roleId)
+                          .map((r) => {
+                            const isChecked = secondaryRoleIds.includes(r._id);
+                            return (
+                              <label
+                                key={r._id}
+                                className={`flex items-center gap-2 p-1.5 rounded cursor-pointer text-xs transition-colors ${
+                                  isChecked
+                                    ? "bg-primary/10 text-primary font-medium"
+                                    : "hover:bg-muted text-foreground"
+                                }`}
+                              >
+                                <Checkbox
+                                  checked={isChecked}
+                                  onCheckedChange={(checked) => {
+                                    if (checked) {
+                                      setSecondaryRoleIds([
+                                        ...secondaryRoleIds,
+                                        r._id,
+                                      ]);
+                                    } else {
+                                      setSecondaryRoleIds(
+                                        secondaryRoleIds.filter(
+                                          (id) => id !== r._id
+                                        )
+                                      );
+                                    }
+                                  }}
+                                />
+                                <span className="truncate">{r.name}</span>
+                              </label>
+                            );
+                          })}
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 

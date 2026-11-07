@@ -21,11 +21,13 @@ import { DailyAttendanceStatsRibbon } from "@/components/attendance/DailyAttenda
 import { DailyRosterTable } from "@/components/attendance/DailyRosterTable";
 import { BulkAttendanceBar } from "@/components/attendance/BulkAttendanceBar";
 import { WebPunchModal } from "@/components/attendance/WebPunchModal";
+import { MyAttendanceDesk } from "@/components/attendance/MyAttendanceDesk";
 import { usePermissions } from "@/contexts/PermissionsContext";
+import { withPermission } from "@/components/shared/withPermission";
 
-export default function AttendanceDeskPage() {
+function AttendanceDeskPage() {
   const { can } = usePermissions();
-  const canManage = can("attendance.manage");
+  const canManage = can("attendance:manage");
 
   const [selectedDate, setSelectedDate] = useState<string>(
     format(new Date(), "yyyy-MM-dd"),
@@ -191,3 +193,26 @@ export default function AttendanceDeskPage() {
     </div>
   );
 }
+
+function AttendanceRouteGateway() {
+  const { can, isSuperAdmin } = usePermissions();
+  const canViewAll = isSuperAdmin || can("attendance:view_all");
+
+  if (!canViewAll) {
+    return <MyAttendanceDesk />;
+  }
+
+  return <AttendanceDeskPage />;
+}
+
+export default withPermission(
+  AttendanceRouteGateway,
+  ["attendance:view_all", "attendance:view_self"],
+  {
+    title: "Attendance Desk Restricted",
+    description:
+      "You do not have permission to view attendance records. Please contact your Practice Administrator.",
+    backHref: "/",
+    backLabel: "Return to Dashboard",
+  }
+);

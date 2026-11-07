@@ -21,6 +21,7 @@ import {
   Radar,
   FileCheck2,
   Sparkles,
+  Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,8 +60,11 @@ import {
 import { DocumentRequest } from "@/lib/types/document-request";
 import { CreateDocRequestModal } from "@/components/documents/CreateDocRequestModal";
 import { MagicLinkShareDialog } from "@/components/documents/MagicLinkShareDialog";
+import { ViewReceivedFilesModal } from "@/components/documents/ViewReceivedFilesModal";
+import { withPermission } from "@/components/shared/withPermission";
+import { Can } from "@/contexts/PermissionsContext";
 
-export default function DocumentRequestsHubPage() {
+function DocumentRequestsHubPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
@@ -68,6 +72,9 @@ export default function DocumentRequestsHubPage() {
   const [shareDialogRequest, setShareDialogRequest] =
     useState<DocumentRequest | null>(null);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [viewFilesRequest, setViewFilesRequest] =
+    useState<DocumentRequest | null>(null);
+  const [isViewFilesModalOpen, setIsViewFilesModalOpen] = useState(false);
 
   const [resendEmail] = useResendDocumentRequestMutation();
   const [cancelRequest] = useCancelDocumentRequestMutation();
@@ -176,14 +183,16 @@ export default function DocumentRequestsHubPage() {
             {isScanning ? "Scanning..." : "Scan Expired"}
           </Button>
 
-          <Button
-            size="sm"
-            id="new-doc-request-btn"
-            onClick={() => setIsCreateModalOpen(true)}
-          >
-            <Plus className="h-4 w-4 mr-1.5" />
-            New Document Request
-          </Button>
+          <Can do="document:request">
+            <Button
+              size="sm"
+              id="new-doc-request-btn"
+              onClick={() => setIsCreateModalOpen(true)}
+            >
+              <Plus className="h-4 w-4 mr-1.5" />
+              New Document Request
+            </Button>
+          </Can>
         </div>
       </div>
 
@@ -326,7 +335,7 @@ export default function DocumentRequestsHubPage() {
               <TableHead className="min-w-[150px]">Upload Progress</TableHead>
               <TableHead className="min-w-[120px]">Expires</TableHead>
               <TableHead className="min-w-[110px]">Status</TableHead>
-              <TableHead className="w-[80px] text-right">Actions</TableHead>
+              <TableHead className="w-[140px] text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -402,16 +411,32 @@ export default function DocumentRequestsHubPage() {
                   >
                     {/* Request No */}
                     <TableCell>
-                      <span className="font-mono text-xs font-bold text-primary">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setViewFilesRequest(req);
+                          setIsViewFilesModalOpen(true);
+                        }}
+                        className="font-mono text-xs font-bold text-primary hover:underline cursor-pointer focus:outline-none"
+                        title="Click to view details & files"
+                      >
                         #{req.requestNo}
-                      </span>
+                      </button>
                     </TableCell>
 
                     {/* Title */}
                     <TableCell>
-                      <div className="font-medium text-foreground line-clamp-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setViewFilesRequest(req);
+                          setIsViewFilesModalOpen(true);
+                        }}
+                        className="font-medium text-foreground hover:text-primary transition-colors text-left line-clamp-1 cursor-pointer"
+                        title="Click to view details & files"
+                      >
                         {req.title}
-                      </div>
+                      </button>
                       {req.instructions ? (
                         <div className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
                           {req.instructions}
@@ -519,61 +544,106 @@ export default function DocumentRequestsHubPage() {
 
                     {/* Actions */}
                     <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
+                      <div className="flex items-center justify-end gap-1">
+                        {uploadedFiles > 0 ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 px-2.5 gap-1.5 text-xs text-primary border-primary/30 hover:bg-primary/10 hover:border-primary font-medium"
+                            onClick={() => {
+                              setViewFilesRequest(req);
+                              setIsViewFilesModalOpen(true);
+                            }}
+                            title="View uploaded documents"
+                          >
+                            <Eye className="h-3.5 w-3.5" />
+                            View Files
+                          </Button>
+                        ) : (
                           <Button
                             variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                          >
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-52">
-                          <DropdownMenuItem
+                            size="sm"
+                            className="h-7 px-2 gap-1 text-xs text-muted-foreground hover:text-foreground"
                             onClick={() => {
-                              setShareDialogRequest(req);
-                              setIsShareDialogOpen(true);
+                              setViewFilesRequest(req);
+                              setIsViewFilesModalOpen(true);
                             }}
-                            className="font-medium"
+                            title="View checklist & status"
                           >
-                            <Copy className="h-4 w-4 mr-2 text-primary" />
-                            Share Magic Link
-                          </DropdownMenuItem>
+                            <Eye className="h-3.5 w-3.5" />
+                            Details
+                          </Button>
+                        )}
 
-                          <DropdownMenuItem asChild>
-                            <a
-                              href={publicUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center"
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
                             >
-                              <ExternalLink className="h-4 w-4 mr-2" />
-                              Open Client Portal
-                            </a>
-                          </DropdownMenuItem>
-
-                          {!isCompleted && !isCancelled && !isExpired && (
-                            <DropdownMenuItem onClick={() => handleResend(req)}>
-                              <Send className="h-4 w-4 mr-2" />
-                              Resend Email Reminder
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-52">
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setViewFilesRequest(req);
+                                setIsViewFilesModalOpen(true);
+                              }}
+                              className="font-medium cursor-pointer"
+                            >
+                              <Eye className="h-4 w-4 mr-2 text-primary" />
+                              {uploadedFiles > 0
+                                ? "View Received Files"
+                                : "View Request Checklist"}
                             </DropdownMenuItem>
-                          )}
 
-                          {!isCompleted && !isCancelled && (
-                            <>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                onClick={() => handleCancel(req)}
-                                className="text-destructive focus:text-destructive"
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setShareDialogRequest(req);
+                                setIsShareDialogOpen(true);
+                              }}
+                              className="font-medium"
+                            >
+                              <Copy className="h-4 w-4 mr-2 text-primary" />
+                              Share Magic Link
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem asChild>
+                              <a
+                                href={publicUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center"
                               >
-                                <Ban className="h-4 w-4 mr-2" />
-                                Cancel & Revoke Link
+                                <ExternalLink className="h-4 w-4 mr-2" />
+                                Open Client Portal
+                              </a>
+                            </DropdownMenuItem>
+
+                            {!isCompleted && !isCancelled && !isExpired && (
+                              <DropdownMenuItem onClick={() => handleResend(req)}>
+                                <Send className="h-4 w-4 mr-2" />
+                                Resend Email Reminder
                               </DropdownMenuItem>
-                            </>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                            )}
+
+                            {!isCompleted && !isCancelled && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  onClick={() => handleCancel(req)}
+                                  className="text-destructive focus:text-destructive"
+                                >
+                                  <Ban className="h-4 w-4 mr-2" />
+                                  Cancel & Revoke Link
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
@@ -599,6 +669,21 @@ export default function DocumentRequestsHubPage() {
         onOpenChange={setIsShareDialogOpen}
         request={shareDialogRequest}
       />
+
+      {/* View Received Files Modal */}
+      <ViewReceivedFilesModal
+        open={isViewFilesModalOpen}
+        onOpenChange={setIsViewFilesModalOpen}
+        request={viewFilesRequest}
+      />
     </div>
   );
 }
+
+export default withPermission(DocumentRequestsHubPage, "document:view", {
+  title: "Document Requests Restricted",
+  description:
+    "You do not have permission to view document collection requests. Please contact your Practice Administrator.",
+  backHref: "/",
+  backLabel: "Return to Dashboard",
+});

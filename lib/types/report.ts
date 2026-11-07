@@ -26,6 +26,7 @@ export interface TaskReportItem {
   client?: {
     _id: string;
     name: string;
+    clientNumber?: string;
     fileNo?: string;
   };
   service?: {

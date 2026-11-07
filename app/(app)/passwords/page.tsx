@@ -14,6 +14,8 @@ import { AddPasswordModal } from "@/components/passwords/AddPasswordModal";
 import { RevealPasswordDialog } from "@/components/passwords/RevealPasswordDialog";
 import { PasswordAuditDrawer } from "@/components/passwords/PasswordAuditDrawer";
 import { ImportPasswordsModal } from "@/components/passwords/ImportPasswordsModal";
+import { withPermission } from "@/components/shared/withPermission";
+import { Can } from "@/contexts/PermissionsContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -64,7 +66,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
-export default function PasswordsMasterPage() {
+function PasswordsMasterPage() {
   const [search, setSearch] = useState("");
   const [portalFilter, setPortalFilter] = useState("all");
   const [clientFilter, setClientFilter] = useState("all");
@@ -260,24 +262,26 @@ export default function PasswordsMasterPage() {
             <span>Practice Audit Logs</span>
           </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsImportModalOpen(true)}
-            className="text-xs h-9 gap-1.5 border-border"
-          >
-            <Upload className="h-3.5 w-3.5 text-muted-foreground" />
-            <span>Import Excel</span>
-          </Button>
+          <Can do="vault:create">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsImportModalOpen(true)}
+              className="text-xs h-9 gap-1.5 border-border"
+            >
+              <Upload className="h-3.5 w-3.5 text-muted-foreground" />
+              <span>Import Excel</span>
+            </Button>
 
-          <Button
-            size="sm"
-            onClick={handleOpenAdd}
-            className="text-xs h-9 gap-1.5 shadow-sm"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Add Credential</span>
-          </Button>
+            <Button
+              size="sm"
+              onClick={handleOpenAdd}
+              className="text-xs h-9 gap-1.5 shadow-sm"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Add Credential</span>
+            </Button>
+          </Can>
         </div>
       </div>
 
@@ -568,16 +572,18 @@ export default function PasswordsMasterPage() {
                           <span className="font-mono text-xs text-muted-foreground tracking-widest select-none">
                             ••••••••
                           </span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleOpenReveal(p)}
-                            className="h-7 px-2 text-xs gap-1 text-primary hover:bg-primary/10"
-                            title="Decrypt & Reveal Password"
-                          >
-                            <Eye className="h-3.5 w-3.5" />
-                            <span className="hidden sm:inline">Reveal</span>
-                          </Button>
+                          <Can do="vault:reveal">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleOpenReveal(p)}
+                              className="h-7 px-2 text-xs gap-1 text-primary hover:bg-primary/10"
+                              title="Decrypt & Reveal Password"
+                            >
+                              <Eye className="h-3.5 w-3.5" />
+                              <span className="hidden sm:inline">Reveal</span>
+                            </Button>
+                          </Can>
                         </div>
                       </TableCell>
 
@@ -620,25 +626,29 @@ export default function PasswordsMasterPage() {
                             <History className="h-3.5 w-3.5" />
                           </Button>
 
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleOpenEdit(p)}
-                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                            title="Edit Credential"
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
+                          <Can do="vault:edit">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleOpenEdit(p)}
+                              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                              title="Edit Credential"
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                          </Can>
 
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setDeleteTarget(p)}
-                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                            title="Delete Credential"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
+                          <Can do="vault:delete">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setDeleteTarget(p)}
+                              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                              title="Delete Credential"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </Can>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -713,3 +723,11 @@ export default function PasswordsMasterPage() {
     </div>
   );
 }
+
+export default withPermission(PasswordsMasterPage, "vault:view", {
+  title: "Password Vault Access Restricted",
+  description:
+    "You do not have permission to view password vault credentials. Please contact your Practice Administrator.",
+  backHref: "/",
+  backLabel: "Return to Dashboard",
+});

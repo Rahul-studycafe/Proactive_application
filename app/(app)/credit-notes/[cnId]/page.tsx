@@ -27,6 +27,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { CreditNoteStatus } from "@/lib/types/credit-note";
 import { ApplyCreditModal } from "@/components/credit-notes/ApplyCreditModal";
 import { RefundCreditModal } from "@/components/credit-notes/RefundCreditModal";
+import { withPermission } from "@/components/shared/withPermission";
+import { Can } from "@/contexts/PermissionsContext";
 
 function numberToWords(num: number): string {
   if (num === 0) return "Zero Rupees Only";
@@ -98,7 +100,7 @@ function numberToWords(num: number): string {
   return `Rupees ${inWords(rounded).trim()} Only`;
 }
 
-export default function ViewCreditNotePage() {
+function ViewCreditNotePage() {
   const params = useParams();
   const cnId = (params?.cnId as string) || "";
   const { user } = useAuth();
@@ -200,22 +202,26 @@ export default function ViewCreditNotePage() {
         <div className="flex items-center gap-2 flex-wrap">
           {creditNote.unallocatedCredit > 0 && (
             <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsApplyModalOpen(true)}
-                className="gap-1.5 text-xs text-purple-600 dark:text-purple-400 border-purple-500/30 hover:bg-purple-500/10"
-              >
-                <ArrowRightLeft className="h-3.5 w-3.5" /> Apply Credit
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsRefundModalOpen(true)}
-                className="gap-1.5 text-xs text-blue-600 dark:text-blue-400 border-blue-500/30 hover:bg-blue-500/10"
-              >
-                <Banknote className="h-3.5 w-3.5" /> Record Refund
-              </Button>
+              <Can do="credit_note:apply">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsApplyModalOpen(true)}
+                  className="gap-1.5 text-xs text-purple-600 dark:text-purple-400 border-purple-500/30 hover:bg-purple-500/10"
+                >
+                  <ArrowRightLeft className="h-3.5 w-3.5" /> Apply Credit
+                </Button>
+              </Can>
+              <Can do="credit_note:refund">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsRefundModalOpen(true)}
+                  className="gap-1.5 text-xs text-blue-600 dark:text-blue-400 border-blue-500/30 hover:bg-blue-500/10"
+                >
+                  <Banknote className="h-3.5 w-3.5" /> Record Refund
+                </Button>
+              </Can>
             </>
           )}
 
@@ -522,3 +528,11 @@ export default function ViewCreditNotePage() {
     </div>
   );
 }
+
+export default withPermission(ViewCreditNotePage, "credit_note:view", {
+  title: "Credit Note Access Restricted",
+  description:
+    "You do not have permission to view credit notes. Please contact your Practice Administrator.",
+  backHref: "/credit-notes",
+  backLabel: "Return to Credit Notes",
+});

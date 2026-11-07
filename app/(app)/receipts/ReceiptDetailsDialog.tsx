@@ -138,9 +138,9 @@ export function ReceiptDetailsDialog({
                 <p className="text-sm font-bold text-foreground">
                   {typeof client === "object" ? client.name : "Client"}
                 </p>
-                {typeof client === "object" && client.fileNo && (
+                {typeof client === "object" && (client.clientNumber || client.fileNo) && (
                   <p className="text-muted-foreground font-mono">
-                    File No: {client.fileNo}
+                    Client No: {client.clientNumber || client.fileNo}
                   </p>
                 )}
               </div>

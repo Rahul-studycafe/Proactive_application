@@ -58,12 +58,17 @@ import { InOutEntryModal } from "@/components/documents/InOutEntryModal";
 import { RecordReturnModal } from "@/components/documents/RecordReturnModal";
 import { MovementHistoryModal } from "@/components/documents/MovementHistoryModal";
 import { History as HistoryIcon } from "lucide-react";
+import { usePermissions, Can } from "@/contexts/PermissionsContext";
 
 interface ClientDocsInOutTabProps {
   clientId: string;
 }
 
 export function ClientDocsInOutTab({ clientId }: ClientDocsInOutTabProps) {
+  const { can, isSuperAdmin } = usePermissions();
+  const canManagePhysical = isSuperAdmin || can("document:physical_manage");
+  const canDeletePhysical = isSuperAdmin || can("document:delete");
+
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -268,18 +273,20 @@ export function ClientDocsInOutTab({ clientId }: ClientDocsInOutTabProps) {
             />
           </Button>
 
-          <Button
-            size="sm"
-            className="h-9"
-            id="log-client-doc-btn"
-            onClick={() => {
-              setDocToEdit(null);
-              setIsEntryModalOpen(true);
-            }}
-          >
-            <Plus className="h-4 w-4 mr-1.5" />
-            Log In / Out Asset
-          </Button>
+          {canManagePhysical && (
+            <Button
+              size="sm"
+              className="h-9"
+              id="log-client-doc-btn"
+              onClick={() => {
+                setDocToEdit(null);
+                setIsEntryModalOpen(true);
+              }}
+            >
+              <Plus className="h-4 w-4 mr-1.5" />
+              Log In / Out Asset
+            </Button>
+          )}
         </div>
       </div>
 
@@ -321,7 +328,7 @@ export function ClientDocsInOutTab({ clientId }: ClientDocsInOutTabProps) {
                         ? "No document records match the active search and filter criteria."
                         : "No physical documents, deeds, or seals logged for this client yet."}
                     </p>
-                    {!hasActiveFilters && (
+                    {!hasActiveFilters && canManagePhysical && (
                       <Button
                         size="sm"
                         className="mt-2"
@@ -497,7 +504,7 @@ export function ClientDocsInOutTab({ clientId }: ClientDocsInOutTabProps) {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
-                          {(isInCustody || isOverdue) && (
+                          {canManagePhysical && (isInCustody || isOverdue) && (
                             <DropdownMenuItem
                               onClick={() => {
                                 setReturnDoc(doc);
@@ -530,25 +537,31 @@ export function ClientDocsInOutTab({ clientId }: ClientDocsInOutTabProps) {
                             </Link>
                           </DropdownMenuItem>
 
-                          <DropdownMenuSeparator />
+                          {(canManagePhysical || canDeletePhysical) && (
+                            <DropdownMenuSeparator />
+                          )}
 
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setDocToEdit(doc);
-                              setIsEntryModalOpen(true);
-                            }}
-                          >
-                            <Pencil className="h-4 w-4 mr-2" />
-                            Edit Record
-                          </DropdownMenuItem>
+                          {canManagePhysical && (
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setDocToEdit(doc);
+                                setIsEntryModalOpen(true);
+                              }}
+                            >
+                              <Pencil className="h-4 w-4 mr-2" />
+                              Edit Record
+                            </DropdownMenuItem>
+                          )}
 
-                          <DropdownMenuItem
-                            onClick={() => handleDelete(doc)}
-                            className="text-destructive focus:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
+                          {canDeletePhysical && (
+                            <DropdownMenuItem
+                              onClick={() => handleDelete(doc)}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

@@ -44,7 +44,8 @@ export function EditClientDialog({ client }: { client: Client }) {
 
   const [formData, setFormData] = useState({
     name: client.name || "",
-    fileNo: client.fileNo || "",
+    clientNumber: client.clientNumber || client.fileNo || "",
+    fileNo: client.clientNumber || client.fileNo || "",
     entityType: client.entityType || "",
     email: client.email || "",
     mobile: client.mobile || "",
@@ -97,10 +98,14 @@ export function EditClientDialog({ client }: { client: Client }) {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>File No (Optional)</Label>
+                <Label>Client Number (Optional)</Label>
                 <Input
-                  value={formData.fileNo}
-                  onChange={(e) => handleChange("fileNo", e.target.value)}
+                  value={formData.clientNumber}
+                  onChange={(e) => {
+                    handleChange("clientNumber", e.target.value);
+                    handleChange("fileNo", e.target.value);
+                  }}
+                  placeholder="e.g. C1234"
                 />
               </div>
               <div className="space-y-2">

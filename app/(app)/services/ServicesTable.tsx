@@ -35,9 +35,15 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { usePermissions, Can } from "@/contexts/PermissionsContext";
 
 export function ServicesTable() {
   const router = useRouter();
+  const { can, isSuperAdmin } = usePermissions();
+  const canEdit = isSuperAdmin || can("service:edit");
+  const canDelete = isSuperAdmin || can("service:delete");
+  const hasRowActions = canEdit || canDelete;
+
   const { data: response, isLoading } = useGetServicesQuery(undefined);
   const [deleteService, { isLoading: isDeleting }] = useDeleteServiceMutation();
   const [serviceToDelete, setServiceToDelete] = useState<any | null>(null);
@@ -87,7 +93,7 @@ export function ServicesTable() {
               <TableHead>Frequency</TableHead>
               <TableHead>Clients</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="w-[50px]"></TableHead>
+              {hasRowActions && <TableHead className="w-[50px]"></TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -139,28 +145,34 @@ export function ServicesTable() {
                     {service.isEnabled ? "Active" : "Disabled"}
                   </Badge>
                 </TableCell>
-                <TableCell onClick={(e) => e.stopPropagation()}>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() => router.push(`/services/${service._id}`)}
-                      >
-                        <Edit2 className="mr-2 h-4 w-4" /> Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="text-destructive focus:text-destructive"
-                        onClick={() => setServiceToDelete(service)}
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" /> Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
+                {hasRowActions && (
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <Can do="service:edit">
+                          <DropdownMenuItem
+                            onClick={() => router.push(`/services/${service._id}`)}
+                          >
+                            <Edit2 className="mr-2 h-4 w-4" /> Edit
+                          </DropdownMenuItem>
+                        </Can>
+                        <Can do="service:delete">
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={() => setServiceToDelete(service)}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" /> Delete
+                          </DropdownMenuItem>
+                        </Can>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>

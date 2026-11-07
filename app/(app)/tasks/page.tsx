@@ -24,6 +24,8 @@ import { type Task, type TaskStatus, type TaskPriority } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 import { TaskToolbar } from "./TaskToolbar";
 import { TasksTable } from "./TasksTable";
+import { withPermission } from "@/components/shared/withPermission";
+import { Can } from "@/contexts/PermissionsContext";
 
 const COLUMNS: TaskStatus[] = [
   "Pending",
@@ -80,7 +82,7 @@ const getColumnDot = (status: TaskStatus) => {
   }
 };
 
-export default function TasksPage() {
+function TasksPage() {
   const [viewMode, setViewMode] = useState<"kanban" | "table">("kanban");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("dueDate");
@@ -184,7 +186,9 @@ export default function TasksPage() {
               <span>Automation</span>
             </Button>
           </Link>
-          <CreateTaskDialog />
+          <Can do="task:create">
+            <CreateTaskDialog />
+          </Can>
         </div>
       </div>
 
@@ -367,3 +371,11 @@ function PriorityBadge({ priority }: { priority: TaskPriority }) {
     </Badge>
   );
 }
+
+export default withPermission(TasksPage, "task:view", {
+  title: "Tasks Access Restricted",
+  description:
+    "You do not have permission to view tasks. Please contact your Practice Administrator.",
+  backHref: "/",
+  backLabel: "Return to Dashboard",
+});

@@ -69,8 +69,10 @@ import { RecordReturnModal } from "@/components/documents/RecordReturnModal";
 import { StorageLocationsView } from "@/components/documents/StorageLocationsView";
 import { MovementHistoryModal } from "@/components/documents/MovementHistoryModal";
 import { History as HistoryIcon } from "lucide-react";
+import { withPermission } from "@/components/shared/withPermission";
+import { Can } from "@/contexts/PermissionsContext";
 
-export default function DocsInOutPage() {
+function DocsInOutPage() {
   const [activeView, setActiveView] = useState<"register" | "storage">(
     "register",
   );
@@ -223,17 +225,19 @@ export default function DocsInOutPage() {
             Export CSV
           </Button>
 
-          <Button
-            size="sm"
-            id="log-in-out-btn"
-            onClick={() => {
-              setDocToEdit(null);
-              setIsEntryModalOpen(true);
-            }}
-          >
-            <Plus className="h-4 w-4 mr-1.5" />
-            Log In / Out
-          </Button>
+          <Can do="document:create">
+            <Button
+              size="sm"
+              id="log-in-out-btn"
+              onClick={() => {
+                setDocToEdit(null);
+                setIsEntryModalOpen(true);
+              }}
+            >
+              <Plus className="h-4 w-4 mr-1.5" />
+              Log In / Out
+            </Button>
+          </Can>
         </div>
       </div>
 
@@ -597,9 +601,9 @@ export default function DocsInOutPage() {
                               >
                                 {client.name}
                               </Link>
-                              {client.fileNo && (
+                              {(client.clientNumber || client.fileNo) && (
                                 <div className="text-xs text-muted-foreground">
-                                  File: {client.fileNo}
+                                  Client No: {client.clientNumber || client.fileNo}
                                 </div>
                               )}
                             </div>
@@ -816,3 +820,11 @@ export default function DocsInOutPage() {
     </div>
   );
 }
+
+export default withPermission(DocsInOutPage, "document:view", {
+  title: "Documents Register Access Restricted",
+  description:
+    "You do not have permission to view physical documents custody records. Please contact your Practice Administrator.",
+  backHref: "/",
+  backLabel: "Return to Dashboard",
+});

@@ -31,8 +31,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
+import { withPermission } from "@/components/shared/withPermission";
 
-export default function AutomationHubPage() {
+function AutomationHubPage() {
   const { data: logsData } = useGetAutomationLogsQuery({ page: 1, limit: 1 });
   const { data: health } = useGetQueueHealthQuery();
 
@@ -196,3 +197,11 @@ export default function AutomationHubPage() {
     </div>
   );
 }
+
+export default withPermission(AutomationHubPage, "settings:manage", {
+  title: "Automation Settings Restricted",
+  description:
+    "You do not have permission to manage task automations. Please contact your Practice Administrator.",
+  backHref: "/tasks",
+  backLabel: "Return to Tasks",
+});

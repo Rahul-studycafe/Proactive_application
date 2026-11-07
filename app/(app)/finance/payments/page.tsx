@@ -54,8 +54,9 @@ import {
 } from "@/components/ui/select";
 import { useGetPaymentTransactionsQuery } from "@/lib/services/api";
 import { formatDate } from "@/lib/utils";
+import { withPermission } from "@/components/shared/withPermission";
 
-export default function PaymentTransactionsPage() {
+function PaymentTransactionsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTx, setSelectedTx] = useState<any | null>(null);
@@ -421,3 +422,11 @@ export default function PaymentTransactionsPage() {
     </div>
   );
 }
+
+export default withPermission(PaymentTransactionsPage, "payment:view", {
+  title: "Transactions Access Restricted",
+  description:
+    "You do not have permission to view online payment transactions. Please contact your Practice Administrator.",
+  backHref: "/",
+  backLabel: "Return to Dashboard",
+});

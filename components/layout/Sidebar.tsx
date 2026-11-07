@@ -49,7 +49,7 @@ type SingleNavItem = {
   label: string;
   icon: typeof LayoutDashboard;
   exact?: boolean;
-  requiredPermission?: Permission;
+  requiredPermission?: Permission | Permission[];
 };
 
 type GroupNavItem = {
@@ -77,9 +77,9 @@ const navItems: NavItem[] = [
   },
   {
     to: "/services",
-    label: "services",
+    label: "Services",
     icon: Layers,
-    requiredPermission: "settings.view",
+    requiredPermission: ["service:view", "package:view"],
   },
   {
     type: "group",
@@ -90,34 +90,37 @@ const navItems: NavItem[] = [
         to: "/quotations",
         label: "Quotations",
         icon: FileSpreadsheet,
+        requiredPermission: "quotation:view",
       },
       {
         to: "/invoices",
         label: "Invoices",
         icon: FileText,
-        requiredPermission: "invoices.view",
+        requiredPermission: "invoice:view",
       },
       {
         to: "/credit-notes",
         label: "Credit Notes",
         icon: FileMinus,
-        requiredPermission: "invoices.view",
+        requiredPermission: "credit_note:view",
       },
       {
         to: "/receipts",
         label: "Receipts",
         icon: CreditCard,
-        requiredPermission: "invoices.view",
+        requiredPermission: "receipt:view",
       },
       {
         to: "/expenses",
         label: "Expenses",
         icon: Receipt,
+        requiredPermission: "expense:view",
       },
       {
         to: "/finance/payments",
         label: "Digital Payments",
         icon: QrCode,
+        requiredPermission: ["billing:manage", "settings:manage"],
       },
     ],
   },
@@ -130,11 +133,13 @@ const navItems: NavItem[] = [
         to: "/dsc",
         label: "DSC Register",
         icon: KeyRound,
+        requiredPermission: "dsc:view",
       },
       {
         to: "/passwords",
         label: "Password Vault",
         icon: ShieldCheck,
+        requiredPermission: "vault:view",
       },
     ],
   },
@@ -147,11 +152,13 @@ const navItems: NavItem[] = [
         to: "/documents/in-out",
         label: "Docs. In-Out",
         icon: ArrowLeftRight,
+        requiredPermission: "document:physical_manage",
       },
       {
         to: "/documents/requests",
         label: "Doc. Requests",
         icon: FileUp,
+        requiredPermission: "document:request",
       },
     ],
   },
@@ -166,11 +173,18 @@ const navItems: NavItem[] = [
         label: "Attendance",
         icon: CalendarCheck,
         exact: true,
+        requiredPermission: ["attendance:view_self", "attendance:view_all"],
       },
       {
         to: "/attendance/matrix",
         label: "Monthly Matrix",
         icon: CalendarDays,
+        requiredPermission: [
+          "attendance:matrix_view_self",
+          "attendance:matrix_view",
+          "attendance:view_all",
+          "attendance:manage",
+        ],
       },
     ],
   },
@@ -183,21 +197,25 @@ const navItems: NavItem[] = [
         to: "/reports/tasks",
         label: "Task Velocity",
         icon: CheckSquare,
+        requiredPermission: "report:view",
       },
       {
         to: "/reports/dsc",
         label: "DSC Renewals",
         icon: KeyRound,
+        requiredPermission: "report:view",
       },
       {
         to: "/reports/invoices",
         label: "Invoices Report",
         icon: FileText,
+        requiredPermission: "report:view",
       },
       {
         to: "/reports/debtors-aging",
         label: "Debtors Aging",
         icon: Clock,
+        requiredPermission: "report:view",
       },
     ],
   },
@@ -205,7 +223,12 @@ const navItems: NavItem[] = [
     to: "/settings",
     label: "Settings",
     icon: Settings,
-    requiredPermission: "settings.view",
+    requiredPermission: [
+      "settings:view",
+      "settings:manage",
+      "role:view",
+      "user:view",
+    ],
   },
 ];
 
@@ -228,6 +251,9 @@ export function Sidebar() {
 
   const isPermitted = (item: SingleNavItem) => {
     if (item.requiredPermission) {
+      if (Array.isArray(item.requiredPermission)) {
+        return item.requiredPermission.some((p) => can(p));
+      }
       return can(item.requiredPermission);
     }
     return true;

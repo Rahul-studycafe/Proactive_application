@@ -1,12 +1,10 @@
+"use client";
+
 import { HolidaysView } from "@/components/holidays/HolidaysView";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
+import { withPermission } from "@/components/shared/withPermission";
 
-export const metadata = {
-  title: "Official Holidays | Proactive SaaS",
-  description: "Configure official office holidays and closures.",
-};
-
-export default function HolidaysPage() {
+function HolidaysPage() {
   return (
     <div className="space-y-6">
       <Breadcrumbs
@@ -19,3 +17,11 @@ export default function HolidaysPage() {
     </div>
   );
 }
+
+export default withPermission(HolidaysPage, "settings:manage", {
+  title: "Holidays Settings Restricted",
+  description:
+    "You do not have permission to manage organization holidays. Please contact your Practice Administrator.",
+  backHref: "/settings",
+  backLabel: "Return to Settings",
+});

@@ -36,6 +36,7 @@ export interface QuotationTotals {
 export interface QuotationClient {
   _id: string;
   name: string;
+  clientNumber?: string;
   fileNo?: string;
   pan?: string;
   email?: string;

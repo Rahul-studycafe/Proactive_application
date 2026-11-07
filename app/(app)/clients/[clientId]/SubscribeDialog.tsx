@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { usePermissions } from "@/contexts/PermissionsContext";
 import {
   useSubscribeClientToPackageMutation,
   useSubscribeClientToServiceMutation,
@@ -58,8 +59,21 @@ export function SubscribeDialog({
   defaultTab = "package",
   triggerButton,
 }: SubscribeDialogProps) {
+  const { can, isSuperAdmin } = usePermissions();
+  const canManageServices = isSuperAdmin || can("client:services_manage") || can("client:edit");
+  const canManagePackages = isSuperAdmin || can("client:packages_manage") || can("client:edit");
+
+  const effectiveDefaultTab: "package" | "service" =
+    defaultTab === "package"
+      ? canManagePackages
+        ? "package"
+        : "service"
+      : canManageServices
+        ? "service"
+        : "package";
+
   const [open, setOpen] = useState(false);
-  const [tab, setTab] = useState<"package" | "service">(defaultTab);
+  const [tab, setTab] = useState<"package" | "service">(effectiveDefaultTab);
 
   // If client wasn't passed directly, fetch it
   const { data: fetchedClient } = useGetClientByIdQuery(clientId, {
@@ -115,7 +129,7 @@ export function SubscribeDialog({
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen);
     if (isOpen) {
-      setTab(defaultTab);
+      setTab(effectiveDefaultTab);
       form.reset({ subscriptionId: "", customPrice: undefined });
     }
   };
@@ -172,12 +186,14 @@ export function SubscribeDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs value={tab} onValueChange={handleTabChange} className="mt-2">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="package">Package</TabsTrigger>
-            <TabsTrigger value="service">Service</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        {canManagePackages && canManageServices && (
+          <Tabs value={tab} onValueChange={handleTabChange} className="mt-2">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="package">Package</TabsTrigger>
+              <TabsTrigger value="service">Service</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        )}
 
         <Form {...form}>
           <form

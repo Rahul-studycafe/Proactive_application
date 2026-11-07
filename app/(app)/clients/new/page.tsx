@@ -17,6 +17,9 @@ import {
   Users as UsersIcon,
   Loader2,
   Check,
+  Layers,
+  Search,
+  ChevronsUpDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,10 +37,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
   useGetClientsQuery,
   useCreateClientMutation,
   useUploadClientPhotoMutation,
   useGetUsersQuery,
+  useGetServicesQuery,
 } from "@/lib/services/api";
 import { type Client } from "@/lib/types";
 import { toast } from "sonner";
@@ -49,6 +59,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { PlanLimitModal } from "@/components/shared/PlanLimitModal";
+import { withPermission } from "@/components/shared/withPermission";
 
 const entityTypes = [
   "Individual",
@@ -90,7 +101,7 @@ const states = [
   "Uttar Pradesh",
 ];
 
-export default function NewClientPage() {
+function NewClientPage() {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -105,6 +116,17 @@ export default function NewClientPage() {
   const { data: clientsRes } = useGetClientsQuery(undefined);
   const clients = clientsRes?.clients || [];
 
+  const { data: svcResponse, isLoading: isLoadingServices } =
+    useGetServicesQuery(undefined);
+  const services: any[] = Array.isArray(svcResponse)
+    ? svcResponse
+    : svcResponse?.data || [];
+
+  // Services subscription
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [serviceSearch, setServiceSearch] = useState("");
+  const [isServicesOpen, setIsServicesOpen] = useState(false);
+
   // Quota enforcement
   const [showQuotaModal, setShowQuotaModal] = useState(false);
 
@@ -115,7 +137,7 @@ export default function NewClientPage() {
 
   // Client info
   const [name, setName] = useState("");
-  const [fileNo, setFileNo] = useState("");
+  const [clientNumber, setClientNumber] = useState("");
   const [clientType, setClientType] = useState("");
   const [group, setGroup] = useState("");
   const [pan, setPan] = useState("");
@@ -351,6 +373,24 @@ export default function NewClientPage() {
     );
   };
 
+  const toggleService = (id: string) => {
+    setSelectedServices((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+
+  const selectAllServices = () => {
+    setSelectedServices(services.map((s: any) => s._id));
+  };
+
+  const clearAllServices = () => {
+    setSelectedServices([]);
+  };
+
+  const filteredServices = services.filter((s: any) =>
+    s.name?.toLowerCase().includes(serviceSearch.toLowerCase()),
+  );
+
   const checkIsValid = () => {
     if (!name.trim()) return false;
     if (!clientType) return false;
@@ -395,8 +435,8 @@ export default function NewClientPage() {
     e.preventDefault();
     if (!validate()) {
       toast.error("Please fix the highlighted fields");
-      // scroll to top to see errors if needed, though they are inline
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      // scroll to top of main content to see errors if needed
+      document.querySelector("main")?.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
@@ -404,7 +444,8 @@ export default function NewClientPage() {
       await createClient({
         name: name.trim(),
         isActive,
-        fileNo: fileNo || undefined,
+        clientNumber: clientNumber || undefined,
+        fileNo: clientNumber || undefined,
         entityType: clientType,
         pan: pan || undefined,
         gstin: gstin || undefined,
@@ -422,6 +463,10 @@ export default function NewClientPage() {
         pincode: pincode || undefined,
         openingBalance: openingBalance ? Number(openingBalance) : 0,
         photoUrl: photoUrl || undefined,
+        subscribedServices:
+          selectedServices.length > 0
+            ? selectedServices.map((id) => ({ serviceId: id }))
+            : undefined,
       }).unwrap();
 
       toast.success(`Client "${name}" created successfully`);
@@ -483,9 +528,9 @@ export default function NewClientPage() {
         </div>
 
         {/* Main Content Area */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
+        <div className="grid grid-cols-1 xl:grid-cols-5 gap-8 items-start">
           {/* LEFT COLUMN: Main Form */}
-          <div className="xl:col-span-2 space-y-8">
+          <div className="xl:col-span-3 space-y-8">
             {/* Client Information */}
             <Card>
               <CardHeader>
@@ -505,11 +550,11 @@ export default function NewClientPage() {
                     placeholder="e.g. Acme Industries Pvt Ltd"
                   />
                 </Field>
-                <Field label="File Number">
+                <Field label="Client Number">
                   <Input
-                    value={fileNo}
-                    onChange={(e) => setFileNo(e.target.value)}
-                    placeholder="e.g. A1234"
+                    value={clientNumber}
+                    onChange={(e) => setClientNumber(e.target.value)}
+                    placeholder="e.g. C1234"
                   />
                 </Field>
                 <Field label="Client Type" required error={errors.clientType}>
@@ -728,7 +773,7 @@ export default function NewClientPage() {
           </div>
 
           {/* RIGHT COLUMN: Sidebar */}
-          <div className="space-y-8">
+          <div className="space-y-8 xl:col-span-2">
             {/* Status & Photo */}
             <Card>
               <CardContent className="pt-6">
@@ -805,6 +850,177 @@ export default function NewClientPage() {
                     <Switch checked={isActive} onCheckedChange={setIsActive} />
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Services Subscription */}
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Layers className="h-4 w-4 text-primary" /> Services
+                  </CardTitle>
+                  {selectedServices.length > 0 && (
+                    <Badge variant="secondary" className="text-xs font-normal">
+                      {selectedServices.length} selected
+                    </Badge>
+                  )}
+                </div>
+                <CardDescription className="text-xs">
+                  Directly subscribe client to practice services.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Popover open={isServicesOpen} onOpenChange={setIsServicesOpen}>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:bg-muted/40 transition-colors cursor-pointer text-left"
+                    >
+                      <span className="truncate">
+                        {selectedServices.length === 0
+                          ? "Select services to subscribe..."
+                          : `${selectedServices.length} service${selectedServices.length > 1 ? "s" : ""} selected`}
+                      </span>
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-80 p-0 shadow-lg border-border"
+                    align="start"
+                  >
+                    <div className="flex items-center border-b px-3 py-2">
+                      <Search className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
+                      <input
+                        type="text"
+                        value={serviceSearch}
+                        onChange={(e) => setServiceSearch(e.target.value)}
+                        placeholder="Search services..."
+                        className="flex h-7 w-full rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                      />
+                      {serviceSearch && (
+                        <button
+                          type="button"
+                          onClick={() => setServiceSearch("")}
+                          className="text-muted-foreground hover:text-foreground p-0.5"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    {services.length > 0 && (
+                      <div className="flex items-center justify-between px-3 py-1.5 border-b bg-muted/30 text-xs text-muted-foreground">
+                        <span>{services.length} services available</span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={selectAllServices}
+                            className="text-primary hover:underline font-medium text-xs cursor-pointer"
+                          >
+                            Select all
+                          </button>
+                          <span>•</span>
+                          <button
+                            type="button"
+                            onClick={clearAllServices}
+                            className="hover:underline text-xs cursor-pointer"
+                          >
+                            Clear
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="max-h-60 overflow-y-auto p-1 divide-y divide-border/40">
+                      {isLoadingServices ? (
+                        <div className="flex items-center justify-center py-6 text-xs text-muted-foreground">
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />{" "}
+                          Loading services...
+                        </div>
+                      ) : filteredServices.length === 0 ? (
+                        <div className="py-6 text-center text-xs text-muted-foreground">
+                          {services.length === 0
+                            ? "No services configured yet."
+                            : "No matching services found."}
+                        </div>
+                      ) : (
+                        filteredServices.map((svc: any) => {
+                          const isChecked = selectedServices.includes(svc._id);
+                          return (
+                            <div
+                              key={svc._id}
+                              onClick={() => toggleService(svc._id)}
+                              className={`flex items-start gap-2.5 p-2 rounded-md cursor-pointer transition-colors ${
+                                isChecked ? "bg-accent/60" : "hover:bg-muted/50"
+                              }`}
+                            >
+                              <Checkbox
+                                checked={isChecked}
+                                onCheckedChange={() => toggleService(svc._id)}
+                                className="mt-0.5"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium leading-none truncate">
+                                  {svc.name}
+                                </p>
+                                <div className="flex items-center gap-1.5 mt-1 text-[10px] text-muted-foreground">
+                                  <span>
+                                    {svc.isRecurring ? "Recurring" : "One-off"}
+                                  </span>
+                                  {svc.defaultBillingRate ? (
+                                    <>
+                                      <span>•</span>
+                                      <span>
+                                        ₹{svc.defaultBillingRate.toLocaleString()}
+                                      </span>
+                                    </>
+                                  ) : null}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+
+                {selectedServices.length > 0 && (
+                  <div className="space-y-1.5 pt-1">
+                    <div className="text-[11px] font-medium text-muted-foreground">
+                      Subscribed upon creation:
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {selectedServices.map((id) => {
+                        const svc = services.find((s: any) => s._id === id);
+                        if (!svc) return null;
+                        return (
+                          <Badge
+                            key={id}
+                            variant="secondary"
+                            className="flex items-center gap-1 text-xs py-1 px-2.5 bg-primary/10 text-primary border border-primary/20 hover:bg-primary/15 transition-colors"
+                          >
+                            <span className="truncate max-w-[180px]">
+                              {svc.name}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleService(id);
+                              }}
+                              className="rounded-full hover:bg-primary/20 p-0.5 ml-0.5 transition-colors"
+                              aria-label={`Remove ${svc.name}`}
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </Badge>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -956,3 +1172,11 @@ function Field({
     </div>
   );
 }
+
+export default withPermission(NewClientPage, "client:create", {
+  title: "Client Creation Restricted",
+  description:
+    "You do not have permission to create new clients. Please contact your Practice Administrator to request 'client:create' permission.",
+  backHref: "/clients",
+  backLabel: "Return to Clients",
+});

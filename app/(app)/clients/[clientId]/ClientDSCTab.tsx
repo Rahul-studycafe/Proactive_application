@@ -54,12 +54,18 @@ import { DSCItem, DSCStatus } from "@/lib/types/dsc";
 import { CreateDSCModal } from "@/components/dsc/CreateDSCModal";
 import { DSCHandoverModal } from "@/components/dsc/DSCHandoverModal";
 import { DSCHistorySheet } from "@/components/dsc/DSCHistorySheet";
+import { usePermissions, Can } from "@/contexts/PermissionsContext";
 
 interface ClientDSCTabProps {
   clientId: string;
 }
 
 export function ClientDSCTab({ clientId }: ClientDSCTabProps) {
+  const { can, isSuperAdmin } = usePermissions();
+  const canRegisterDsc = isSuperAdmin || can("dsc:create");
+  const canEditDsc = isSuperAdmin || can("dsc:edit");
+  const canDeleteDsc = isSuperAdmin || can("dsc:delete");
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [expiryFilter, setExpiryFilter] = useState<string>("all");
@@ -242,17 +248,19 @@ export function ClientDSCTab({ clientId }: ClientDSCTabProps) {
             />
           </Button>
 
-          <Button
-            size="sm"
-            onClick={() => {
-              setEditingDsc(null);
-              setIsCreateModalOpen(true);
-            }}
-            className="gap-1.5 h-8 text-xs"
-          >
-            <Plus className="h-4 w-4" />
-            Register DSC
-          </Button>
+          {canRegisterDsc && (
+            <Button
+              size="sm"
+              onClick={() => {
+                setEditingDsc(null);
+                setIsCreateModalOpen(true);
+              }}
+              className="gap-1.5 h-8 text-xs"
+            >
+              <Plus className="h-4 w-4" />
+              Register DSC
+            </Button>
+          )}
         </div>
       </CardHeader>
 
@@ -436,17 +444,19 @@ export function ClientDSCTab({ clientId }: ClientDSCTabProps) {
                             Clear Filters
                           </Button>
                         )}
-                        <Button
-                          size="sm"
-                          onClick={() => {
-                            setEditingDsc(null);
-                            setIsCreateModalOpen(true);
-                          }}
-                          className="text-xs gap-1"
-                        >
-                          <Plus className="h-3.5 w-3.5" />
-                          Register DSC
-                        </Button>
+                        {canRegisterDsc && (
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setEditingDsc(null);
+                              setIsCreateModalOpen(true);
+                            }}
+                            className="text-xs gap-1"
+                          >
+                            <Plus className="h-3.5 w-3.5" />
+                            Register DSC
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </TableCell>
@@ -563,16 +573,18 @@ export function ClientDSCTab({ clientId }: ClientDSCTabProps) {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuItem
-                              onClick={() => {
-                                setHandoverDsc(dsc);
-                                setIsHandoverModalOpen(true);
-                              }}
-                              className="gap-2 text-xs"
-                            >
-                              <ArrowRightLeft className="h-3.5 w-3.5 text-blue-600" />
-                              Log Handover
-                            </DropdownMenuItem>
+                            {canEditDsc && (
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setHandoverDsc(dsc);
+                                  setIsHandoverModalOpen(true);
+                                }}
+                                className="gap-2 text-xs"
+                              >
+                                <ArrowRightLeft className="h-3.5 w-3.5 text-blue-600" />
+                                Log Handover
+                              </DropdownMenuItem>
+                            )}
 
                             <DropdownMenuItem
                               onClick={() => {
@@ -585,26 +597,32 @@ export function ClientDSCTab({ clientId }: ClientDSCTabProps) {
                               Custody History
                             </DropdownMenuItem>
 
-                            <DropdownMenuSeparator />
+                            {(canEditDsc || canDeleteDsc) && (
+                              <DropdownMenuSeparator />
+                            )}
 
-                            <DropdownMenuItem
-                              onClick={() => {
-                                setEditingDsc(dsc);
-                                setIsCreateModalOpen(true);
-                              }}
-                              className="gap-2 text-xs"
-                            >
-                              <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                              Edit Details
-                            </DropdownMenuItem>
+                            {canEditDsc && (
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setEditingDsc(dsc);
+                                  setIsCreateModalOpen(true);
+                                }}
+                                className="gap-2 text-xs"
+                              >
+                                <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                                Edit Details
+                              </DropdownMenuItem>
+                            )}
 
-                            <DropdownMenuItem
-                              onClick={() => handleDelete(dsc)}
-                              className="gap-2 text-xs text-destructive focus:text-destructive"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                              Decommission
-                            </DropdownMenuItem>
+                            {canDeleteDsc && (
+                              <DropdownMenuItem
+                                onClick={() => handleDelete(dsc)}
+                                className="gap-2 text-xs text-destructive focus:text-destructive"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                                Decommission
+                              </DropdownMenuItem>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>

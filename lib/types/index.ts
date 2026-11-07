@@ -17,6 +17,7 @@ export interface User {
 export interface Client {
   _id: string;
   name: string;
+  clientNumber?: string;
   fileNo?: string;
   entityType?: string;
   email?: string;
@@ -45,6 +46,7 @@ export interface Client {
 
 export interface CreateClientPayload {
   name: string;
+  clientNumber?: string;
   fileNo?: string;
   entityType?: string;
   email?: string;

@@ -36,8 +36,9 @@ import {
   useGetClientsQuery,
 } from "@/lib/services/api";
 import { ReportLayout } from "@/components/reports";
+import { withPermission } from "@/components/shared/withPermission";
 
-export default function DscRenewalsReportPage() {
+function DscRenewalsReportPage() {
   const [daysHorizon, setDaysHorizon] = useState<string>("all");
   const [selectedClientId, setSelectedClientId] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
@@ -457,3 +458,11 @@ export default function DscRenewalsReportPage() {
     </ReportLayout>
   );
 }
+
+export default withPermission(DscRenewalsReportPage, "report:view", {
+  title: "DSC Report Restricted",
+  description:
+    "You do not have permission to view DSC token renewal reports. Please contact your Practice Administrator.",
+  backHref: "/",
+  backLabel: "Return to Dashboard",
+});

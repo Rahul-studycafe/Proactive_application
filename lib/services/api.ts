@@ -265,6 +265,7 @@ export const applicationApi = createApi({
         method: "POST",
         body: credentials,
       }),
+      invalidatesTags: ["User", "Role"],
       transformResponse: (response: { data: any }) => response.data,
     }),
     forgotPassword: builder.mutation({
@@ -803,6 +804,50 @@ export const applicationApi = createApi({
     getRoles: builder.query({
       query: () => "/roles",
       providesTags: ["Role"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    getPermissionsCatalogue: builder.query({
+      query: () => "/roles/catalogue",
+      providesTags: ["Role"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    getRoleById: builder.query({
+      query: (id: string) => `/roles/${id}`,
+      providesTags: (_res, _err, id) => [{ type: "Role", id }],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    createRole: builder.mutation({
+      query: (body: any) => ({
+        url: "/roles",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Role"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    updateRole: builder.mutation({
+      query: ({ id, ...body }: { id: string; [key: string]: any }) => ({
+        url: `/roles/${id}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["Role", "User"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    deleteRole: builder.mutation({
+      query: (id: string) => ({
+        url: `/roles/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Role", "User"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    duplicateRole: builder.mutation({
+      query: (id: string) => ({
+        url: `/roles/${id}/duplicate`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Role"],
       transformResponse: (response: { data: any }) => response.data,
     }),
 
@@ -2332,6 +2377,12 @@ export const {
   useGetDashboardOverviewQuery,
   useGetClientSummaryQuery,
   useGetRolesQuery,
+  useGetPermissionsCatalogueQuery,
+  useGetRoleByIdQuery,
+  useCreateRoleMutation,
+  useUpdateRoleMutation,
+  useDeleteRoleMutation,
+  useDuplicateRoleMutation,
   useGetUsersQuery,
   useCreateUserMutation,
   useUpdateUserMutation,

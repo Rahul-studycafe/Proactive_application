@@ -64,14 +64,44 @@ import { ClientPasswordsTab } from "@/components/passwords";
 import { ClientExpensesTab } from "@/components/expenses";
 import { ClientPortalTab } from "./ClientPortalTab";
 import { EnablePortalLoginModal } from "@/components/clients/EnablePortalLoginModal";
+import { withPermission } from "@/components/shared/withPermission";
+import { usePermissions, Can } from "@/contexts/PermissionsContext";
 
-export default function ClientDetailPage() {
+function ClientDetailPage() {
   const params = useParams();
   const clientId = params?.clientId as string;
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const activeTab = searchParams?.get("tab") || "details";
+
+  const { can, isSuperAdmin } = usePermissions();
+
+  const canViewTasks = isSuperAdmin || can("task:view");
+  const canViewServices = isSuperAdmin || can("client:services_manage") || can("service:view") || can("client:view");
+  const canViewRetainers = isSuperAdmin || can("client:packages_manage") || can("package:view") || can("client:view");
+  const canViewDocuments =
+    isSuperAdmin ||
+    can("document:view") ||
+    can("document:create") ||
+    can("document:request") ||
+    can("document:physical_manage");
+  const canViewDSC = isSuperAdmin || can("dsc:view") || can("dsc:create");
+  const canViewLedger = isSuperAdmin || can("invoice:view") || can("receipt:view");
+  const canViewPasswords = isSuperAdmin || can("vault:view");
+  const canViewExpenses = isSuperAdmin || can("expense:view");
+  const canViewPortal = isSuperAdmin || can("client:portal_manage");
+
+  const requestedTab = searchParams?.get("tab") || "details";
+  let activeTab = requestedTab;
+
+  if (activeTab === "documents" && !canViewDocuments) activeTab = "details";
+  if (activeTab === "docs-in-out" && !canViewDocuments) activeTab = "details";
+  if (activeTab === "dsc" && !canViewDSC) activeTab = "details";
+  if (activeTab === "ledger" && !canViewLedger) activeTab = "details";
+  if (activeTab === "passwords" && !canViewPasswords) activeTab = "details";
+  if (activeTab === "expenses" && !canViewExpenses) activeTab = "details";
+  if (activeTab === "portal" && !canViewPortal) activeTab = "details";
+  if (activeTab === "tasks" && !canViewTasks) activeTab = "details";
 
   const handleTabChange = (val: string) => {
     const newParams = new URLSearchParams(searchParams?.toString() || "");
@@ -212,7 +242,7 @@ export default function ClientDetailPage() {
             </h1>
             <div className="mt-1 flex items-center gap-3 text-sm text-muted-foreground">
               <span className="font-mono">
-                {client.fileNo || "No File No."}
+                {client.clientNumber || client.fileNo || "No Client Number"}
               </span>
               <span>·</span>
               <span>{client.entityType || "Unknown Entity"}</span>
@@ -230,8 +260,10 @@ export default function ClientDetailPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <EnablePortalLoginModal clientId={clientId} client={client} />
-          <EditClientDialog client={client} />
+          <Can do="client:edit">
+            <EnablePortalLoginModal clientId={clientId} client={client} />
+            <EditClientDialog client={client} />
+          </Can>
         </div>
       </div>
 
@@ -247,67 +279,93 @@ export default function ClientDetailPage() {
           >
             Details
           </TabsTrigger>
-          <TabsTrigger
-            value="services"
-            className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2 pt-1 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
-          >
-            Services
-            {client?.subscribedServices?.length
-              ? ` (${client.subscribedServices.length})`
-              : ""}
-          </TabsTrigger>
-          <TabsTrigger
-            value="retainers"
-            className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2 pt-1 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
-          >
-            Retainers
-            {client?.subscribedPackages?.length
-              ? ` (${client.subscribedPackages.length})`
-              : ""}
-          </TabsTrigger>
-          <TabsTrigger
-            value="tasks"
-            className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2 pt-1 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
-          >
-            Tasks ({clientTasks.length})
-          </TabsTrigger>
-          <TabsTrigger
-            value="documents"
-            className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2 pt-1 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
-          >
-            Documents
-          </TabsTrigger>
-          <TabsTrigger
-            value="dsc"
-            className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2 pt-1 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
-          >
-            DSC Register
-          </TabsTrigger>
-          <TabsTrigger
-            value="ledger"
-            className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2 pt-1 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
-          >
-            Ledger
-          </TabsTrigger>
 
-          <TabsTrigger
-            value="passwords"
-            className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2 pt-1 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
-          >
-            Passwords
-          </TabsTrigger>
-          <TabsTrigger
-            value="expenses"
-            className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2 pt-1 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
-          >
-            Expenses
-          </TabsTrigger>
-          <TabsTrigger
-            value="portal"
-            className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2 pt-1 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
-          >
-            Portal Access
-          </TabsTrigger>
+          {canViewServices && (
+            <TabsTrigger
+              value="services"
+              className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2 pt-1 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
+            >
+              Services
+              {client?.subscribedServices?.length
+                ? ` (${client.subscribedServices.length})`
+                : ""}
+            </TabsTrigger>
+          )}
+
+          {canViewRetainers && (
+            <TabsTrigger
+              value="retainers"
+              className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2 pt-1 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
+            >
+              Retainers
+              {client?.subscribedPackages?.length
+                ? ` (${client.subscribedPackages.length})`
+                : ""}
+            </TabsTrigger>
+          )}
+
+          {canViewTasks && (
+            <TabsTrigger
+              value="tasks"
+              className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2 pt-1 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
+            >
+              Tasks ({clientTasks.length})
+            </TabsTrigger>
+          )}
+
+          {canViewDocuments && (
+            <TabsTrigger
+              value="documents"
+              className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2 pt-1 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
+            >
+              Documents
+            </TabsTrigger>
+          )}
+
+          {canViewDSC && (
+            <TabsTrigger
+              value="dsc"
+              className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2 pt-1 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
+            >
+              DSC Register
+            </TabsTrigger>
+          )}
+
+          {canViewLedger && (
+            <TabsTrigger
+              value="ledger"
+              className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2 pt-1 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
+            >
+              Ledger
+            </TabsTrigger>
+          )}
+
+          {canViewPasswords && (
+            <TabsTrigger
+              value="passwords"
+              className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2 pt-1 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
+            >
+              Passwords
+            </TabsTrigger>
+          )}
+
+          {canViewExpenses && (
+            <TabsTrigger
+              value="expenses"
+              className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2 pt-1 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
+            >
+              Expenses
+            </TabsTrigger>
+          )}
+
+          {canViewPortal && (
+            <TabsTrigger
+              value="portal"
+              className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2 pt-1 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
+            >
+              Portal Access
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="details" className="space-y-6 pt-2">
@@ -378,21 +436,23 @@ export default function ClientDetailPage() {
                 </div>
               </CardContent>
             </Card>
-            <Card className="shadow-sm border-border">
-              <CardContent className="p-4 flex flex-col items-center justify-center text-center gap-2">
-                <div className="p-2 bg-emerald-50 text-emerald-600 rounded-full">
-                  <Wallet className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-2xl font-semibold">
-                    {client.openingBalance ? `₹${client.openingBalance}` : "₹0"}
-                  </p>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
-                    Ledger
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            {canViewLedger && (
+              <Card className="shadow-sm border-border">
+                <CardContent className="p-4 flex flex-col items-center justify-center text-center gap-2">
+                  <div className="p-2 bg-emerald-50 text-emerald-600 rounded-full">
+                    <Wallet className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-semibold">
+                      {client.openingBalance ? `₹${client.openingBalance}` : "₹0"}
+                    </p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+                      Ledger
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -405,9 +465,9 @@ export default function ClientDetailPage() {
               </CardHeader>
               <CardContent className="p-6 space-y-4">
                 <div className="grid grid-cols-[140px_1fr] gap-4 items-center">
-                  <span className="text-sm text-muted-foreground">File No</span>
+                  <span className="text-sm text-muted-foreground">Client Number</span>
                   <span className="text-sm font-medium">
-                    {client.fileNo || "—"}
+                    {client.clientNumber || client.fileNo || "—"}
                   </span>
                 </div>
                 <div className="grid grid-cols-[140px_1fr] gap-4 items-center">
@@ -599,16 +659,18 @@ export default function ClientDetailPage() {
                   client.
                 </p>
               </div>
-              <SubscribeDialog
-                clientId={clientId}
-                client={client}
-                defaultTab="service"
-                triggerButton={
-                  <Button size="sm" className="gap-2 shadow-xs">
-                    <Plus className="h-4 w-4" /> Add Service
-                  </Button>
-                }
-              />
+              <Can do={["client:services_manage", "client:edit"]}>
+                <SubscribeDialog
+                  clientId={clientId}
+                  client={client}
+                  defaultTab="service"
+                  triggerButton={
+                    <Button size="sm" className="gap-2 shadow-xs">
+                      <Plus className="h-4 w-4" /> Add Service
+                    </Button>
+                  }
+                />
+              </Can>
             </div>
 
             {/* Note banner if client has retainers */}
@@ -649,16 +711,18 @@ export default function ClientDetailPage() {
                 <p className="text-xs text-muted-foreground max-w-sm mb-2">
                   No standalone services are directly assigned to this client.
                 </p>
-                <SubscribeDialog
-                  clientId={clientId}
-                  client={client}
-                  defaultTab="service"
-                  triggerButton={
-                    <Button size="sm" variant="outline" className="gap-2">
-                      <Plus className="h-4 w-4" /> Subscribe to a Service
-                    </Button>
-                  }
-                />
+                <Can do={["client:services_manage", "client:edit"]}>
+                  <SubscribeDialog
+                    clientId={clientId}
+                    client={client}
+                    defaultTab="service"
+                    triggerButton={
+                      <Button size="sm" variant="outline" className="gap-2">
+                        <Plus className="h-4 w-4" /> Subscribe to a Service
+                      </Button>
+                    }
+                  />
+                </Can>
               </div>
             ) : (
               <ul className="divide-y">
@@ -702,35 +766,37 @@ export default function ClientDetailPage() {
                             ₹{Number(sub.customPrice).toLocaleString("en-IN")}
                           </span>
                         )}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                          title="Unsubscribe Service"
-                          onClick={async () => {
-                            if (
-                              !confirm(
-                                `Are you sure you want to unsubscribe from "${svcName}"?`,
+                        <Can do={["client:services_manage", "client:edit"]}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                            title="Unsubscribe Service"
+                            onClick={async () => {
+                              if (
+                                !confirm(
+                                  `Are you sure you want to unsubscribe from "${svcName}"?`,
+                                )
                               )
-                            )
-                              return;
-                            try {
-                              await unsubscribeService({
-                                clientId,
-                                serviceId: svcId.toString(),
-                              }).unwrap();
-                              toast.success(
-                                "Successfully unsubscribed from service",
-                              );
-                            } catch (err: any) {
-                              toast.error(
-                                err?.data?.message || "Failed to unsubscribe",
-                              );
-                            }
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                                return;
+                              try {
+                                await unsubscribeService({
+                                  clientId,
+                                  serviceId: svcId.toString(),
+                                });
+                                toast.success(
+                                  "Successfully unsubscribed from service",
+                                );
+                              } catch (err: any) {
+                                toast.error(
+                                  err?.data?.message || "Failed to unsubscribe",
+                                );
+                              }
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </Can>
                       </div>
                     </li>
                   );
@@ -746,14 +812,16 @@ export default function ClientDetailPage() {
 
         <TabsContent value="tasks" className="space-y-4">
           <div className="flex items-center justify-end">
-            <CreateTaskDialog
-              defaultClientId={clientId}
-              triggerNode={
-                <Button className="gap-2">
-                  <Plus className="h-4 w-4" /> Create Task
-                </Button>
-              }
-            />
+            <Can do="task:create">
+              <CreateTaskDialog
+                defaultClientId={clientId}
+                triggerNode={
+                  <Button className="gap-2">
+                    <Plus className="h-4 w-4" /> Create Task
+                  </Button>
+                }
+              />
+            </Can>
           </div>
           <div className="rounded-xl border bg-card shadow-sm">
             {clientTasks.length === 0 ? (
@@ -834,39 +902,59 @@ export default function ClientDetailPage() {
           </div>
         </TabsContent>
 
-        <TabsContent value="documents">
-          <ClientDocumentsTab
-            clientId={clientId}
-            clientName={client?.name}
-            initialSubTab={activeTab === "docs-in-out" ? "physical" : undefined}
-          />
-        </TabsContent>
-        <TabsContent value="dsc">
-          <ClientDSCTab clientId={clientId} />
-        </TabsContent>
-        <TabsContent value="ledger">
-          <ClientLedgerTab clientId={clientId} />
-        </TabsContent>
-        <TabsContent value="docs-in-out">
-          <ClientDocumentsTab
-            clientId={clientId}
-            clientName={client?.name}
-            initialSubTab="physical"
-          />
-        </TabsContent>
-        <TabsContent value="passwords">
-          <ClientPasswordsTab
-            clientId={clientId}
-            clientName={client?.name}
-            clientFileNo={client?.fileNo}
-          />
-        </TabsContent>
-        <TabsContent value="expenses">
-          <ClientExpensesTab clientId={clientId} clientName={client?.name} />
-        </TabsContent>
-        <TabsContent value="portal">
-          <ClientPortalTab clientId={clientId} client={client} />
-        </TabsContent>
+        {canViewDocuments && (
+          <TabsContent value="documents">
+            <ClientDocumentsTab
+              clientId={clientId}
+              clientName={client?.name}
+              initialSubTab={activeTab === "docs-in-out" ? "physical" : undefined}
+            />
+          </TabsContent>
+        )}
+
+        {canViewDSC && (
+          <TabsContent value="dsc">
+            <ClientDSCTab clientId={clientId} />
+          </TabsContent>
+        )}
+
+        {canViewLedger && (
+          <TabsContent value="ledger">
+            <ClientLedgerTab clientId={clientId} />
+          </TabsContent>
+        )}
+
+        {canViewDocuments && (
+          <TabsContent value="docs-in-out">
+            <ClientDocumentsTab
+              clientId={clientId}
+              clientName={client?.name}
+              initialSubTab="physical"
+            />
+          </TabsContent>
+        )}
+
+        {canViewPasswords && (
+          <TabsContent value="passwords">
+            <ClientPasswordsTab
+              clientId={clientId}
+              clientName={client?.name}
+              clientFileNo={client?.clientNumber || client?.fileNo}
+            />
+          </TabsContent>
+        )}
+
+        {canViewExpenses && (
+          <TabsContent value="expenses">
+            <ClientExpensesTab clientId={clientId} clientName={client?.name} />
+          </TabsContent>
+        )}
+
+        {canViewPortal && (
+          <TabsContent value="portal">
+            <ClientPortalTab clientId={clientId} client={client} />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
@@ -893,3 +981,11 @@ function InfoCard({
     </div>
   );
 }
+
+export default withPermission(ClientDetailPage, "client:view", {
+  title: "Client Profile Restricted",
+  description:
+    "You do not have permission to view client profiles. Please contact your Practice Administrator.",
+  backHref: "/clients",
+  backLabel: "Return to Clients",
+});

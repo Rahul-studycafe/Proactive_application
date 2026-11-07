@@ -5,6 +5,7 @@ export interface IAutomationLogDetail {
   clientId: {
     _id: string;
     name: string;
+    clientNumber?: string;
     fileNo?: string;
   };
   serviceId: {

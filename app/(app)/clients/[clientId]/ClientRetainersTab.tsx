@@ -30,6 +30,7 @@ import {
 import { RecurrenceBadge } from "@/components/services/RecurrenceBadge";
 import { SubscribeDialog } from "./SubscribeDialog";
 import { useUnsubscribeClientFromPackageMutation } from "@/lib/services/api";
+import { Can } from "@/contexts/PermissionsContext";
 
 interface ClientRetainersTabProps {
   clientId: string;
@@ -163,16 +164,18 @@ export function ClientRetainersTab({
               compliance services under fixed-fee billing.
             </p>
           </div>
-          <SubscribeDialog
-            clientId={clientId}
-            client={client}
-            defaultTab="package"
-            triggerButton={
-              <Button size="sm" className="gap-2 shadow-xs">
-                <Plus className="h-4 w-4" /> Add Retainer Package
-              </Button>
-            }
-          />
+          <Can do={["client:packages_manage", "client:edit"]}>
+            <SubscribeDialog
+              clientId={clientId}
+              client={client}
+              defaultTab="package"
+              triggerButton={
+                <Button size="sm" className="gap-2 shadow-xs">
+                  <Plus className="h-4 w-4" /> Add Retainer Package
+                </Button>
+              }
+            />
+          </Can>
         </CardHeader>
 
         <CardContent className="p-6">
@@ -189,16 +192,18 @@ export function ClientRetainersTab({
                 contracts. Add a retainer package to bundle GST, TDS, and ROC
                 compliances into regular recurring billing.
               </p>
-              <SubscribeDialog
-                clientId={clientId}
-                client={client}
-                defaultTab="package"
-                triggerButton={
-                  <Button size="sm" variant="outline" className="gap-2">
-                    <Plus className="h-4 w-4" /> Assign First Retainer
-                  </Button>
-                }
-              />
+              <Can do={["client:packages_manage", "client:edit"]}>
+                <SubscribeDialog
+                  clientId={clientId}
+                  client={client}
+                  defaultTab="package"
+                  triggerButton={
+                    <Button size="sm" variant="outline" className="gap-2">
+                      <Plus className="h-4 w-4" /> Assign First Retainer
+                    </Button>
+                  }
+                />
+              </Can>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -258,15 +263,17 @@ export function ClientRetainersTab({
                         </div>
                       </div>
 
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                        title="Unsubscribe Retainer"
-                        onClick={() => setPackageToDelete(sub)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <Can do={["client:packages_manage", "client:edit"]}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                          title="Unsubscribe Retainer"
+                          onClick={() => setPackageToDelete(sub)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </Can>
                     </div>
 
                     {/* Pricing & Frequency Bar */}

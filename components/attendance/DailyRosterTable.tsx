@@ -57,9 +57,10 @@ export function DailyRosterTable({
     null,
   );
 
-  const { can } = usePermissions();
+  const { can, isSuperAdmin } = usePermissions();
   const { user } = useAuth();
-  const canManage = can("attendance.manage");
+  const canManage = isSuperAdmin || can("attendance:manage");
+  const canAdjust = isSuperAdmin || can("attendance:manual_entry") || canManage;
   const isSelfOnly = !can("attendance.view_all") && can("attendance.view_self");
 
   const visibleRoster =
@@ -325,7 +326,7 @@ export function DailyRosterTable({
                     </TableCell>
 
                     {/* Actions */}
-                    {canManage && (
+                    {canAdjust && (
                       <TableCell className="text-right">
                         <Button
                           variant="ghost"

@@ -27,6 +27,8 @@ import {
 import { useGetClientsQuery } from "@/lib/services/api";
 import { type Client } from "@/lib/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Can } from "@/components/shared/Can";
+import { withPermission } from "@/components/shared/withPermission";
 
 const entityTypes = [
   "Individual",
@@ -42,7 +44,7 @@ const entityTypes = [
   "Other",
 ];
 
-export default function ClientsPage() {
+function ClientsPage() {
   const { data: clientsRes, isLoading } = useGetClientsQuery(undefined);
   const clients: Client[] = clientsRes?.clients || [];
 
@@ -53,7 +55,7 @@ export default function ClientsPage() {
     return clients.filter((c) => {
       const matchesQ =
         !q ||
-        [c.name, c.fileNo, c.email, c.mobile].some((v) =>
+        [c.name, c.clientNumber, c.fileNo, c.email, c.mobile].some((v) =>
           v?.toLowerCase().includes(q.toLowerCase()),
         );
       const matchesType = typeFilter === "all" || c.entityType === typeFilter;
@@ -73,18 +75,20 @@ export default function ClientsPage() {
           </p>
         </div>
 
-        <Button asChild>
-          <Link href="/clients/new">
-            <Plus className="mr-2 h-4 w-4" /> New Client
-          </Link>
-        </Button>
+        <Can do="client:create">
+          <Button asChild>
+            <Link href="/clients/new">
+              <Plus className="mr-2 h-4 w-4" /> New Client
+            </Link>
+          </Button>
+        </Can>
       </div>
 
       <div className="flex flex-wrap items-center gap-3 rounded-xl border bg-card p-3 shadow-sm">
         <div className="relative min-w-[260px] flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search by name, file no, email, mobile…"
+            placeholder="Search by name, client number, email, mobile…"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             className="pl-9"
@@ -118,7 +122,7 @@ export default function ClientsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead>File No.</TableHead>
+                <TableHead>Client Number</TableHead>
                 <TableHead>Entity Type</TableHead>
                 <TableHead>Mobile</TableHead>
                 <TableHead>Status</TableHead>
@@ -155,7 +159,7 @@ export default function ClientsPage() {
                     </div>
                   </TableCell>
                   <TableCell className="font-mono text-xs">
-                    {c.fileNo || "-"}
+                    {c.clientNumber || c.fileNo || "-"}
                   </TableCell>
                   <TableCell>
                     <span className="text-sm">{c.entityType || "-"}</span>
@@ -197,3 +201,5 @@ function EmptyState() {
     </div>
   );
 }
+
+export default withPermission(ClientsPage, "client:view");

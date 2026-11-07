@@ -153,6 +153,15 @@ export interface StaffAttendanceSummary {
   attendancePercentage: number;
   totalWorkingMinutes: number;
   totalOvertimeMinutes: number;
+  records?: Array<{
+    date: string;
+    status: string;
+    checkIn?: Date | string | null;
+    checkOut?: Date | string | null;
+    totalMinutes?: number;
+    overtimeMinutes?: number;
+    notes?: string;
+  }>;
 }
 
 export interface OfficePerimeterConfig {

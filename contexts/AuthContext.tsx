@@ -13,8 +13,9 @@ export interface AuthUser {
   id: string;
   name: string;
   email: string;
-  role: "Admin" | "Accountant" | "Staff" | "Team Leader";
+  role: string;
   tenant: string;
+  tenantId?: string;
   joinDate: string;
   workspace: string;
   phone: string;
@@ -22,8 +23,15 @@ export interface AuthUser {
   bio: string;
   initials: string;
   plan: string;
+  maxUsers?: number;
+  renewalDate?: string;
+  subscriptionStatus?: string;
+  subscriptionDuration?: string;
   avatar?: string;
   isOwner?: boolean;
+  isSuperAdmin?: boolean;
+  effectivePermissions?: Record<string, { allowed: boolean; scope: string }>;
+  roles?: { id: string; name: string }[];
 }
 
 interface AuthContextValue {
@@ -112,20 +120,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   if (data?.user) {
     const backendUser = data.user;
+    const tenant = backendUser.tenantId;
+    const maxUsers = tenant?.plan?.maxUsers || 5;
+    const tierName =
+      maxUsers <= 5
+        ? "Starter"
+        : maxUsers <= 15
+          ? "Professional"
+          : "Enterprise";
+
     user = {
       id: backendUser._id || backendUser.id,
       name: backendUser.name || backendUser.username,
       email: backendUser.email,
       role: backendUser.roleId?.name || "Admin",
-      tenant: backendUser.tenantId?.name || "Workspace",
+      tenant: tenant?.name || "Workspace",
+      tenantId: tenant?._id,
       joinDate: backendUser.createdAt,
-      workspace: backendUser.tenantId?.name || "Default Workspace",
+      workspace: tenant?.name || "Default Workspace",
       phone: backendUser.phone || "",
       location: backendUser.location || "",
       bio: backendUser.bio || "",
-      plan: backendUser.tenantId?.plan?.razorpaySubscriptionId
-        ? "Premium"
-        : "Free",
+      plan: tierName,
+      maxUsers: maxUsers,
+      renewalDate: tenant?.renewalDate,
+      subscriptionStatus: tenant?.subscriptionStatus || "active",
+      subscriptionDuration: tenant?.subscriptionDuration || "monthly",
       avatar: backendUser.photoUrl
         ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}${backendUser.photoUrl}`
         : undefined,
@@ -135,6 +155,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         "U"
       ).toUpperCase(),
       isOwner: backendUser.isOwner || false,
+      isSuperAdmin: backendUser.isSuperAdmin || backendUser.isOwner || false,
+      effectivePermissions: backendUser.effectivePermissions || {},
+      roles: backendUser.roles || (backendUser.roleId ? [{ id: backendUser.roleId._id, name: backendUser.roleId.name }] : []),
     };
   }
 

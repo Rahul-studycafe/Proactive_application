@@ -32,6 +32,8 @@ import {
 import { useGetInvoiceByIdQuery } from "@/lib/services/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { withPermission } from "@/components/shared/withPermission";
+import { Can } from "@/contexts/PermissionsContext";
 
 // ─── Status badge styling ───────────────────────────────────────
 const statusStyle: Record<string, string> = {
@@ -132,7 +134,7 @@ function numberToWordsIndian(num: number): string {
   return `Rupees ${inWords(rounded).trim()} Only`;
 }
 
-export default function ViewInvoicePage() {
+function ViewInvoicePage() {
   const params = useParams();
   const router = useRouter();
   const invoiceId = (params?.invoiceId as string) || "";
@@ -239,21 +241,25 @@ export default function ViewInvoicePage() {
             <Share2 className="mr-1.5 h-4 w-4" /> Share
           </Button>
           {invoice.status !== "Draft" && invoice.status !== "Cancelled" && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsCreditNoteModalOpen(true)}
-              className="gap-1.5 text-xs text-purple-600 dark:text-purple-400 border-purple-500/30 hover:bg-purple-500/10"
-            >
-              <FileMinus className="h-4 w-4" /> Issue Credit Note
-            </Button>
+            <Can do="credit_note:create">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsCreditNoteModalOpen(true)}
+                className="gap-1.5 text-xs text-purple-600 dark:text-purple-400 border-purple-500/30 hover:bg-purple-500/10"
+              >
+                <FileMinus className="h-4 w-4" /> Issue Credit Note
+              </Button>
+            </Can>
           )}
           {invoice.status === "Draft" && (
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/invoices/new?id=${invoice._id}`}>
-                <Pencil className="mr-1.5 h-4 w-4" /> Edit Draft
-              </Link>
-            </Button>
+            <Can do="invoice:edit">
+              <Button asChild variant="outline" size="sm">
+                <Link href={`/invoices/new?id=${invoice._id}`}>
+                  <Pencil className="mr-1.5 h-4 w-4" /> Edit Draft
+                </Link>
+              </Button>
+            </Can>
           )}
           <Button size="sm" onClick={handlePrint} className="gap-1.5">
             <Printer className="h-4 w-4" /> Print
@@ -597,3 +603,11 @@ export default function ViewInvoicePage() {
     </div>
   );
 }
+
+export default withPermission(ViewInvoicePage, "invoice:view", {
+  title: "Invoice Access Restricted",
+  description:
+    "You do not have permission to view invoice details. Please contact your Practice Administrator.",
+  backHref: "/invoices",
+  backLabel: "Return to Invoices",
+});

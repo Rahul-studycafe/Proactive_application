@@ -76,7 +76,7 @@ export function TopBar() {
           <DropdownMenuContent align="end" className="w-48">
             {/* <DropdownMenuLabel>{user?.email}</DropdownMenuLabel> */}
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push("/profile")}>
+            <DropdownMenuItem onClick={() => router.push("/settings/profile")}>
               <User className="mr-2 h-4 w-4" /> Profile
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleLogout}>

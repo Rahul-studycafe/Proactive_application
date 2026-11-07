@@ -12,6 +12,7 @@ export interface ClientExpense {
     | {
         _id: string;
         name: string;
+        clientNumber?: string;
         fileNo?: string;
         pan?: string;
         email?: string;

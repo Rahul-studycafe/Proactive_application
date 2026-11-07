@@ -25,6 +25,7 @@ import {
   useGetMonthlyMatrixQuery,
 } from "@/lib/services/api";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
+import { withPermission } from "@/components/shared/withPermission";
 import {
   Card,
   CardContent,
@@ -70,7 +71,7 @@ export interface StaffSummaryPageViewProps {
   userId: string;
 }
 
-export function StaffSummaryPageView({ userId }: StaffSummaryPageViewProps) {
+function StaffSummaryPageViewComponent({ userId }: StaffSummaryPageViewProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const currentDate = new Date();
@@ -631,3 +632,15 @@ export function StaffSummaryPageView({ userId }: StaffSummaryPageViewProps) {
     </div>
   );
 }
+
+export const StaffSummaryPageView = withPermission(
+  StaffSummaryPageViewComponent,
+  "attendance:view",
+  {
+    title: "Staff Summary Restricted",
+    description:
+      "You do not have permission to view staff attendance summaries. Please contact your Practice Administrator.",
+    backHref: "/attendance/matrix",
+    backLabel: "Return to Matrix",
+  },
+);

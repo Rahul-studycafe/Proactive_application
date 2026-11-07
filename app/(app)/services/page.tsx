@@ -5,8 +5,17 @@ import { ServicesTable } from "./ServicesTable";
 import { PackagesTable } from "./PackagesTable";
 import { CreateServiceDialog } from "./CreateServiceDialog";
 import { CreatePackageDialog } from "./CreatePackageDialog";
+import { withPermission } from "@/components/shared/withPermission";
+import { usePermissions, Can } from "@/contexts/PermissionsContext";
 
-export default function ServicesPage() {
+function ServicesPage() {
+  const { can, isSuperAdmin } = usePermissions();
+
+  const canViewServices = isSuperAdmin || can("service:view");
+  const canViewPackages = isSuperAdmin || can("package:view");
+
+  const defaultTab = canViewServices ? "services" : canViewPackages ? "packages" : "services";
+
   return (
     <div className="space-y-5">
       <div>
@@ -18,26 +27,46 @@ export default function ServicesPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="services" className="space-y-4">
-        <div className="flex items-center justify-between">
+      <Tabs defaultValue={defaultTab} className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <TabsList>
-            <TabsTrigger value="services">Services (Blueprints)</TabsTrigger>
-            <TabsTrigger value="packages">Packages (Commercial)</TabsTrigger>
+            {canViewServices && (
+              <TabsTrigger value="services">Services (Blueprints)</TabsTrigger>
+            )}
+            {canViewPackages && (
+              <TabsTrigger value="packages">Packages (Commercial)</TabsTrigger>
+            )}
           </TabsList>
 
           <div className="flex items-center gap-2">
-            <CreateServiceDialog />
-            <CreatePackageDialog />
+            <Can do="service:create">
+              <CreateServiceDialog />
+            </Can>
+            <Can do="package:create">
+              <CreatePackageDialog />
+            </Can>
           </div>
         </div>
 
-        <TabsContent value="services" className="m-0">
-          <ServicesTable />
-        </TabsContent>
-        <TabsContent value="packages" className="m-0">
-          <PackagesTable />
-        </TabsContent>
+        {canViewServices && (
+          <TabsContent value="services" className="m-0">
+            <ServicesTable />
+          </TabsContent>
+        )}
+        {canViewPackages && (
+          <TabsContent value="packages" className="m-0">
+            <PackagesTable />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
 }
+
+export default withPermission(ServicesPage, ["service:view", "package:view"], {
+  title: "Services Catalog Access Restricted",
+  description:
+    "You do not have permission to view services or packages. Please contact your Practice Administrator.",
+  backHref: "/",
+  backLabel: "Return to Dashboard",
+});

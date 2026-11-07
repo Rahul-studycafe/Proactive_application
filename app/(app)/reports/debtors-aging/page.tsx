@@ -44,8 +44,9 @@ import {
   ExcelExportButton,
 } from "@/components/reports";
 import { DebtorsAgingItem } from "@/lib/types/report";
+import { withPermission } from "@/components/shared/withPermission";
 
-export default function DebtorsAgingReportPage() {
+function DebtorsAgingReportPage() {
   const [selectedClientId, setSelectedClientId] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -456,3 +457,11 @@ export default function DebtorsAgingReportPage() {
     </ReportLayout>
   );
 }
+
+export default withPermission(DebtorsAgingReportPage, "report:view", {
+  title: "Debtors Aging Report Restricted",
+  description:
+    "You do not have permission to view debtors aging analysis reports. Please contact your Practice Administrator.",
+  backHref: "/",
+  backLabel: "Return to Dashboard",
+});

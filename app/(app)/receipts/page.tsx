@@ -41,6 +41,8 @@ import {
 import { useGetReceiptsQuery } from "@/lib/services/api";
 import { CreateReceiptDialog } from "./CreateReceiptDialog";
 import { ReceiptDetailsDialog } from "./ReceiptDetailsDialog";
+import { withPermission } from "@/components/shared/withPermission";
+import { Can } from "@/contexts/PermissionsContext";
 
 function formatCurrency(amount: number) {
   return `₹${(amount || 0).toLocaleString("en-IN", {
@@ -105,7 +107,7 @@ const getPaymentModeBadge = (mode: string) => {
   }
 };
 
-export default function ReceiptsPage() {
+function ReceiptsPage() {
   const [page, setPage] = useState(1);
   const [modeFilter, setModeFilter] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -169,9 +171,11 @@ export default function ReceiptsPage() {
             reconciliation.
           </p>
         </div>
-        <Button onClick={() => setCreateDialogOpen(true)} className="gap-2">
-          <Plus className="h-4 w-4" /> Record Payment
-        </Button>
+        <Can do="receipt:create">
+          <Button onClick={() => setCreateDialogOpen(true)} className="gap-2">
+            <Plus className="h-4 w-4" /> Record Payment
+          </Button>
+        </Can>
       </div>
 
       {/* KPI Cards */}
@@ -403,3 +407,11 @@ export default function ReceiptsPage() {
     </div>
   );
 }
+
+export default withPermission(ReceiptsPage, "receipt:view", {
+  title: "Receipts Access Restricted",
+  description:
+    "You do not have permission to view receipts and payment logs. Please contact your Practice Administrator.",
+  backHref: "/",
+  backLabel: "Return to Dashboard",
+});

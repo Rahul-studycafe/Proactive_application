@@ -49,8 +49,10 @@ import {
   QuotationStatusBadge,
   ConvertToInvoiceButton,
 } from "@/components/quotations";
+import { withPermission } from "@/components/shared/withPermission";
+import { Can } from "@/contexts/PermissionsContext";
 
-export default function QuotationViewPrintPage() {
+function QuotationViewPrintPage() {
   const params = useParams();
   const router = useRouter();
   const quoteId = params?.quoteId as string;
@@ -184,62 +186,66 @@ export default function QuotationViewPrintPage() {
         <div className="flex flex-wrap items-center gap-2">
           {/* Quick Status Changer Dropdown */}
           {!isConverted && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-9 text-xs">
-                  Status: {quotation.status}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="text-xs">
-                <DropdownMenuLabel>Update Proposal Status</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => handleStatusChange("Draft")}
-                  disabled={quotation.status === "Draft"}
-                  className="cursor-pointer"
-                >
-                  <Clock className="h-3.5 w-3.5 mr-2 text-slate-500" />
-                  Mark as Draft
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => handleStatusChange("Sent")}
-                  disabled={quotation.status === "Sent"}
-                  className="cursor-pointer"
-                >
-                  <Send className="h-3.5 w-3.5 mr-2 text-blue-500" />
-                  Mark as Sent
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => handleStatusChange("Accepted")}
-                  disabled={quotation.status === "Accepted"}
-                  className="cursor-pointer"
-                >
-                  <CheckCircle2 className="h-3.5 w-3.5 mr-2 text-emerald-500" />
-                  Mark as Accepted
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => handleStatusChange("Declined")}
-                  disabled={quotation.status === "Declined"}
-                  className="cursor-pointer text-destructive focus:text-destructive"
-                >
-                  <XCircle className="h-3.5 w-3.5 mr-2" />
-                  Mark as Declined
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Can do="quotation:edit">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-9 text-xs">
+                    Status: {quotation.status}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="text-xs">
+                  <DropdownMenuLabel>Update Proposal Status</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => handleStatusChange("Draft")}
+                    disabled={quotation.status === "Draft"}
+                    className="cursor-pointer"
+                  >
+                    <Clock className="h-3.5 w-3.5 mr-2 text-slate-500" />
+                    Mark as Draft
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleStatusChange("Sent")}
+                    disabled={quotation.status === "Sent"}
+                    className="cursor-pointer"
+                  >
+                    <Send className="h-3.5 w-3.5 mr-2 text-blue-500" />
+                    Mark as Sent
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleStatusChange("Accepted")}
+                    disabled={quotation.status === "Accepted"}
+                    className="cursor-pointer"
+                  >
+                    <CheckCircle2 className="h-3.5 w-3.5 mr-2 text-emerald-500" />
+                    Mark as Accepted
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleStatusChange("Declined")}
+                    disabled={quotation.status === "Declined"}
+                    className="cursor-pointer text-destructive focus:text-destructive"
+                  >
+                    <XCircle className="h-3.5 w-3.5 mr-2" />
+                    Mark as Declined
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </Can>
           )}
 
           {/* Send Email */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleSendEmail}
-            disabled={isSendingEmail}
-            className="h-9 gap-1.5 text-xs"
-          >
-            <Send className="h-3.5 w-3.5 text-muted-foreground" />
-            Send Email
-          </Button>
+          <Can do="quotation:edit">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSendEmail}
+              disabled={isSendingEmail}
+              className="h-9 gap-1.5 text-xs"
+            >
+              <Send className="h-3.5 w-3.5 text-muted-foreground" />
+              Send Email
+            </Button>
+          </Can>
 
           {/* Print Button */}
           <Button
@@ -253,7 +259,9 @@ export default function QuotationViewPrintPage() {
           </Button>
 
           {/* 1-Click Convert to Invoice Button (F-109) */}
-          <ConvertToInvoiceButton quotation={quotation} size="sm" />
+          <Can do="invoice:create">
+            <ConvertToInvoiceButton quotation={quotation} size="sm" />
+          </Can>
         </div>
       </div>
 
@@ -352,7 +360,7 @@ export default function QuotationViewPrintPage() {
                 {client?.name || "Client Name"}
               </h4>
               <p className="text-xs text-muted-foreground">
-                {client?.fileNo && <span>File No: {client.fileNo} • </span>}
+                {(client?.clientNumber || client?.fileNo) && <span>Client No: {client.clientNumber || client.fileNo} • </span>}
                 {client?.pan && <span>PAN: {client.pan}</span>}
                 {client?.gstin && <span> • GSTIN: {client.gstin}</span>}
               </p>
@@ -661,3 +669,11 @@ export default function QuotationViewPrintPage() {
     </div>
   );
 }
+
+export default withPermission(QuotationViewPrintPage, "quotation:view", {
+  title: "Quotation Access Restricted",
+  description:
+    "You do not have permission to view quotation proposals. Please contact your Practice Administrator.",
+  backHref: "/quotations",
+  backLabel: "Return to Quotations",
+});

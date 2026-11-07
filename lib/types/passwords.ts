@@ -11,7 +11,7 @@ export interface PortalMaster {
 
 export interface ClientPassword {
   _id: string;
-  clientId: string | { _id: string; name: string; fileNo?: string };
+  clientId: string | { _id: string; name: string; clientNumber?: string; fileNo?: string };
   portalId?: string;
   portalName: string;
   portalUrl?: string;
@@ -77,7 +77,7 @@ export interface PasswordAuditLog {
   _id: string;
   tenantId?: string;
   passwordId: string;
-  clientId?: { _id: string; name: string; fileNo?: string };
+  clientId?: { _id: string; name: string; clientNumber?: string; fileNo?: string };
   portalName: string;
   username: string;
   accessedByUserId?: {

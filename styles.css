@@ -170,6 +170,11 @@
   * {
     border-color: var(--color-border);
   }
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+  }
   html {
     color-scheme: light;
   }
@@ -181,7 +186,6 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-    min-height: 100vh;
   }
 
   /* Custom Scrollbar Styles conforming to active theme */

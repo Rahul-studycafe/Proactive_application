@@ -20,6 +20,7 @@ import {
   Zap,
   History,
   Sparkles,
+  User,
 } from "lucide-react";
 
 import { mockUsers } from "@/lib/mock-data";
@@ -36,9 +37,12 @@ import {
 import { HolidaysView } from "@/components/holidays/HolidaysView";
 import { WorkingDaysView } from "@/components/settings/WorkingDaysView";
 import { UsersSettingsView } from "@/components/settings/UsersSettingsView";
+import { UserRolesSettingsView } from "@/components/settings/UserRolesSettingsView";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { QueueHealthCard } from "@/components/automation/QueueHealthCard";
 import { TriggerAutomationModal } from "@/components/automation/TriggerAutomationModal";
+import { usePermissions } from "@/contexts/PermissionsContext";
+import { AccessRestricted } from "@/components/shared/AccessRestricted";
 
 interface SettingModule {
   id: string;
@@ -47,6 +51,8 @@ interface SettingModule {
   icon: any;
   colorClass: string;
   category: "User" | "Client" | "Billing" | "System";
+  requiredPermission?: string | string[];
+  superAdminOnly?: boolean;
 }
 
 const SETTING_MODULES: SettingModule[] = [
@@ -60,6 +66,7 @@ const SETTING_MODULES: SettingModule[] = [
     colorClass:
       "bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400",
     category: "System",
+    superAdminOnly: true,
   },
   {
     id: "website-cms",
@@ -70,6 +77,8 @@ const SETTING_MODULES: SettingModule[] = [
     colorClass:
       "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400",
     category: "System",
+    requiredPermission: ["settings:manage", "settings:view"],
+    superAdminOnly: true,
   },
   {
     id: "automation-settings",
@@ -80,8 +89,21 @@ const SETTING_MODULES: SettingModule[] = [
     colorClass:
       "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400",
     category: "System",
+    requiredPermission: "settings:manage",
+    superAdminOnly: true,
   },
   // User Section
+  {
+    id: "profile",
+    title: "My Profile",
+    description:
+      "Manage your personal details, profile avatar, security, and subscription.",
+    icon: User,
+    colorClass:
+      "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400",
+    category: "User",
+    // Open to all authenticated users
+  },
   {
     id: "users",
     title: "Users",
@@ -90,6 +112,7 @@ const SETTING_MODULES: SettingModule[] = [
     colorClass:
       "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400",
     category: "User",
+    requiredPermission: ["user:view", "user:create", "user:edit"],
   },
   {
     id: "user-roles",
@@ -100,6 +123,7 @@ const SETTING_MODULES: SettingModule[] = [
     colorClass:
       "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400",
     category: "User",
+    requiredPermission: ["role:view", "role:manage"],
   },
   {
     id: "user-notifications",
@@ -110,6 +134,7 @@ const SETTING_MODULES: SettingModule[] = [
     colorClass:
       "bg-teal-50 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400",
     category: "User",
+    requiredPermission: ["user:view", "settings:view", "settings:manage"],
   },
   {
     id: "attendance-settings",
@@ -119,6 +144,7 @@ const SETTING_MODULES: SettingModule[] = [
     colorClass:
       "bg-orange-50 text-orange-600 dark:bg-orange-950/40 dark:text-orange-400",
     category: "User",
+    requiredPermission: ["attendance:manage", "settings:manage"],
   },
   {
     id: "holidays-list",
@@ -128,6 +154,7 @@ const SETTING_MODULES: SettingModule[] = [
     icon: Palmtree,
     colorClass: "bg-sky-50 text-sky-600 dark:bg-sky-950/40 dark:text-sky-400",
     category: "User",
+    requiredPermission: ["attendance:manage", "settings:manage"],
   },
   {
     id: "user-replacement",
@@ -137,6 +164,7 @@ const SETTING_MODULES: SettingModule[] = [
     colorClass:
       "bg-stone-100 text-stone-600 dark:bg-stone-900 dark:text-stone-300",
     category: "User",
+    requiredPermission: ["user:edit", "user:create"],
   },
 
   // Client Section
@@ -148,6 +176,7 @@ const SETTING_MODULES: SettingModule[] = [
     colorClass:
       "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400",
     category: "Client",
+    requiredPermission: ["client:edit", "settings:manage"],
   },
   {
     id: "client-groups",
@@ -157,6 +186,7 @@ const SETTING_MODULES: SettingModule[] = [
     colorClass:
       "bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400",
     category: "Client",
+    requiredPermission: ["client:edit", "settings:manage"],
   },
   {
     id: "portals-list",
@@ -166,6 +196,7 @@ const SETTING_MODULES: SettingModule[] = [
     colorClass:
       "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400",
     category: "Client",
+    requiredPermission: ["client:portal_manage", "settings:manage"],
   },
 
   // Billing Section
@@ -178,6 +209,8 @@ const SETTING_MODULES: SettingModule[] = [
     colorClass:
       "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400",
     category: "Billing",
+    requiredPermission: ["billing:manage", "settings:manage"],
+    superAdminOnly: true,
   },
   {
     id: "billing-preferences",
@@ -187,6 +220,12 @@ const SETTING_MODULES: SettingModule[] = [
     colorClass:
       "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400",
     category: "Billing",
+    requiredPermission: [
+      "invoice:edit",
+      "invoice:create",
+      "billing:manage",
+      "settings:manage",
+    ],
   },
   {
     id: "billing-entities",
@@ -197,6 +236,8 @@ const SETTING_MODULES: SettingModule[] = [
     colorClass:
       "bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400",
     category: "Billing",
+    requiredPermission: ["billing:manage", "settings:manage"],
+    superAdminOnly: true,
   },
 ];
 
@@ -209,6 +250,18 @@ function SettingsContent() {
     initialModule,
   );
 
+  const { can, isSuperAdmin } = usePermissions();
+
+  const isModulePermitted = (m: SettingModule) => {
+    if (isSuperAdmin) return true;
+    if (m.superAdminOnly) return false;
+    if (!m.requiredPermission) return true;
+    if (Array.isArray(m.requiredPermission)) {
+      return m.requiredPermission.some((p) => can(p));
+    }
+    return can(m.requiredPermission);
+  };
+
   useEffect(() => {
     const mod = searchParams.get("module");
     if (mod) {
@@ -217,6 +270,10 @@ function SettingsContent() {
   }, [searchParams]);
 
   const selectModule = (id: string) => {
+    if (id === "profile") {
+      router.push("/settings/profile");
+      return;
+    }
     if (id === "website-cms") {
       router.push("/settings/website");
       return;
@@ -244,8 +301,27 @@ function SettingsContent() {
 
   const currentModuleObj = SETTING_MODULES.find((m) => m.id === activeModule);
 
-  // If a module is active, show the module content with Back Header
+  // If a module is active, check permissions before rendering
   if (activeModule) {
+    if (currentModuleObj && !isModulePermitted(currentModuleObj)) {
+      return (
+        <div className="space-y-6">
+          <Breadcrumbs
+            items={[
+              { label: "Settings", href: "/settings", onClick: backToSettings },
+              { label: currentModuleObj.title || "Module Settings" },
+            ]}
+          />
+          <AccessRestricted
+            title={`Access to ${currentModuleObj.title} is Restricted`}
+            description="You do not have administrative permissions to view or configure this setting module. Please contact your Practice Super Admin."
+            backHref="/settings"
+            backLabel="Return to Settings"
+          />
+        </div>
+      );
+    }
+
     return (
       <div className="space-y-6">
         <Breadcrumbs
@@ -293,10 +369,12 @@ function SettingsContent() {
             </div>
           )}
           {activeModule === "users" && <UsersSettingsView />}
+          {activeModule === "user-roles" && <UserRolesSettingsView />}
           {activeModule !== "holidays-list" &&
             activeModule !== "attendance-settings" &&
             activeModule !== "automation-settings" &&
-            activeModule !== "users" && (
+            activeModule !== "users" &&
+            activeModule !== "user-roles" && (
               <div className="rounded-xl border bg-card p-12 text-center shadow-sm">
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground mb-3">
                   <Settings2 className="h-6 w-6" />
@@ -320,6 +398,35 @@ function SettingsContent() {
     );
   }
 
+  // Filter modules by permissions for each category
+  const userModules = SETTING_MODULES.filter(
+    (m) => m.category === "User" && isModulePermitted(m)
+  );
+  const clientModules = SETTING_MODULES.filter(
+    (m) => m.category === "Client" && isModulePermitted(m)
+  );
+  const billingModules = SETTING_MODULES.filter(
+    (m) => m.category === "Billing" && isModulePermitted(m)
+  );
+  const systemModules = SETTING_MODULES.filter(
+    (m) => m.category === "System" && isModulePermitted(m)
+  );
+
+  const totalPermitted =
+    userModules.length +
+    clientModules.length +
+    billingModules.length +
+    systemModules.length;
+
+  if (totalPermitted === 0) {
+    return (
+      <AccessRestricted
+        title="Settings Access Restricted"
+        description="You do not have permissions to access any practice management settings. Please contact your Practice Super Admin."
+      />
+    );
+  }
+
   // Main Settings Hub (Categories and Cards)
   return (
     <div className="space-y-8 max-w-7xl">
@@ -328,81 +435,13 @@ function SettingsContent() {
       </div>
 
       {/* User Section */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold tracking-tight text-foreground">
-          User
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {SETTING_MODULES.filter((m) => m.category === "User").map((mod) => {
-            const IconComponent = mod.icon;
-            return (
-              <button
-                key={mod.id}
-                type="button"
-                onClick={() => selectModule(mod.id)}
-                className="flex items-start gap-4 rounded-xl border bg-card p-4 text-left transition-all hover:bg-muted/30 hover:border-border/80 hover:shadow-sm group focus:outline-none focus:ring-2 focus:ring-primary/20"
-              >
-                <div
-                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform group-hover:scale-105 ${mod.colorClass}`}
-                >
-                  <IconComponent className="h-6 w-6" />
-                </div>
-                <div className="space-y-1 min-w-0">
-                  <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
-                    {mod.title}
-                  </h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
-                    {mod.description}
-                  </p>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Client Section */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold tracking-tight text-foreground">
-          Client
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {SETTING_MODULES.filter((m) => m.category === "Client").map((mod) => {
-            const IconComponent = mod.icon;
-            return (
-              <button
-                key={mod.id}
-                type="button"
-                onClick={() => selectModule(mod.id)}
-                className="flex items-start gap-4 rounded-xl border bg-card p-4 text-left transition-all hover:bg-muted/30 hover:border-border/80 hover:shadow-sm group focus:outline-none focus:ring-2 focus:ring-primary/20"
-              >
-                <div
-                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform group-hover:scale-105 ${mod.colorClass}`}
-                >
-                  <IconComponent className="h-6 w-6" />
-                </div>
-                <div className="space-y-1 min-w-0">
-                  <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
-                    {mod.title}
-                  </h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
-                    {mod.description}
-                  </p>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Billing Section */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold tracking-tight text-foreground">
-          Billing
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {SETTING_MODULES.filter((m) => m.category === "Billing").map(
-            (mod) => {
+      {userModules.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            User
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {userModules.map((mod) => {
               const IconComponent = mod.icon;
               return (
                 <button
@@ -426,44 +465,118 @@ function SettingsContent() {
                   </div>
                 </button>
               );
-            },
-          )}
+            })}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Client Section */}
+      {clientModules.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            Client
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {clientModules.map((mod) => {
+              const IconComponent = mod.icon;
+              return (
+                <button
+                  key={mod.id}
+                  type="button"
+                  onClick={() => selectModule(mod.id)}
+                  className="flex items-start gap-4 rounded-xl border bg-card p-4 text-left transition-all hover:bg-muted/30 hover:border-border/80 hover:shadow-sm group focus:outline-none focus:ring-2 focus:ring-primary/20"
+                >
+                  <div
+                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform group-hover:scale-105 ${mod.colorClass}`}
+                  >
+                    <IconComponent className="h-6 w-6" />
+                  </div>
+                  <div className="space-y-1 min-w-0">
+                    <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                      {mod.title}
+                    </h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                      {mod.description}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Billing Section */}
+      {billingModules.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            Billing
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {billingModules.map((mod) => {
+              const IconComponent = mod.icon;
+              return (
+                <button
+                  key={mod.id}
+                  type="button"
+                  onClick={() => selectModule(mod.id)}
+                  className="flex items-start gap-4 rounded-xl border bg-card p-4 text-left transition-all hover:bg-muted/30 hover:border-border/80 hover:shadow-sm group focus:outline-none focus:ring-2 focus:ring-primary/20"
+                >
+                  <div
+                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform group-hover:scale-105 ${mod.colorClass}`}
+                  >
+                    <IconComponent className="h-6 w-6" />
+                  </div>
+                  <div className="space-y-1 min-w-0">
+                    <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                      {mod.title}
+                    </h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                      {mod.description}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* System & Automation Section */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold tracking-tight text-foreground">
-          System & Automation
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {SETTING_MODULES.filter((m) => m.category === "System").map((mod) => {
-            const IconComponent = mod.icon;
-            return (
-              <button
-                key={mod.id}
-                type="button"
-                onClick={() => selectModule(mod.id)}
-                className="flex items-start gap-4 rounded-xl border bg-card p-4 text-left transition-all hover:bg-muted/30 hover:border-border/80 hover:shadow-sm group focus:outline-none focus:ring-2 focus:ring-primary/20"
-              >
-                <div
-                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform group-hover:scale-105 ${mod.colorClass}`}
+      {systemModules.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            System & Automation
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {systemModules.map((mod) => {
+              const IconComponent = mod.icon;
+              return (
+                <button
+                  key={mod.id}
+                  type="button"
+                  onClick={() => selectModule(mod.id)}
+                  className="flex items-start gap-4 rounded-xl border bg-card p-4 text-left transition-all hover:bg-muted/30 hover:border-border/80 hover:shadow-sm group focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
-                  <IconComponent className="h-6 w-6" />
-                </div>
-                <div className="space-y-1 min-w-0">
-                  <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
-                    {mod.title}
-                  </h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
-                    {mod.description}
-                  </p>
-                </div>
-              </button>
-            );
-          })}
+                  <div
+                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform group-hover:scale-105 ${mod.colorClass}`}
+                  >
+                    <IconComponent className="h-6 w-6" />
+                  </div>
+                  <div className="space-y-1 min-w-0">
+                    <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                      {mod.title}
+                    </h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                      {mod.description}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

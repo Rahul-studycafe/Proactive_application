@@ -299,7 +299,7 @@ export function WorkingDaysView({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b">
         <div>
           <div className="flex items-center gap-2.5">
-            <h2 className="text-2xl font-bold tracking-tight">
+            <h2 className="text-2xl font-semibold tracking-tight">
               Working Days & Office Perimeter
             </h2>
             <Badge
