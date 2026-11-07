@@ -972,7 +972,8 @@ function NewClientPage() {
                                     <>
                                       <span>•</span>
                                       <span>
-                                        ₹{svc.defaultBillingRate.toLocaleString()}
+                                        ₹
+                                        {svc.defaultBillingRate.toLocaleString()}
                                       </span>
                                     </>
                                   ) : null}

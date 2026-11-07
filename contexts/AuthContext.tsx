@@ -157,7 +157,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isOwner: backendUser.isOwner || false,
       isSuperAdmin: backendUser.isSuperAdmin || backendUser.isOwner || false,
       effectivePermissions: backendUser.effectivePermissions || {},
-      roles: backendUser.roles || (backendUser.roleId ? [{ id: backendUser.roleId._id, name: backendUser.roleId.name }] : []),
+      roles:
+        backendUser.roles ||
+        (backendUser.roleId
+          ? [{ id: backendUser.roleId._id, name: backendUser.roleId.name }]
+          : []),
     };
   }
 

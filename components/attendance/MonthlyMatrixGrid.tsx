@@ -64,11 +64,10 @@ export function MonthlyMatrixGrid() {
 
   const { can, isSuperAdmin } = usePermissions();
   const { user } = useAuth();
-  const canManualEntry = isSuperAdmin || can("attendance:manual_entry") || can("attendance:manage");
+  const canManualEntry =
+    isSuperAdmin || can("attendance:manual_entry") || can("attendance:manage");
   const canViewAllMatrix =
-    isSuperAdmin ||
-    can("attendance:matrix_view") ||
-    can("attendance:view_all");
+    isSuperAdmin || can("attendance:matrix_view") || can("attendance:view_all");
   const isSelfOnly = !canViewAllMatrix;
 
   // Selection states for Modals & Drawer

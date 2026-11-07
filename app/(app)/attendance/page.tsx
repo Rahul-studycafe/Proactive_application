@@ -214,5 +214,5 @@ export default withPermission(
       "You do not have permission to view attendance records. Please contact your Practice Administrator.",
     backHref: "/",
     backLabel: "Return to Dashboard",
-  }
+  },
 );

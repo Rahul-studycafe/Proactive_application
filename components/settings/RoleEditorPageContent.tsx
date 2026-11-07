@@ -64,22 +64,25 @@ const CATEGORY_ICONS: Record<string, any> = {
   "Clients & CRM": Users,
   "Tasks & Workflows": CheckSquare,
   "Billing & Invoices": Landmark,
-  "Quotations": FileSpreadsheet,
+  Quotations: FileSpreadsheet,
   "Receipts & Payments": CreditCard,
   "Expenses & Outlays": Receipt,
   "Services & Packages": Layers,
   "DSC Management": KeyRound,
   "Password Vault": Lock,
-  "Documents": Files,
+  Documents: Files,
   "HR & Attendance": CalendarCheck,
   "Reports & Analytics": BarChart3,
   "Firm Administration": Settings2,
 };
 
 const SCOPE_EXPLANATIONS: Record<string, string> = {
-  everything: "Unrestricted access across all clients, records, and staff members.",
-  team_only: "Restricted to records belonging to the user's assigned department or branch.",
-  assigned_only: "Strictly restricted to records where this user is directly assigned or creator.",
+  everything:
+    "Unrestricted access across all clients, records, and staff members.",
+  team_only:
+    "Restricted to records belonging to the user's assigned department or branch.",
+  assigned_only:
+    "Strictly restricted to records where this user is directly assigned or creator.",
 };
 
 export function RoleEditorPageContent({ roleId }: RoleEditorPageContentProps) {
@@ -95,10 +98,8 @@ export function RoleEditorPageContent({ roleId }: RoleEditorPageContentProps) {
     skip: isNew,
   });
 
-  const {
-    data: catalogueData,
-    isLoading: isLoadingCatalogue,
-  } = useGetPermissionsCatalogueQuery(undefined);
+  const { data: catalogueData, isLoading: isLoadingCatalogue } =
+    useGetPermissionsCatalogueQuery(undefined);
 
   const [createRole, { isLoading: isCreating }] = useCreateRoleMutation();
   const [updateRole, { isLoading: isUpdating }] = useUpdateRoleMutation();
@@ -116,13 +117,19 @@ export function RoleEditorPageContent({ roleId }: RoleEditorPageContentProps) {
   const [activeCategory, setActiveCategory] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
   const [permissionsState, setPermissionsState] = useState<
-    Record<string, { allowed: boolean; scope: "everything" | "team_only" | "assigned_only" }>
+    Record<
+      string,
+      { allowed: boolean; scope: "everything" | "team_only" | "assigned_only" }
+    >
   >({});
   const [hasInitialized, setHasInitialized] = useState(false);
   const [initialBaseline, setInitialBaseline] = useState<{
     name: string;
     description: string;
-    permissions: Record<string, { allowed: boolean; scope: "everything" | "team_only" | "assigned_only" }>;
+    permissions: Record<
+      string,
+      { allowed: boolean; scope: "everything" | "team_only" | "assigned_only" }
+    >;
   } | null>(null);
 
   // Set default active category once categories load
@@ -138,7 +145,13 @@ export function RoleEditorPageContent({ roleId }: RoleEditorPageContentProps) {
 
     if (isNew) {
       if (!hasInitialized) {
-        const initial: Record<string, { allowed: boolean; scope: "everything" | "team_only" | "assigned_only" }> = {};
+        const initial: Record<
+          string,
+          {
+            allowed: boolean;
+            scope: "everything" | "team_only" | "assigned_only";
+          }
+        > = {};
         catalogue.forEach((p) => {
           initial[p.id] = { allowed: false, scope: "everything" };
         });
@@ -154,7 +167,13 @@ export function RoleEditorPageContent({ roleId }: RoleEditorPageContentProps) {
       setRoleName(existingRole.name || "");
       setRoleDescription(existingRole.description || "");
 
-      const initial: Record<string, { allowed: boolean; scope: "everything" | "team_only" | "assigned_only" }> = {};
+      const initial: Record<
+        string,
+        {
+          allowed: boolean;
+          scope: "everything" | "team_only" | "assigned_only";
+        }
+      > = {};
       const existing = existingRole.permissions || {};
 
       catalogue.forEach((p) => {
@@ -188,7 +207,9 @@ export function RoleEditorPageContent({ roleId }: RoleEditorPageContentProps) {
     const stats: Record<string, { total: number; allowed: number }> = {};
     categories.forEach((cat) => {
       const items = catalogue.filter((p) => p.category === cat);
-      const allowed = items.filter((p) => permissionsState[p.id]?.allowed).length;
+      const allowed = items.filter(
+        (p) => permissionsState[p.id]?.allowed,
+      ).length;
       stats[cat] = { total: items.length, allowed };
     });
     return stats;
@@ -208,7 +229,7 @@ export function RoleEditorPageContent({ roleId }: RoleEditorPageContentProps) {
         p.name.toLowerCase().includes(q) ||
         p.description?.toLowerCase().includes(q) ||
         p.id.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q)
+        p.category.toLowerCase().includes(q),
     );
   }, [catalogue, searchQuery]);
 
@@ -227,7 +248,7 @@ export function RoleEditorPageContent({ roleId }: RoleEditorPageContentProps) {
   // Change data scope
   const handleChangeScope = (
     id: string,
-    scope: "everything" | "team_only" | "assigned_only"
+    scope: "everything" | "team_only" | "assigned_only",
   ) => {
     if (isSuperAdmin) return;
     setPermissionsState((prev) => ({
@@ -294,7 +315,8 @@ export function RoleEditorPageContent({ roleId }: RoleEditorPageContentProps) {
   const hasChanges = useMemo(() => {
     if (!initialBaseline) return false;
     if (roleName.trim() !== initialBaseline.name.trim()) return true;
-    if (roleDescription.trim() !== initialBaseline.description.trim()) return true;
+    if (roleDescription.trim() !== initialBaseline.description.trim())
+      return true;
 
     for (const p of catalogue) {
       const cur = permissionsState[p.id];
@@ -313,7 +335,8 @@ export function RoleEditorPageContent({ roleId }: RoleEditorPageContentProps) {
   }, [roleName, roleDescription, permissionsState, initialBaseline, catalogue]);
 
   const isSaving = isCreating || isUpdating;
-  const isSaveDisabled = isSaving || isSuperAdmin || !hasChanges || !roleName.trim();
+  const isSaveDisabled =
+    isSaving || isSuperAdmin || !hasChanges || !roleName.trim();
 
   // Save handler
   const handleSaveRole = async (e?: React.FormEvent) => {
@@ -386,7 +409,9 @@ export function RoleEditorPageContent({ roleId }: RoleEditorPageContentProps) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Loading role configuration & permissions...</p>
+        <p className="text-sm text-muted-foreground">
+          Loading role configuration & permissions...
+        </p>
       </div>
     );
   }
@@ -395,7 +420,9 @@ export function RoleEditorPageContent({ roleId }: RoleEditorPageContentProps) {
     return (
       <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-12 text-center max-w-lg mx-auto my-12">
         <AlertTriangle className="h-10 w-10 text-destructive mx-auto mb-3" />
-        <h3 className="text-base font-semibold text-foreground">Role Not Found</h3>
+        <h3 className="text-base font-semibold text-foreground">
+          Role Not Found
+        </h3>
         <p className="text-sm text-muted-foreground mt-1">
           The requested role does not exist or may have been deleted.
         </p>
@@ -427,24 +454,36 @@ export function RoleEditorPageContent({ roleId }: RoleEditorPageContentProps) {
             <div>
               <div className="flex items-center gap-2.5 pt-1">
                 <h1 className="text-2xl font-semibold tracking-tight">
-                  {isNew ? "Create Custom Role" : `Edit Role: ${existingRole?.name}`}
+                  {isNew
+                    ? "Create Custom Role"
+                    : `Edit Role: ${existingRole?.name}`}
                 </h1>
                 {isSuperAdmin ? (
-                  <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300">
+                  <Badge
+                    variant="outline"
+                    className="bg-purple-50 text-purple-700 border-purple-300"
+                  >
                     Immutable Super Admin
                   </Badge>
                 ) : existingRole?.isSystemDefault ? (
-                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                  <Badge
+                    variant="outline"
+                    className="bg-blue-50 text-blue-700 border-blue-200"
+                  >
                     System Blueprint Role
                   </Badge>
                 ) : !isNew ? (
-                  <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
+                  <Badge
+                    variant="outline"
+                    className="bg-emerald-50 text-emerald-700 border-emerald-200"
+                  >
                     Custom Role
                   </Badge>
                 ) : null}
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Define granular resource permissions and data access scopes for this role.
+                Define granular resource permissions and data access scopes for
+                this role.
               </p>
             </div>
           </div>
@@ -490,10 +529,12 @@ export function RoleEditorPageContent({ roleId }: RoleEditorPageContentProps) {
                 Super Admin Access Is Immutable
               </p>
               <p className="text-xs text-purple-700 dark:text-purple-300 mt-0.5 leading-relaxed">
-                The Super Admin role possesses permanent unrestricted privileges (*:*) across all resources,
-                settings, and user management functions. To grant restricted or scoped access to employees,
-                configure the <strong>Admin</strong>, <strong>Accountant</strong>, or <strong>Staff</strong> roles,
-                or create a custom role.
+                The Super Admin role possesses permanent unrestricted privileges
+                (*:*) across all resources, settings, and user management
+                functions. To grant restricted or scoped access to employees,
+                configure the <strong>Admin</strong>,{" "}
+                <strong>Accountant</strong>, or <strong>Staff</strong> roles, or
+                create a custom role.
               </p>
             </div>
           </CardContent>
@@ -508,7 +549,10 @@ export function RoleEditorPageContent({ roleId }: RoleEditorPageContentProps) {
             <div className="lg:col-span-6 space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="role-name-input" className="text-xs font-semibold text-foreground">
+                  <Label
+                    htmlFor="role-name-input"
+                    className="text-xs font-semibold text-foreground"
+                  >
                     Role Name <span className="text-destructive">*</span>
                   </Label>
                   <Input
@@ -523,7 +567,10 @@ export function RoleEditorPageContent({ roleId }: RoleEditorPageContentProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="role-desc-input" className="text-xs font-semibold text-foreground">
+                  <Label
+                    htmlFor="role-desc-input"
+                    className="text-xs font-semibold text-foreground"
+                  >
                     Description
                   </Label>
                   <Input
@@ -618,7 +665,9 @@ export function RoleEditorPageContent({ roleId }: RoleEditorPageContentProps) {
           <div className="hidden sm:block h-4 w-px bg-border" />
 
           <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-muted-foreground">
-            <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-muted rounded border">Ctrl+S</kbd>
+            <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-muted rounded border">
+              Ctrl+S
+            </kbd>
             <span>to save</span>
           </div>
         </div>
@@ -648,14 +697,21 @@ export function RoleEditorPageContent({ roleId }: RoleEditorPageContentProps) {
             {searchResults.length === 0 ? (
               <div className="py-12 text-center text-muted-foreground">
                 <Search className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                <p className="text-sm font-medium">No permissions matched &ldquo;{searchQuery}&rdquo;</p>
+                <p className="text-sm font-medium">
+                  No permissions matched &ldquo;{searchQuery}&rdquo;
+                </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Try broader keywords like &ldquo;view&rdquo;, &ldquo;create&rdquo;, &ldquo;invoice&rdquo;, or &ldquo;task&rdquo;.
+                  Try broader keywords like &ldquo;view&rdquo;,
+                  &ldquo;create&rdquo;, &ldquo;invoice&rdquo;, or
+                  &ldquo;task&rdquo;.
                 </p>
               </div>
             ) : (
               searchResults.map((p) => {
-                const state = permissionsState[p.id] || { allowed: false, scope: "everything" };
+                const state = permissionsState[p.id] || {
+                  allowed: false,
+                  scope: "everything",
+                };
                 const isAllowed = state.allowed;
 
                 return (
@@ -718,8 +774,8 @@ export function RoleEditorPageContent({ roleId }: RoleEditorPageContentProps) {
                           isActive
                             ? "bg-primary-foreground/20 text-primary-foreground"
                             : stats.allowed > 0
-                            ? "bg-primary/10 text-primary font-semibold"
-                            : "bg-muted text-muted-foreground"
+                              ? "bg-primary/10 text-primary font-semibold"
+                              : "bg-muted text-muted-foreground"
                         }`}
                       >
                         {stats.allowed}/{stats.total}
@@ -750,7 +806,8 @@ export function RoleEditorPageContent({ roleId }: RoleEditorPageContentProps) {
                       {activeCategory} Permissions
                     </h2>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Configure individual access actions and data scopes for {activeCategory.toLowerCase()}.
+                      Configure individual access actions and data scopes for{" "}
+                      {activeCategory.toLowerCase()}.
                     </p>
                   </div>
                 </div>
@@ -786,7 +843,10 @@ export function RoleEditorPageContent({ roleId }: RoleEditorPageContentProps) {
                 {catalogue
                   .filter((p) => p.category === activeCategory)
                   .map((p) => {
-                    const state = permissionsState[p.id] || { allowed: false, scope: "everything" };
+                    const state = permissionsState[p.id] || {
+                      allowed: false,
+                      scope: "everything",
+                    };
                     const isAllowed = state.allowed;
 
                     return (
@@ -798,7 +858,9 @@ export function RoleEditorPageContent({ roleId }: RoleEditorPageContentProps) {
                         isSuperAdmin={isSuperAdmin}
                         showCategoryBadge={false}
                         onToggle={() => handleTogglePermission(p.id)}
-                        onChangeScope={(scope) => handleChangeScope(p.id, scope)}
+                        onChangeScope={(scope) =>
+                          handleChangeScope(p.id, scope)
+                        }
                       />
                     );
                   })}
@@ -835,7 +897,9 @@ function PermissionRowItem({
     <div
       onClick={(e) => {
         // Prevent toggle if clicking on interactive select element
-        if ((e.target as HTMLElement).closest("select, [role=combobox], button")) {
+        if (
+          (e.target as HTMLElement).closest("select, [role=combobox], button")
+        ) {
           return;
         }
         onToggle();
@@ -876,7 +940,10 @@ function PermissionRowItem({
             )}
 
             {showCategoryBadge && (
-              <Badge variant="outline" className="text-[10px] py-0 px-1.5 font-normal text-muted-foreground">
+              <Badge
+                variant="outline"
+                className="text-[10px] py-0 px-1.5 font-normal text-muted-foreground"
+              >
                 {p.category}
               </Badge>
             )}
@@ -941,4 +1008,3 @@ function PermissionRowItem({
     </div>
   );
 }
-

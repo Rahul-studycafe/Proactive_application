@@ -16,6 +16,5 @@ export default withPermission(
       "You do not have permission to create custom roles. Please contact your Practice Administrator.",
     backHref: "/settings?module=user-roles",
     backLabel: "Return to User Roles",
-  }
+  },
 );
-

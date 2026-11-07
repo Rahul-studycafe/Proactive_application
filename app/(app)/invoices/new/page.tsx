@@ -690,10 +690,14 @@ function NewInvoicePage() {
   );
 }
 
-export default withPermission(NewInvoicePage, ["invoice:create", "invoice:edit"], {
-  title: "Invoice Access Restricted",
-  description:
-    "You do not have permission to create or edit invoices. Please contact your Practice Administrator.",
-  backHref: "/invoices",
-  backLabel: "Return to Invoices",
-});
+export default withPermission(
+  NewInvoicePage,
+  ["invoice:create", "invoice:edit"],
+  {
+    title: "Invoice Access Restricted",
+    description:
+      "You do not have permission to create or edit invoices. Please contact your Practice Administrator.",
+    backHref: "/invoices",
+    backLabel: "Return to Invoices",
+  },
+);

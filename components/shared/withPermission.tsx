@@ -44,7 +44,7 @@ export interface WithPermissionOptions {
 export function withPermission<P extends object>(
   WrappedComponent: React.ComponentType<P>,
   requiredPermission: string | string[],
-  options: WithPermissionOptions = {}
+  options: WithPermissionOptions = {},
 ): React.FC<P> {
   const GuardedPage: React.FC<P> = (props: P) => {
     const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
@@ -189,4 +189,3 @@ export function RouteGuard({
 
   return <>{children}</>;
 }
-

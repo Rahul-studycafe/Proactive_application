@@ -14,7 +14,11 @@ function ServicesPage() {
   const canViewServices = isSuperAdmin || can("service:view");
   const canViewPackages = isSuperAdmin || can("package:view");
 
-  const defaultTab = canViewServices ? "services" : canViewPackages ? "packages" : "services";
+  const defaultTab = canViewServices
+    ? "services"
+    : canViewPackages
+      ? "packages"
+      : "services";
 
   return (
     <div className="space-y-5">

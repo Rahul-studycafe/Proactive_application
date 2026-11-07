@@ -147,7 +147,7 @@ export function UsersSettingsView() {
     }
 
     const combinedRoleIds = Array.from(
-      new Set([roleId, ...secondaryRoleIds.filter((id) => id !== roleId)])
+      new Set([roleId, ...secondaryRoleIds.filter((id) => id !== roleId)]),
     );
 
     try {
@@ -190,7 +190,7 @@ export function UsersSettingsView() {
     if (!selectedUser) return;
 
     const combinedRoleIds = Array.from(
-      new Set([roleId, ...secondaryRoleIds.filter((id) => id !== roleId)])
+      new Set([roleId, ...secondaryRoleIds.filter((id) => id !== roleId)]),
     );
 
     try {
@@ -571,10 +571,13 @@ export function UsersSettingsView() {
                             checked={isChecked}
                             onCheckedChange={(checked) => {
                               if (checked) {
-                                setSecondaryRoleIds([...secondaryRoleIds, r._id]);
+                                setSecondaryRoleIds([
+                                  ...secondaryRoleIds,
+                                  r._id,
+                                ]);
                               } else {
                                 setSecondaryRoleIds(
-                                  secondaryRoleIds.filter((id) => id !== r._id)
+                                  secondaryRoleIds.filter((id) => id !== r._id),
                                 );
                               }
                             }}
@@ -677,7 +680,8 @@ export function UsersSettingsView() {
                     </SelectContent>
                   </Select>
 
-                  {assignableRoles.filter((r) => r._id !== roleId).length > 0 && (
+                  {assignableRoles.filter((r) => r._id !== roleId).length >
+                    0 && (
                     <div className="space-y-2 pt-2 border-t border-border/50">
                       <div className="flex items-center justify-between">
                         <Label className="text-xs font-medium text-foreground">
@@ -712,8 +716,8 @@ export function UsersSettingsView() {
                                     } else {
                                       setSecondaryRoleIds(
                                         secondaryRoleIds.filter(
-                                          (id) => id !== r._id
-                                        )
+                                          (id) => id !== r._id,
+                                        ),
                                       );
                                     }
                                   }}

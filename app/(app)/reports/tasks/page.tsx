@@ -308,7 +308,10 @@ function TasksReportPage() {
                               {clientObj?.name || "Client Name"}
                             </span>
                             <span className="text-[11px] text-muted-foreground">
-                              Client No: {clientObj?.clientNumber || clientObj?.fileNo || "—"}
+                              Client No:{" "}
+                              {clientObj?.clientNumber ||
+                                clientObj?.fileNo ||
+                                "—"}
                             </span>
                           </div>
                         </TableCell>

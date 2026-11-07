@@ -66,7 +66,7 @@ export default function DashboardPage() {
   });
 
   const isStaffWorkspace = Boolean(
-    data?.isStaffWorkspace || (!canViewInvoices && !canViewAttendanceAll)
+    data?.isStaffWorkspace || (!canViewInvoices && !canViewAttendanceAll),
   );
 
   const expOverview = expenseStats?.overview || {
@@ -184,7 +184,9 @@ export default function DashboardPage() {
             <Link href="/attendance">
               <Button variant="outline" size="sm" className="gap-1.5 text-xs">
                 <CalendarCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                <span>{canViewAttendanceAll ? "Daily Desk" : "My Attendance"}</span>
+                <span>
+                  {canViewAttendanceAll ? "Daily Desk" : "My Attendance"}
+                </span>
               </Button>
             </Link>
           )}

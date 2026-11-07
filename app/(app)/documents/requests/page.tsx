@@ -623,7 +623,9 @@ function DocumentRequestsHubPage() {
                             </DropdownMenuItem>
 
                             {!isCompleted && !isCancelled && !isExpired && (
-                              <DropdownMenuItem onClick={() => handleResend(req)}>
+                              <DropdownMenuItem
+                                onClick={() => handleResend(req)}
+                              >
                                 <Send className="h-4 w-4 mr-2" />
                                 Resend Email Reminder
                               </DropdownMenuItem>

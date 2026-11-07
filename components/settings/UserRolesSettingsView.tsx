@@ -46,11 +46,13 @@ import {
 export function UserRolesSettingsView() {
   const router = useRouter();
 
-  const { data: rolesData, isLoading: isLoadingRoles } = useGetRolesQuery(undefined);
+  const { data: rolesData, isLoading: isLoadingRoles } =
+    useGetRolesQuery(undefined);
   const { data: catalogueData } = useGetPermissionsCatalogueQuery(undefined);
 
   const [deleteRole, { isLoading: isDeleting }] = useDeleteRoleMutation();
-  const [duplicateRole, { isLoading: isDuplicating }] = useDuplicateRoleMutation();
+  const [duplicateRole, { isLoading: isDuplicating }] =
+    useDuplicateRoleMutation();
 
   const roles: any[] = rolesData?.roles || [];
   const catalogue: any[] = catalogueData?.catalogue || [];
@@ -67,7 +69,7 @@ export function UserRolesSettingsView() {
     return roles.filter(
       (r) =>
         r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        r.description?.toLowerCase().includes(searchQuery.toLowerCase())
+        r.description?.toLowerCase().includes(searchQuery.toLowerCase()),
     );
   }, [roles, searchQuery]);
 
@@ -77,7 +79,9 @@ export function UserRolesSettingsView() {
       await duplicateRole(role._id).unwrap();
       toast.success(`Duplicated role "${role.name}"`);
     } catch (err: any) {
-      toast.error(err?.data?.message || err?.message || "Failed to duplicate role");
+      toast.error(
+        err?.data?.message || err?.message || "Failed to duplicate role",
+      );
     }
   };
 
@@ -89,7 +93,9 @@ export function UserRolesSettingsView() {
       toast.success(`Role "${roleToDelete.name}" deleted successfully`);
       setRoleToDelete(null);
     } catch (err: any) {
-      toast.error(err?.data?.message || err?.message || "Failed to delete role");
+      toast.error(
+        err?.data?.message || err?.message || "Failed to delete role",
+      );
       setRoleToDelete(null);
     }
   };
@@ -101,10 +107,13 @@ export function UserRolesSettingsView() {
         <div>
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-primary" />
-            <h2 className="text-xl font-bold tracking-tight">Roles & Permissions</h2>
+            <h2 className="text-xl font-bold tracking-tight">
+              Roles & Permissions
+            </h2>
           </div>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Configure dynamic roles and control what team members can view, edit, delete, and export.
+            Configure dynamic roles and control what team members can view,
+            edit, delete, and export.
           </p>
         </div>
 
@@ -129,7 +138,8 @@ export function UserRolesSettingsView() {
         </div>
 
         <div className="text-xs text-muted-foreground font-medium">
-          {filteredRoles.length} role{filteredRoles.length === 1 ? "" : "s"} defined
+          {filteredRoles.length} role{filteredRoles.length === 1 ? "" : "s"}{" "}
+          defined
         </div>
       </div>
 
@@ -140,15 +150,22 @@ export function UserRolesSettingsView() {
             <TableRow className="bg-muted/40">
               <TableHead className="w-[240px]">Role Name</TableHead>
               <TableHead>Description</TableHead>
-              <TableHead className="w-[140px] text-center">Assigned Users</TableHead>
-              <TableHead className="w-[160px] text-center">Permissions</TableHead>
+              <TableHead className="w-[140px] text-center">
+                Assigned Users
+              </TableHead>
+              <TableHead className="w-[160px] text-center">
+                Permissions
+              </TableHead>
               <TableHead className="w-[120px] text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoadingRoles ? (
               <TableRow>
-                <TableCell colSpan={5} className="py-12 text-center text-muted-foreground">
+                <TableCell
+                  colSpan={5}
+                  className="py-12 text-center text-muted-foreground"
+                >
                   <div className="flex items-center justify-center gap-2">
                     <Loader2 className="h-5 w-5 animate-spin text-primary" />
                     <span>Loading roles and permissions...</span>
@@ -157,7 +174,10 @@ export function UserRolesSettingsView() {
               </TableRow>
             ) : filteredRoles.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="py-12 text-center text-muted-foreground">
+                <TableCell
+                  colSpan={5}
+                  className="py-12 text-center text-muted-foreground"
+                >
                   No roles found matching your search.
                 </TableCell>
               </TableRow>
@@ -203,7 +223,10 @@ export function UserRolesSettingsView() {
                           </Badge>
                         )}
                         {role.isSystemDefault && !role.isSuperAdmin && (
-                          <Badge variant="secondary" className="text-[10px] font-normal">
+                          <Badge
+                            variant="secondary"
+                            className="text-[10px] font-normal"
+                          >
                             Standard
                           </Badge>
                         )}
@@ -235,7 +258,9 @@ export function UserRolesSettingsView() {
                           size="icon"
                           className="h-8 w-8 text-muted-foreground hover:text-foreground"
                           title="Edit Role & Permissions"
-                          onClick={() => router.push(`/settings/roles/${role._id}`)}
+                          onClick={() =>
+                            router.push(`/settings/roles/${role._id}`)
+                          }
                         >
                           <Pencil className="h-3.5 w-3.5" />
                         </Button>
@@ -262,7 +287,9 @@ export function UserRolesSettingsView() {
                                   ? `Cannot delete while ${assignedCount} user(s) assigned`
                                   : "Delete Role"
                               }
-                              disabled={assignedCount > 0 || role.isSystemDefault}
+                              disabled={
+                                assignedCount > 0 || role.isSystemDefault
+                              }
                               onClick={() => setRoleToDelete(role)}
                             >
                               <Trash2 className="h-3.5 w-3.5" />

@@ -93,11 +93,10 @@ export function ViewReceivedFilesModal({
     {
       skip: !open || !request?._id,
       refetchOnMountOrArgChange: true,
-    }
+    },
   );
 
-  const activeRequest: DocumentRequest | null =
-    liveRequest || request || null;
+  const activeRequest: DocumentRequest | null = liveRequest || request || null;
 
   if (!activeRequest) return null;
 
@@ -264,160 +263,166 @@ export function ViewReceivedFilesModal({
           </div>
 
           <div className="space-y-3">
-            {activeRequest.items?.map((item: RequestedFileItem, idx: number) => {
-              const isUploaded = item.status === "Uploaded";
-              const isPending = item.status === "Pending";
+            {activeRequest.items?.map(
+              (item: RequestedFileItem, idx: number) => {
+                const isUploaded = item.status === "Uploaded";
+                const isPending = item.status === "Pending";
 
-              // Check if uploadedDocumentId is populated object or string ID
-              const docRef: UploadedDocumentRef | undefined =
-                item.uploadedDocumentId &&
-                typeof item.uploadedDocumentId === "object"
-                  ? (item.uploadedDocumentId as UploadedDocumentRef)
-                  : undefined;
+                // Check if uploadedDocumentId is populated object or string ID
+                const docRef: UploadedDocumentRef | undefined =
+                  item.uploadedDocumentId &&
+                  typeof item.uploadedDocumentId === "object"
+                    ? (item.uploadedDocumentId as UploadedDocumentRef)
+                    : undefined;
 
-              const displayFileName =
-                docRef?.fileName ||
-                (isUploaded ? `${item.name} (Uploaded File)` : undefined);
-              const fileUrl = docRef?.fileUrl;
+                const displayFileName =
+                  docRef?.fileName ||
+                  (isUploaded ? `${item.name} (Uploaded File)` : undefined);
+                const fileUrl = docRef?.fileUrl;
 
-              return (
-                <div
-                  key={item._id || idx}
-                  className={`rounded-xl border p-4 transition-all ${
-                    isUploaded
-                      ? "border-emerald-200 bg-emerald-50/30 dark:border-emerald-900/60 dark:bg-emerald-950/10"
-                      : "border-border bg-card"
-                  }`}
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                    {/* Item Information */}
-                    <div className="space-y-1 flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-sm font-semibold text-foreground">
-                          {item.name}
-                        </span>
-                        {item.isRequired ? (
+                return (
+                  <div
+                    key={item._id || idx}
+                    className={`rounded-xl border p-4 transition-all ${
+                      isUploaded
+                        ? "border-emerald-200 bg-emerald-50/30 dark:border-emerald-900/60 dark:bg-emerald-950/10"
+                        : "border-border bg-card"
+                    }`}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                      {/* Item Information */}
+                      <div className="space-y-1 flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-sm font-semibold text-foreground">
+                            {item.name}
+                          </span>
+                          {item.isRequired ? (
+                            <Badge
+                              variant="secondary"
+                              className="text-[10px] px-1.5 py-0 font-normal"
+                            >
+                              Required
+                            </Badge>
+                          ) : (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] px-1.5 py-0 font-normal text-muted-foreground"
+                            >
+                              Optional
+                            </Badge>
+                          )}
+                        </div>
+
+                        {item.description && (
+                          <p className="text-xs text-muted-foreground">
+                            {item.description}
+                          </p>
+                        )}
+
+                        {item.acceptedFormats &&
+                          item.acceptedFormats.length > 0 && (
+                            <p className="text-[11px] text-muted-foreground/80 font-mono">
+                              Formats: {item.acceptedFormats.join(", ")}
+                            </p>
+                          )}
+                      </div>
+
+                      {/* Status Badge */}
+                      <div className="shrink-0">
+                        {isUploaded ? (
                           <Badge
-                            variant="secondary"
-                            className="text-[10px] px-1.5 py-0 font-normal"
+                            variant="outline"
+                            className="bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 gap-1 text-xs"
                           >
-                            Required
+                            <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                            Received
                           </Badge>
                         ) : (
                           <Badge
                             variant="outline"
-                            className="text-[10px] px-1.5 py-0 font-normal text-muted-foreground"
+                            className="bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800 gap-1 text-xs"
                           >
-                            Optional
+                            <Clock className="h-3 w-3 text-amber-500" />
+                            Awaiting File
                           </Badge>
                         )}
                       </div>
-
-                      {item.description && (
-                        <p className="text-xs text-muted-foreground">
-                          {item.description}
-                        </p>
-                      )}
-
-                      {item.acceptedFormats && item.acceptedFormats.length > 0 && (
-                        <p className="text-[11px] text-muted-foreground/80 font-mono">
-                          Formats: {item.acceptedFormats.join(", ")}
-                        </p>
-                      )}
                     </div>
 
-                    {/* Status Badge */}
-                    <div className="shrink-0">
-                      {isUploaded ? (
-                        <Badge
-                          variant="outline"
-                          className="bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 gap-1 text-xs"
-                        >
-                          <CheckCircle2 className="h-3 w-3 text-emerald-600" />
-                          Received
-                        </Badge>
-                      ) : (
-                        <Badge
-                          variant="outline"
-                          className="bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800 gap-1 text-xs"
-                        >
-                          <Clock className="h-3 w-3 text-amber-500" />
-                          Awaiting File
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Uploaded File Details & Actions Box */}
-                  {isUploaded && (
-                    <div className="mt-3 pt-3 border-t border-emerald-200/60 dark:border-emerald-900/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/70 dark:bg-black/20 rounded-lg p-3">
-                      <div className="flex items-center gap-3 min-w-0 flex-1">
-                        {getFileIcon(displayFileName || "file.pdf")}
-                        <div className="min-w-0">
-                          <p className="text-xs font-semibold text-foreground truncate max-w-sm">
-                            {displayFileName}
-                          </p>
-                          <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
-                            {item.uploadedAt && (
-                              <span>
-                                Uploaded on{" "}
-                                {new Date(item.uploadedAt).toLocaleString("en-IN", {
-                                  day: "numeric",
-                                  month: "short",
-                                  year: "numeric",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })}
-                              </span>
-                            )}
+                    {/* Uploaded File Details & Actions Box */}
+                    {isUploaded && (
+                      <div className="mt-3 pt-3 border-t border-emerald-200/60 dark:border-emerald-900/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/70 dark:bg-black/20 rounded-lg p-3">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          {getFileIcon(displayFileName || "file.pdf")}
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold text-foreground truncate max-w-sm">
+                              {displayFileName}
+                            </p>
+                            <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
+                              {item.uploadedAt && (
+                                <span>
+                                  Uploaded on{" "}
+                                  {new Date(item.uploadedAt).toLocaleString(
+                                    "en-IN",
+                                    {
+                                      day: "numeric",
+                                      month: "short",
+                                      year: "numeric",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    },
+                                  )}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="flex items-center gap-2 shrink-0">
-                        {fileUrl ? (
-                          <>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {fileUrl ? (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 gap-1.5 text-xs bg-background text-primary border-primary/30 hover:bg-primary/5 hover:text-primary"
+                                onClick={() =>
+                                  handleOpenFile(fileUrl, displayFileName)
+                                }
+                              >
+                                <Eye className="h-3.5 w-3.5" />
+                                View
+                              </Button>
+                              <Button
+                                variant="default"
+                                size="sm"
+                                className="h-8 gap-1.5 text-xs"
+                                onClick={() =>
+                                  handleDownloadFile(fileUrl, displayFileName)
+                                }
+                              >
+                                <Download className="h-3.5 w-3.5" />
+                                Download
+                              </Button>
+                            </>
+                          ) : (
                             <Button
                               variant="outline"
                               size="sm"
-                              className="h-8 gap-1.5 text-xs bg-background text-primary border-primary/30 hover:bg-primary/5 hover:text-primary"
-                              onClick={() => handleOpenFile(fileUrl, displayFileName)}
-                            >
-                              <Eye className="h-3.5 w-3.5" />
-                              View
-                            </Button>
-                            <Button
-                              variant="default"
-                              size="sm"
                               className="h-8 gap-1.5 text-xs"
-                              onClick={() =>
-                                handleDownloadFile(fileUrl, displayFileName)
-                              }
+                              onClick={() => window.open(publicUrl, "_blank")}
+                              title="Inspect in client portal"
                             >
-                              <Download className="h-3.5 w-3.5" />
-                              Download
+                              <ExternalLink className="h-3.5 w-3.5" />
+                              Open in Portal
                             </Button>
-                          </>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-8 gap-1.5 text-xs"
-                            onClick={() =>
-                              window.open(publicUrl, "_blank")
-                            }
-                            title="Inspect in client portal"
-                          >
-                            <ExternalLink className="h-3.5 w-3.5" />
-                            Open in Portal
-                          </Button>
-                        )}
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                    )}
+                  </div>
+                );
+              },
+            )}
           </div>
         </div>
 
@@ -462,4 +467,3 @@ export function ViewReceivedFilesModal({
     </Dialog>
   );
 }
-

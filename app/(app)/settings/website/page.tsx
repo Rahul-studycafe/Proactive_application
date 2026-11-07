@@ -62,19 +62,6 @@ export default function WebsiteSettingsPage() {
   const [updateWebsite, { isLoading: isSaving }] =
     useUpdateWebsiteSettingsMutation();
 
-  if (!isSuperAdmin && !can("settings:manage")) {
-    return (
-      <div className="space-y-6">
-        <AccessRestricted
-          title="Website CMS Access Restricted"
-          description="Only practice administrators can configure the firm portal, custom domains, and branding."
-          backHref="/settings"
-          backLabel="Return to Settings"
-        />
-      </div>
-    );
-  }
-
   const [subdomain, setSubdomain] = useState("");
   const [customDomain, setCustomDomain] = useState("");
   const [firmName, setFirmName] = useState("");
@@ -132,6 +119,19 @@ export default function WebsiteSettingsPage() {
       setIsPublished(websiteData.isPublished ?? true);
     }
   }, [websiteData]);
+
+  if (!isSuperAdmin && !can("settings:manage")) {
+    return (
+      <div className="space-y-6">
+        <AccessRestricted
+          title="Website CMS Access Restricted"
+          description="Only practice administrators can configure the firm portal, custom domains, and branding."
+          backHref="/settings"
+          backLabel="Return to Settings"
+        />
+      </div>
+    );
+  }
 
   const handleAddService = () => {
     setServices([...services, { title: "", description: "", isActive: true }]);
@@ -196,16 +196,14 @@ export default function WebsiteSettingsPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Breadcrumbs
-          items={[
-            { label: "Settings", href: "/settings" },
-            { label: "Website", href: "/settings/website" },
-          ]}
-        />
-
+              items={[
+                { label: "Settings", href: "/settings" },
+                { label: "Website", href: "/settings/website" },
+              ]}
+            />
           </div>
           <h1 className="text-2xl font-semibold tracking-tight pt-4">
-             White-Label Website &
-            Portal CMS
+            White-Label Website & Portal CMS
           </h1>
           <p className="text-xs text-muted-foreground max-w-2xl">
             Configure your custom practice portal subdomain, primary branding

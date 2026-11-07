@@ -74,4 +74,3 @@ export function Can({
 
   return <>{children}</>;
 }
-

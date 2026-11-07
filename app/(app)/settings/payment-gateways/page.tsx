@@ -45,19 +45,6 @@ export default function PaymentGatewaysPage() {
   const [upsertConfig, { isLoading: isSaving }] =
     useUpsertGatewayConfigMutation();
 
-  if (!isSuperAdmin && !can("billing:manage")) {
-    return (
-      <div className="space-y-6">
-        <AccessRestricted
-          title="Payment Gateway Access Restricted"
-          description="Only practice administrators or billing managers can configure bank settlement accounts and UPI VPA gateways."
-          backHref="/settings"
-          backLabel="Return to Settings"
-        />
-      </div>
-    );
-  }
-
   const [upiVpa, setUpiVpa] = useState("");
   const [merchantName, setMerchantName] = useState("");
   const [isEnabled, setIsEnabled] = useState(true);
@@ -80,6 +67,19 @@ export default function PaymentGatewaysPage() {
       }
     }
   }, [configs]);
+
+  if (!isSuperAdmin && !can("billing:manage")) {
+    return (
+      <div className="space-y-6">
+        <AccessRestricted
+          title="Payment Gateway Access Restricted"
+          description="Only practice administrators or billing managers can configure bank settlement accounts and UPI VPA gateways."
+          backHref="/settings"
+          backLabel="Return to Settings"
+        />
+      </div>
+    );
+  }
 
   const handleToggleMode = (mode: string) => {
     if (acceptedModes.includes(mode)) {
@@ -121,15 +121,15 @@ export default function PaymentGatewaysPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-
-             <Breadcrumbs
-                      items={[
-                        { label: "Settings", href: "/settings" },
-                        { label: "Payment Gateways", href: "/settings/payment-gateways" },
-                      ]}
-                    />
-
-           
+            <Breadcrumbs
+              items={[
+                { label: "Settings", href: "/settings" },
+                {
+                  label: "Payment Gateways",
+                  href: "/settings/payment-gateways",
+                },
+              ]}
+            />
           </div>
           <h1 className="text-2xl font-semibold tracking-tight flex gap-2 items-center pt-4">
             <QrCode className="h-6 w-6 text-primary" /> Direct UPI & Settlement

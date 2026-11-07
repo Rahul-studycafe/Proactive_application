@@ -138,11 +138,12 @@ export function ReceiptDetailsDialog({
                 <p className="text-sm font-bold text-foreground">
                   {typeof client === "object" ? client.name : "Client"}
                 </p>
-                {typeof client === "object" && (client.clientNumber || client.fileNo) && (
-                  <p className="text-muted-foreground font-mono">
-                    Client No: {client.clientNumber || client.fileNo}
-                  </p>
-                )}
+                {typeof client === "object" &&
+                  (client.clientNumber || client.fileNo) && (
+                    <p className="text-muted-foreground font-mono">
+                      Client No: {client.clientNumber || client.fileNo}
+                    </p>
+                  )}
               </div>
               {typeof client === "object" && client._id && (
                 <Link

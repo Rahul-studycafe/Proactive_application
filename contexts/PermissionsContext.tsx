@@ -75,8 +75,8 @@ export function PermissionsProvider({ children }: { children: ReactNode }) {
     // Platform Super Admin / Owner bypasses all checks
     const isSuperAdmin = Boolean(
       user.isOwner ||
-        user.isSuperAdmin ||
-        user.role?.toLowerCase().includes("super admin"),
+      user.isSuperAdmin ||
+      user.role?.toLowerCase().includes("super admin"),
     );
 
     const effectiveMap = user.effectivePermissions || {};

@@ -350,7 +350,8 @@ function ServiceDetailPage() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete service?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will remove &quot;{formData.name}&quot; from your workspace.
+                    This will remove &quot;{formData.name}&quot; from your
+                    workspace.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

@@ -152,7 +152,8 @@ export function ClientDocumentsTab({
 }: ClientDocumentsTabProps) {
   const { can, isSuperAdmin } = usePermissions();
 
-  const canViewVault = isSuperAdmin || can("document:view") || can("document:create");
+  const canViewVault =
+    isSuperAdmin || can("document:view") || can("document:create");
   const canRequestDocs = isSuperAdmin || can("document:request");
   const canPhysicalManage = isSuperAdmin || can("document:physical_manage");
 
@@ -866,7 +867,10 @@ export function ClientDocumentsTab({
                                     <MoreVertical className="h-4 w-4" />
                                   </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-52">
+                                <DropdownMenuContent
+                                  align="end"
+                                  className="w-52"
+                                >
                                   <DropdownMenuItem
                                     onClick={() => {
                                       setViewFilesRequest(req);

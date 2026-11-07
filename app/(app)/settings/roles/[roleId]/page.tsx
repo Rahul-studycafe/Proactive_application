@@ -20,6 +20,5 @@ export default withPermission(
       "You do not have permission to view or modify roles. Please contact your Practice Administrator.",
     backHref: "/settings?module=user-roles",
     backLabel: "Return to User Roles",
-  }
+  },
 );
-

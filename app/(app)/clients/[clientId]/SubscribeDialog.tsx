@@ -60,8 +60,10 @@ export function SubscribeDialog({
   triggerButton,
 }: SubscribeDialogProps) {
   const { can, isSuperAdmin } = usePermissions();
-  const canManageServices = isSuperAdmin || can("client:services_manage") || can("client:edit");
-  const canManagePackages = isSuperAdmin || can("client:packages_manage") || can("client:edit");
+  const canManageServices =
+    isSuperAdmin || can("client:services_manage") || can("client:edit");
+  const canManagePackages =
+    isSuperAdmin || can("client:packages_manage") || can("client:edit");
 
   const effectiveDefaultTab: "package" | "service" =
     defaultTab === "package"

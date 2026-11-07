@@ -400,16 +400,16 @@ function SettingsContent() {
 
   // Filter modules by permissions for each category
   const userModules = SETTING_MODULES.filter(
-    (m) => m.category === "User" && isModulePermitted(m)
+    (m) => m.category === "User" && isModulePermitted(m),
   );
   const clientModules = SETTING_MODULES.filter(
-    (m) => m.category === "Client" && isModulePermitted(m)
+    (m) => m.category === "Client" && isModulePermitted(m),
   );
   const billingModules = SETTING_MODULES.filter(
-    (m) => m.category === "Billing" && isModulePermitted(m)
+    (m) => m.category === "Billing" && isModulePermitted(m),
   );
   const systemModules = SETTING_MODULES.filter(
-    (m) => m.category === "System" && isModulePermitted(m)
+    (m) => m.category === "System" && isModulePermitted(m),
   );
 
   const totalPermitted =

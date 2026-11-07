@@ -50,7 +50,6 @@ import { usePermissions } from "@/contexts/PermissionsContext";
 import { AccessRestricted } from "@/components/shared/AccessRestricted";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 
-
 export default function BillingEntitiesPage() {
   const { isSuperAdmin, can } = usePermissions();
 
@@ -59,19 +58,6 @@ export default function BillingEntitiesPage() {
     useCreateBillingEntityMutation();
   const [updateEntity, { isLoading: isUpdating }] =
     useUpdateBillingEntityMutation();
-
-  if (!isSuperAdmin && !can("billing:manage")) {
-    return (
-      <div className="space-y-6">
-        <AccessRestricted
-          title="Billing Entities Access Restricted"
-          description="Only practice administrators or billing managers can configure GSTIN entities and bank accounts."
-          backHref="/settings"
-          backLabel="Return to Settings"
-        />
-      </div>
-    );
-  }
   const [deleteEntity, { isLoading: isDeleting }] =
     useDeleteBillingEntityMutation();
 
@@ -96,6 +82,19 @@ export default function BillingEntitiesPage() {
   const [ifsc, setIfsc] = useState("");
   const [bankBranch, setBankBranch] = useState("");
   const [upiId, setUpiId] = useState("");
+
+  if (!isSuperAdmin && !can("billing:manage")) {
+    return (
+      <div className="space-y-6">
+        <AccessRestricted
+          title="Billing Entities Access Restricted"
+          description="Only practice administrators or billing managers can configure GSTIN entities and bank accounts."
+          backHref="/settings"
+          backLabel="Return to Settings"
+        />
+      </div>
+    );
+  }
 
   const handleOpenCreate = () => {
     setEditingEntity(null);
@@ -219,17 +218,18 @@ export default function BillingEntitiesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-
-             <Breadcrumbs
-          items={[
-            { label: "Settings", href: "/settings" },
-            { label: "Billing Entities", href: "/settings/billing-entities" },
-          ]}
-        />
+            <Breadcrumbs
+              items={[
+                { label: "Settings", href: "/settings" },
+                {
+                  label: "Billing Entities",
+                  href: "/settings/billing-entities",
+                },
+              ]}
+            />
           </div>
           <h1 className="text-2xl font-semibold tracking-tight pt-4">
-             Multi-Branch &
-            Regional Billing Entities
+            Multi-Branch & Regional Billing Entities
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             Configure regional office branches (e.g. Mumbai, Bengaluru, Delhi)

@@ -360,7 +360,11 @@ function QuotationViewPrintPage() {
                 {client?.name || "Client Name"}
               </h4>
               <p className="text-xs text-muted-foreground">
-                {(client?.clientNumber || client?.fileNo) && <span>Client No: {client.clientNumber || client.fileNo} • </span>}
+                {(client?.clientNumber || client?.fileNo) && (
+                  <span>
+                    Client No: {client.clientNumber || client.fileNo} •{" "}
+                  </span>
+                )}
                 {client?.pan && <span>PAN: {client.pan}</span>}
                 {client?.gstin && <span> • GSTIN: {client.gstin}</span>}
               </p>

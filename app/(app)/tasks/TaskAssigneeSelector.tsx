@@ -1,10 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import {
-  useGetUsersQuery,
-  useUpdateTaskMutation,
-} from "@/lib/services/api";
+import { useGetUsersQuery, useUpdateTaskMutation } from "@/lib/services/api";
 import { usePermissions } from "@/contexts/PermissionsContext";
 import {
   Popover,
@@ -15,15 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  Check,
-  Plus,
-  Search,
-  X,
-  Loader2,
-  UserPlus,
-  User,
-} from "lucide-react";
+import { Check, Plus, Search, X, Loader2, UserPlus, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -57,7 +46,7 @@ export function TaskAssigneeSelector({
 
   const { data: usersRes, isLoading: isUsersLoading } = useGetUsersQuery(
     { limit: 100 },
-    { skip: !open }
+    { skip: !open },
   );
 
   const [updateTask, { isLoading: isUpdating }] = useUpdateTaskMutation();
@@ -72,13 +61,14 @@ export function TaskAssigneeSelector({
     const q = search.toLowerCase();
     return allUsers.filter(
       (u) =>
-        u.name?.toLowerCase().includes(q) ||
-        u.email?.toLowerCase().includes(q)
+        u.name?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q),
     );
   }, [allUsers, search]);
 
   const currentIds = useMemo(() => {
-    return assignees.map((a) => (typeof a === "object" ? a._id : a)).filter(Boolean);
+    return assignees
+      .map((a) => (typeof a === "object" ? a._id : a))
+      .filter(Boolean);
   }, [assignees]);
 
   const handleToggleAssignee = async (userId: string, userName: string) => {
@@ -101,11 +91,17 @@ export function TaskAssigneeSelector({
         toast.success(`Assigned ${userName} to task`);
       }
     } catch (err: any) {
-      toast.error(err?.data?.message || err?.message || "Failed to update assignees");
+      toast.error(
+        err?.data?.message || err?.message || "Failed to update assignees",
+      );
     }
   };
 
-  const handleRemoveSingle = async (e: React.MouseEvent, userId: string, userName: string) => {
+  const handleRemoveSingle = async (
+    e: React.MouseEvent,
+    userId: string,
+    userName: string,
+  ) => {
     e.stopPropagation();
     if (!isEditable || isUpdating) return;
 
@@ -119,7 +115,9 @@ export function TaskAssigneeSelector({
       }).unwrap();
       toast.success(`Unassigned ${userName} from task`);
     } catch (err: any) {
-      toast.error(err?.data?.message || err?.message || "Failed to remove assignee");
+      toast.error(
+        err?.data?.message || err?.message || "Failed to remove assignee",
+      );
     } finally {
       setActiveRemovingId(null);
     }
@@ -165,7 +163,7 @@ export function TaskAssigneeSelector({
                 disabled={isUpdating}
                 className={cn(
                   "w-full flex items-center justify-between gap-2.5 px-2.5 py-2 text-left rounded-md transition-colors text-xs hover:bg-muted/70",
-                  isAssigned && "bg-primary/10 hover:bg-primary/15"
+                  isAssigned && "bg-primary/10 hover:bg-primary/15",
                 )}
               >
                 <div className="flex items-center gap-2 min-w-0">
@@ -176,7 +174,9 @@ export function TaskAssigneeSelector({
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0">
-                    <p className="font-medium text-foreground truncate">{user.name}</p>
+                    <p className="font-medium text-foreground truncate">
+                      {user.name}
+                    </p>
                     {user.email && (
                       <p className="text-[10px] text-muted-foreground truncate">
                         {user.email}
@@ -236,7 +236,9 @@ export function TaskAssigneeSelector({
               type="button"
               className={cn(
                 "group flex items-center gap-1 text-left rounded-md p-1 transition-colors",
-                isEditable ? "hover:bg-muted/60 cursor-pointer" : "cursor-default"
+                isEditable
+                  ? "hover:bg-muted/60 cursor-pointer"
+                  : "cursor-default",
               )}
               title={isEditable ? "Click to change assignees" : undefined}
             >
@@ -298,12 +300,16 @@ export function TaskAssigneeSelector({
                     {assignee.name?.charAt(0).toUpperCase() || "U"}
                   </AvatarFallback>
                 </Avatar>
-                <span className="font-medium text-foreground">{assignee.name}</span>
+                <span className="font-medium text-foreground">
+                  {assignee.name}
+                </span>
 
                 {isEditable && (
                   <button
                     type="button"
-                    onClick={(e) => handleRemoveSingle(e, assignee._id, assignee.name)}
+                    onClick={(e) =>
+                      handleRemoveSingle(e, assignee._id, assignee.name)
+                    }
                     disabled={isUpdating || isRemoving}
                     title={`Unassign ${assignee.name}`}
                     className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded p-0.5 ml-0.5 transition-colors"
@@ -334,7 +340,9 @@ export function TaskAssigneeSelector({
                 className="h-7 text-xs gap-1.5 px-2.5 border-dashed hover:border-primary hover:text-primary"
               >
                 <UserPlus className="h-3.5 w-3.5" />
-                <span>{assignees.length === 0 ? "Assign Staff" : "Add Assignee"}</span>
+                <span>
+                  {assignees.length === 0 ? "Assign Staff" : "Add Assignee"}
+                </span>
               </Button>
             </PopoverTrigger>
             {popoverContent}
@@ -344,4 +352,3 @@ export function TaskAssigneeSelector({
     </div>
   );
 }
-

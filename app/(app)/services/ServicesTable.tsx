@@ -156,7 +156,9 @@ export function ServicesTable() {
                       <DropdownMenuContent align="end">
                         <Can do="service:edit">
                           <DropdownMenuItem
-                            onClick={() => router.push(`/services/${service._id}`)}
+                            onClick={() =>
+                              router.push(`/services/${service._id}`)
+                            }
                           >
                             <Edit2 className="mr-2 h-4 w-4" /> Edit
                           </DropdownMenuItem>

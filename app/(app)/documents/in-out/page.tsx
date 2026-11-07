@@ -603,7 +603,8 @@ function DocsInOutPage() {
                               </Link>
                               {(client.clientNumber || client.fileNo) && (
                                 <div className="text-xs text-muted-foreground">
-                                  Client No: {client.clientNumber || client.fileNo}
+                                  Client No:{" "}
+                                  {client.clientNumber || client.fileNo}
                                 </div>
                               )}
                             </div>

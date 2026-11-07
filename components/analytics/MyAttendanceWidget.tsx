@@ -29,9 +29,12 @@ interface MyAttendanceWidgetProps {
   isLoading?: boolean;
 }
 
-export function MyAttendanceWidget({ isLoading: propLoading }: MyAttendanceWidgetProps) {
+export function MyAttendanceWidget({
+  isLoading: propLoading,
+}: MyAttendanceWidgetProps) {
   const [punchModalOpen, setPunchModalOpen] = useState(false);
-  const { data: attendance, isLoading: queryLoading } = useGetTodayAttendanceQuery();
+  const { data: attendance, isLoading: queryLoading } =
+    useGetTodayAttendanceQuery();
 
   const isLoading = propLoading !== undefined ? propLoading : queryLoading;
   const todayFormatted = format(new Date(), "dd MMM yyyy");
@@ -130,7 +133,9 @@ export function MyAttendanceWidget({ isLoading: propLoading }: MyAttendanceWidge
                     {attendance?.checkOut ? (
                       formatTime(attendance.checkOut)
                     ) : hasCheckedIn ? (
-                      <span className="text-emerald-600 dark:text-emerald-400">Active</span>
+                      <span className="text-emerald-600 dark:text-emerald-400">
+                        Active
+                      </span>
                     ) : (
                       "--:--"
                     )}
@@ -152,7 +157,9 @@ export function MyAttendanceWidget({ isLoading: propLoading }: MyAttendanceWidge
                 <Button
                   size="sm"
                   className="w-full text-xs gap-1.5"
-                  variant={hasCheckedIn && !hasCheckedOut ? "destructive" : "default"}
+                  variant={
+                    hasCheckedIn && !hasCheckedOut ? "destructive" : "default"
+                  }
                   onClick={() => setPunchModalOpen(true)}
                 >
                   {hasCheckedIn && !hasCheckedOut ? (
@@ -186,11 +193,7 @@ export function MyAttendanceWidget({ isLoading: propLoading }: MyAttendanceWidge
         </CardContent>
       </Card>
 
-      <WebPunchModal
-        open={punchModalOpen}
-        onOpenChange={setPunchModalOpen}
-      />
+      <WebPunchModal open={punchModalOpen} onOpenChange={setPunchModalOpen} />
     </>
   );
 }
-

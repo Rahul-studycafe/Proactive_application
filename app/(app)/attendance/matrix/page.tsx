@@ -60,5 +60,5 @@ export default withPermission(
       "You do not have permission to view the monthly attendance matrix. Please contact your Practice Administrator.",
     backHref: "/attendance",
     backLabel: "Return to Attendance",
-  }
+  },
 );

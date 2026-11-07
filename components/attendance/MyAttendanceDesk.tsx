@@ -27,7 +27,13 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -66,23 +72,25 @@ export function MyAttendanceDesk() {
 
   const currentDate = new Date();
   const [selectedMonth, setSelectedMonth] = useState<string>(
-    String(currentDate.getMonth() + 1)
+    String(currentDate.getMonth() + 1),
   );
   const [selectedYear, setSelectedYear] = useState<string>(
-    String(currentDate.getFullYear())
+    String(currentDate.getFullYear()),
   );
   const [punchModalOpen, setPunchModalOpen] = useState(false);
 
   // Queries
-  const { data: todayAttendance, isLoading: isTodayLoading } = useGetTodayAttendanceQuery();
-  const { data: summary, isLoading: isSummaryLoading } = useGetStaffAttendanceSummaryQuery(
-    {
-      userId,
-      month: selectedMonth,
-      year: selectedYear,
-    },
-    { skip: !userId }
-  );
+  const { data: todayAttendance, isLoading: isTodayLoading } =
+    useGetTodayAttendanceQuery();
+  const { data: summary, isLoading: isSummaryLoading } =
+    useGetStaffAttendanceSummaryQuery(
+      {
+        userId,
+        month: selectedMonth,
+        year: selectedYear,
+      },
+      { skip: !userId },
+    );
 
   const formatHours = (minutes?: number) => {
     if (!minutes || minutes <= 0) return "0h 0m";
@@ -112,7 +120,8 @@ export function MyAttendanceDesk() {
             </Badge>
           </h1>
           <p className="text-sm text-muted-foreground">
-            Track your daily punch records, active work duration, and monthly attendance history.
+            Track your daily punch records, active work duration, and monthly
+            attendance history.
           </p>
         </div>
 
@@ -194,7 +203,9 @@ export function MyAttendanceDesk() {
                 {todayAttendance?.checkOut ? (
                   formatTime(todayAttendance.checkOut)
                 ) : hasCheckedIn ? (
-                  <span className="text-emerald-600 dark:text-emerald-400">In Session</span>
+                  <span className="text-emerald-600 dark:text-emerald-400">
+                    In Session
+                  </span>
                 ) : (
                   "--:--"
                 )}
@@ -242,7 +253,11 @@ export function MyAttendanceDesk() {
               </SelectTrigger>
               <SelectContent>
                 {MONTH_NAMES.map((name, i) => (
-                  <SelectItem key={name} value={String(i + 1)} className="text-xs">
+                  <SelectItem
+                    key={name}
+                    value={String(i + 1)}
+                    className="text-xs"
+                  >
                     {name}
                   </SelectItem>
                 ))}
@@ -254,13 +269,15 @@ export function MyAttendanceDesk() {
                 <SelectValue placeholder="Year" />
               </SelectTrigger>
               <SelectContent>
-                {[currentDate.getFullYear() - 1, currentDate.getFullYear(), currentDate.getFullYear() + 1].map(
-                  (y) => (
-                    <SelectItem key={y} value={String(y)} className="text-xs">
-                      {y}
-                    </SelectItem>
-                  )
-                )}
+                {[
+                  currentDate.getFullYear() - 1,
+                  currentDate.getFullYear(),
+                  currentDate.getFullYear() + 1,
+                ].map((y) => (
+                  <SelectItem key={y} value={String(y)} className="text-xs">
+                    {y}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -333,7 +350,8 @@ export function MyAttendanceDesk() {
         <Card className="rounded-xl border shadow-sm overflow-hidden">
           <CardHeader className="py-3 px-4 border-b bg-muted/20">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Day-by-Day Punch Logs ({MONTH_NAMES[Number(selectedMonth) - 1]} {selectedYear})
+              Day-by-Day Punch Logs ({MONTH_NAMES[Number(selectedMonth) - 1]}{" "}
+              {selectedYear})
             </CardTitle>
           </CardHeader>
           <div className="overflow-x-auto">
@@ -352,14 +370,20 @@ export function MyAttendanceDesk() {
               <TableBody>
                 {isSummaryLoading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-xs text-muted-foreground">
+                    <TableCell
+                      colSpan={7}
+                      className="text-center py-8 text-xs text-muted-foreground"
+                    >
                       <Loader2 className="h-5 w-5 animate-spin mx-auto mb-2 text-primary" />
                       Loading attendance records...
                     </TableCell>
                   </TableRow>
                 ) : !summary?.records || summary.records.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-xs text-muted-foreground">
+                    <TableCell
+                      colSpan={7}
+                      className="text-center py-8 text-xs text-muted-foreground"
+                    >
                       No attendance logs recorded for this month.
                     </TableCell>
                   </TableRow>
@@ -367,7 +391,10 @@ export function MyAttendanceDesk() {
                   summary.records.map((rec) => {
                     const dateObj = new Date(rec.date);
                     return (
-                      <TableRow key={rec.date} className="text-xs hover:bg-muted/30">
+                      <TableRow
+                        key={rec.date}
+                        className="text-xs hover:bg-muted/30"
+                      >
                         <TableCell className="font-mono font-medium">
                           {format(dateObj, "dd MMM yyyy")}
                         </TableCell>
@@ -382,7 +409,8 @@ export function MyAttendanceDesk() {
                                 ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                                 : rec.status === "Half Day"
                                   ? "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                                  : rec.status === "Leave" || rec.status === "Paid Leave"
+                                  : rec.status === "Leave" ||
+                                      rec.status === "Paid Leave"
                                     ? "border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400"
                                     : rec.status === "Holiday"
                                       ? "border-purple-500/30 bg-purple-500/10 text-purple-600 dark:text-purple-400"
@@ -416,10 +444,7 @@ export function MyAttendanceDesk() {
         </Card>
       </div>
 
-      <WebPunchModal
-        open={punchModalOpen}
-        onOpenChange={setPunchModalOpen}
-      />
+      <WebPunchModal open={punchModalOpen} onOpenChange={setPunchModalOpen} />
     </div>
   );
 }

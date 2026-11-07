@@ -77,8 +77,16 @@ function ClientDetailPage() {
   const { can, isSuperAdmin } = usePermissions();
 
   const canViewTasks = isSuperAdmin || can("task:view");
-  const canViewServices = isSuperAdmin || can("client:services_manage") || can("service:view") || can("client:view");
-  const canViewRetainers = isSuperAdmin || can("client:packages_manage") || can("package:view") || can("client:view");
+  const canViewServices =
+    isSuperAdmin ||
+    can("client:services_manage") ||
+    can("service:view") ||
+    can("client:view");
+  const canViewRetainers =
+    isSuperAdmin ||
+    can("client:packages_manage") ||
+    can("package:view") ||
+    can("client:view");
   const canViewDocuments =
     isSuperAdmin ||
     can("document:view") ||
@@ -86,7 +94,8 @@ function ClientDetailPage() {
     can("document:request") ||
     can("document:physical_manage");
   const canViewDSC = isSuperAdmin || can("dsc:view") || can("dsc:create");
-  const canViewLedger = isSuperAdmin || can("invoice:view") || can("receipt:view");
+  const canViewLedger =
+    isSuperAdmin || can("invoice:view") || can("receipt:view");
   const canViewPasswords = isSuperAdmin || can("vault:view");
   const canViewExpenses = isSuperAdmin || can("expense:view");
   const canViewPortal = isSuperAdmin || can("client:portal_manage");
@@ -444,7 +453,9 @@ function ClientDetailPage() {
                   </div>
                   <div>
                     <p className="text-2xl font-semibold">
-                      {client.openingBalance ? `₹${client.openingBalance}` : "₹0"}
+                      {client.openingBalance
+                        ? `₹${client.openingBalance}`
+                        : "₹0"}
                     </p>
                     <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
                       Ledger
@@ -465,7 +476,9 @@ function ClientDetailPage() {
               </CardHeader>
               <CardContent className="p-6 space-y-4">
                 <div className="grid grid-cols-[140px_1fr] gap-4 items-center">
-                  <span className="text-sm text-muted-foreground">Client Number</span>
+                  <span className="text-sm text-muted-foreground">
+                    Client Number
+                  </span>
                   <span className="text-sm font-medium">
                     {client.clientNumber || client.fileNo || "—"}
                   </span>
@@ -907,7 +920,9 @@ function ClientDetailPage() {
             <ClientDocumentsTab
               clientId={clientId}
               clientName={client?.name}
-              initialSubTab={activeTab === "docs-in-out" ? "physical" : undefined}
+              initialSubTab={
+                activeTab === "docs-in-out" ? "physical" : undefined
+              }
             />
           </TabsContent>
         )}
