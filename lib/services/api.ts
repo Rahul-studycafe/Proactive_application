@@ -11,8 +11,9 @@ const mutex = new Mutex();
 
 const getBaseApiUrl = (): string => {
   const envUrl =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
-  const cleanUrl = envUrl.trim().replace(/\/+$/, "");
+    (process.env.NEXT_PUBLIC_API_URL || "").trim() ||
+    "http://localhost:5050/api/v1";
+  const cleanUrl = envUrl.replace(/\/+$/, "");
   return cleanUrl.endsWith("/api/v1") ? cleanUrl : `${cleanUrl}/api/v1`;
 };
 
