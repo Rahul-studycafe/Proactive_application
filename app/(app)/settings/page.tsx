@@ -21,6 +21,7 @@ import {
   History,
   Sparkles,
   User,
+  SlidersHorizontal,
 } from "lucide-react";
 
 import { mockUsers } from "@/lib/mock-data";
@@ -38,6 +39,9 @@ import { HolidaysView } from "@/components/holidays/HolidaysView";
 import { WorkingDaysView } from "@/components/settings/WorkingDaysView";
 import { UsersSettingsView } from "@/components/settings/UsersSettingsView";
 import { UserRolesSettingsView } from "@/components/settings/UserRolesSettingsView";
+import { TenantConfigurationView } from "@/components/settings/TenantConfigurationView";
+import { UserNotificationsSettingsView } from "@/components/settings/UserNotificationsSettingsView";
+import { UserReplacementView } from "@/components/settings/UserReplacementView";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { QueueHealthCard } from "@/components/automation/QueueHealthCard";
 import { TriggerAutomationModal } from "@/components/automation/TriggerAutomationModal";
@@ -68,18 +72,7 @@ const SETTING_MODULES: SettingModule[] = [
     category: "System",
     superAdminOnly: true,
   },
-  {
-    id: "website-cms",
-    title: "Website & Portal CMS",
-    description:
-      "White-label subdomain, agency branding, custom domain, and client portal layout.",
-    icon: Globe2,
-    colorClass:
-      "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400",
-    category: "System",
-    requiredPermission: ["settings:manage", "settings:view"],
-    superAdminOnly: true,
-  },
+
   {
     id: "automation-settings",
     title: "Automation & Engine",
@@ -91,6 +84,17 @@ const SETTING_MODULES: SettingModule[] = [
     category: "System",
     requiredPermission: "settings:manage",
     superAdminOnly: true,
+  },
+  {
+    id: "configuration",
+    title: "Organization Configuration",
+    description:
+      "Manage tenant-specific dropdown options: document types, storage units, DSC hardware, portal catalogs, and tags.",
+    icon: SlidersHorizontal,
+    colorClass:
+      "bg-teal-50 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400",
+    category: "System",
+    requiredPermission: ["configuration:view", "settings:manage"],
   },
   // User Section
   {
@@ -134,7 +138,7 @@ const SETTING_MODULES: SettingModule[] = [
     colorClass:
       "bg-teal-50 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400",
     category: "User",
-    requiredPermission: ["user:view", "settings:view", "settings:manage"],
+    requiredPermission: ["user:view", "settings:view", "settings:manage", "notification_settings:view"],
   },
   {
     id: "attendance-settings",
@@ -164,40 +168,21 @@ const SETTING_MODULES: SettingModule[] = [
     colorClass:
       "bg-stone-100 text-stone-600 dark:bg-stone-900 dark:text-stone-300",
     category: "User",
-    requiredPermission: ["user:edit", "user:create"],
+    requiredPermission: ["user:edit", "user:create", "user:delete", "settings:manage"],
   },
 
   // Client Section
   {
-    id: "client-settings",
-    title: "Client Settings",
-    description: "Manage client settings and custom fields configuration.",
-    icon: Settings2,
-    colorClass:
-      "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400",
-    category: "Client",
-    requiredPermission: ["client:edit", "settings:manage"],
-  },
-  {
     id: "client-groups",
     title: "Client Groups",
-    description: "Add, edit, or delete the client's management groups.",
+    description: "Manage client management and family groups for consolidated accounts.",
     icon: FolderPlus,
     colorClass:
       "bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400",
     category: "Client",
-    requiredPermission: ["client:edit", "settings:manage"],
+    requiredPermission: ["configuration:view", "settings:manage", "client:edit"],
   },
-  {
-    id: "portals-list",
-    title: "Portals List",
-    description: "Manage compliance portals or websites e.g. GST, Income Tax.",
-    icon: Globe2,
-    colorClass:
-      "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400",
-    category: "Client",
-    requiredPermission: ["client:portal_manage", "settings:manage"],
-  },
+  
 
   // Billing Section
   {
@@ -274,10 +259,7 @@ function SettingsContent() {
       router.push("/settings/profile");
       return;
     }
-    if (id === "website-cms") {
-      router.push("/settings/website");
-      return;
-    }
+
     if (id === "payment-gateways") {
       router.push("/settings/payment-gateways");
       return;
@@ -370,11 +352,21 @@ function SettingsContent() {
           )}
           {activeModule === "users" && <UsersSettingsView />}
           {activeModule === "user-roles" && <UserRolesSettingsView />}
+          {activeModule === "configuration" && <TenantConfigurationView />}
+          {activeModule === "client-groups" && (
+            <TenantConfigurationView initialCategoryKey="client_groups" />
+          )}
+          {activeModule === "user-notifications" && <UserNotificationsSettingsView />}
+          {activeModule === "user-replacement" && <UserReplacementView />}
           {activeModule !== "holidays-list" &&
             activeModule !== "attendance-settings" &&
             activeModule !== "automation-settings" &&
             activeModule !== "users" &&
-            activeModule !== "user-roles" && (
+            activeModule !== "user-roles" &&
+            activeModule !== "configuration" &&
+            activeModule !== "client-groups" &&
+            activeModule !== "user-notifications" &&
+            activeModule !== "user-replacement" && (
               <div className="rounded-xl border bg-card p-12 text-center shadow-sm">
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground mb-3">
                   <Settings2 className="h-6 w-6" />

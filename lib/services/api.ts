@@ -221,6 +221,20 @@ import type {
   DebtorsAgingReportResponse,
   DebtorsAgingQuery,
 } from "@/lib/types/report";
+import type {
+  ConfigurationCategory,
+  ConfigurationOption,
+  CreateConfigurationOptionPayload,
+  UpdateConfigurationOptionPayload,
+  ReorderConfigurationOptionsPayload,
+  DeleteConfigurationOptionResult,
+} from "@/lib/types/configuration";
+import type {
+  InAppNotificationItem,
+  InAppNotificationsResponse,
+  NotificationPreferenceItem,
+  NotificationPolicyItem,
+} from "@/lib/types/notification";
 
 export const applicationApi = createApi({
   reducerPath: "applicationApi",
@@ -265,6 +279,10 @@ export const applicationApi = createApi({
     "BillingEntity",
     "TenantSubscription",
     "TenantUsage",
+    "Configuration",
+    "InAppNotification",
+    "NotificationPreference",
+    "NotificationPolicy",
   ],
   endpoints: (builder) => ({
     login: builder.mutation({
@@ -908,6 +926,54 @@ export const applicationApi = createApi({
         method: "POST",
         body,
       }),
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    getUserReplacementPreview: builder.query<
+      {
+        activeTasksCount: number;
+        clientsCount: number;
+        servicesCount: number;
+        user: {
+          _id: string;
+          name: string;
+          username: string;
+          email?: string;
+          photoUrl?: string;
+          role?: string;
+          isOwner: boolean;
+        };
+      },
+      string
+    >({
+      query: (userId: string) => ({
+        url: "/users/replacement-preview",
+        params: { userId },
+      }),
+      transformResponse: (response: { data: any }) => response.data,
+      providesTags: ["User", "Task", "Client"],
+    }),
+    replaceUser: builder.mutation<
+      {
+        tasksReassignedCount: number;
+        clientsReassignedCount: number;
+        servicesReassignedCount: number;
+        userDeactivated: boolean;
+      },
+      {
+        departingUserId: string;
+        replacementUserId: string;
+        reassignTasks?: boolean;
+        reassignClients?: boolean;
+        reassignServices?: boolean;
+        deactivateUser?: boolean;
+      }
+    >({
+      query: (body) => ({
+        url: "/users/replace-user",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["User", "Task", "Client"],
       transformResponse: (response: { data: any }) => response.data,
     }),
 
@@ -2120,20 +2186,6 @@ export const applicationApi = createApi({
       }),
       transformResponse: (response: { data: any }) => response.data,
     }),
-    getWebsiteSettings: builder.query<any, void>({
-      query: () => "/tenant-settings/website",
-      providesTags: ["WebsiteSettings"],
-      transformResponse: (response: { data: any }) => response.data,
-    }),
-    updateWebsiteSettings: builder.mutation<any, any>({
-      query: (body) => ({
-        url: "/tenant-settings/website",
-        method: "PUT",
-        body,
-      }),
-      invalidatesTags: ["WebsiteSettings"],
-      transformResponse: (response: { data: any }) => response.data,
-    }),
 
     // ─── Part 26: Client Self-Service Hub Endpoints ────────────────
     getComplianceCalendar: builder.query<
@@ -2321,6 +2373,181 @@ export const applicationApi = createApi({
       invalidatesTags: ["TenantSubscription", "TenantUsage"],
       transformResponse: (response: { data: any }) => response.data,
     }),
+    getConfigurationCategories: builder.query<ConfigurationCategory[], void>({
+      query: () => "/configurations/categories",
+      providesTags: ["Configuration"],
+      transformResponse: (response: { data: ConfigurationCategory[] }) => response.data,
+    }),
+    getConfigurationOptions: builder.query<
+      ConfigurationOption[],
+      { categoryKey: string; includeInactive?: boolean }
+    >({
+      query: ({ categoryKey, includeInactive }) => ({
+        url: "/configurations",
+        params: {
+          categoryKey,
+          ...(includeInactive ? { includeInactive: true } : {}),
+        },
+      }),
+      providesTags: (result, error, arg) => [
+        { type: "Configuration" as const, id: arg.categoryKey },
+        "Configuration",
+      ],
+      transformResponse: (response: { data: ConfigurationOption[] }) => response.data,
+    }),
+    createConfigurationOption: builder.mutation<
+      ConfigurationOption,
+      CreateConfigurationOptionPayload
+    >({
+      query: (body) => ({
+        url: "/configurations",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (result, error, arg) => [
+        { type: "Configuration" as const, id: arg.categoryKey },
+        "Configuration",
+      ],
+      transformResponse: (response: { data: ConfigurationOption }) => response.data,
+    }),
+    updateConfigurationOption: builder.mutation<
+      ConfigurationOption,
+      { id: string; categoryKey?: string; body: UpdateConfigurationOptionPayload }
+    >({
+      query: ({ id, body }) => ({
+        url: `/configurations/${id}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: (result, error, arg) => [
+        ...(arg.categoryKey ? [{ type: "Configuration" as const, id: arg.categoryKey }] : []),
+        "Configuration",
+      ],
+      transformResponse: (response: { data: ConfigurationOption }) => response.data,
+    }),
+    toggleConfigurationOption: builder.mutation<
+      ConfigurationOption,
+      { id: string; categoryKey?: string }
+    >({
+      query: ({ id }) => ({
+        url: `/configurations/${id}/toggle`,
+        method: "PATCH",
+      }),
+      invalidatesTags: (result, error, arg) => [
+        ...(arg.categoryKey ? [{ type: "Configuration" as const, id: arg.categoryKey }] : []),
+        "Configuration",
+      ],
+      transformResponse: (response: { data: ConfigurationOption }) => response.data,
+    }),
+    deleteConfigurationOption: builder.mutation<
+      DeleteConfigurationOptionResult,
+      { id: string; categoryKey?: string }
+    >({
+      query: ({ id }) => ({
+        url: `/configurations/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, arg) => [
+        ...(arg.categoryKey ? [{ type: "Configuration" as const, id: arg.categoryKey }] : []),
+        "Configuration",
+      ],
+      transformResponse: (response: { data: DeleteConfigurationOptionResult }) => response.data,
+    }),
+    reorderConfigurationOptions: builder.mutation<
+      ConfigurationOption[],
+      ReorderConfigurationOptionsPayload
+    >({
+      query: (body) => ({
+        url: "/configurations/reorder",
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: (result, error, arg) => [
+        { type: "Configuration" as const, id: arg.categoryKey },
+        "Configuration",
+      ],
+      transformResponse: (response: { data: ConfigurationOption[] }) => response.data,
+    }),
+    // ─── Centralized Notification System ──────────────────────
+    getInAppNotifications: builder.query<
+      InAppNotificationsResponse,
+      { unreadOnly?: boolean; page?: number; limit?: number; category?: string } | void
+    >({
+      query: (params) => ({
+        url: "/user-notifications/in-app",
+        params: params || {},
+      }),
+      providesTags: ["InAppNotification"],
+      transformResponse: (response: { data: InAppNotificationsResponse }) => response.data,
+    }),
+    getUnreadInAppCount: builder.query<{ unreadCount: number }, void>({
+      query: () => "/user-notifications/in-app/unread-count",
+      providesTags: ["InAppNotification"],
+      transformResponse: (response: { data: { unreadCount: number } }) => response.data,
+    }),
+    markInAppAsRead: builder.mutation<InAppNotificationItem, string>({
+      query: (id) => ({
+        url: `/user-notifications/in-app/${id}/read`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["InAppNotification"],
+      transformResponse: (response: { data: InAppNotificationItem }) => response.data,
+    }),
+    markAllInAppAsRead: builder.mutation<void, void>({
+      query: () => ({
+        url: "/user-notifications/in-app/read-all",
+        method: "PATCH",
+      }),
+      invalidatesTags: ["InAppNotification"],
+    }),
+    deleteInAppNotification: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/user-notifications/in-app/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["InAppNotification"],
+    }),
+    getUserNotificationPreferences: builder.query<
+      { preferences: NotificationPreferenceItem[] },
+      void
+    >({
+      query: () => "/user-notifications/preferences",
+      providesTags: ["NotificationPreference"],
+      transformResponse: (response: { data: { preferences: NotificationPreferenceItem[] } }) => response.data,
+    }),
+    updateUserNotificationPreferences: builder.mutation<
+      any,
+      { preferences: { eventKey: string; inApp: boolean; email: boolean; whatsapp?: boolean; sms?: boolean }[] }
+    >({
+      query: (body) => ({
+        url: "/user-notifications/preferences",
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["NotificationPreference"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    resetUserNotificationPreferences: builder.mutation<void, void>({
+      query: () => ({
+        url: "/user-notifications/preferences/reset",
+        method: "POST",
+      }),
+      invalidatesTags: ["NotificationPreference"],
+    }),
+    getTenantNotificationPolicy: builder.query<any, void>({
+      query: () => "/user-notifications/policy",
+      providesTags: ["NotificationPolicy"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    updateTenantNotificationPolicy: builder.mutation<any, { policies: any[] }>({
+      query: (body) => ({
+        url: "/user-notifications/policy",
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["NotificationPolicy", "NotificationPreference"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
   }),
 });
 
@@ -2392,6 +2619,8 @@ export const {
   useDeleteRoleMutation,
   useDuplicateRoleMutation,
   useGetUsersQuery,
+  useGetUserReplacementPreviewQuery,
+  useReplaceUserMutation,
   useCreateUserMutation,
   useUpdateUserMutation,
   useDeleteUserMutation,
@@ -2502,8 +2731,6 @@ export const {
   useResetClientPortalUserPasswordMutation,
   useToggleClientPortalAccessMutation,
   useGetPortalWebsiteConfigQuery,
-  useGetWebsiteSettingsQuery,
-  useUpdateWebsiteSettingsMutation,
   useGetComplianceCalendarQuery,
   useGetPortalDocumentsQuery,
   useGetPortalInvoicesQuery,
@@ -2525,4 +2752,21 @@ export const {
   useGetTenantUsageQuery,
   useGetTenantSubscriptionQuery,
   useUpdateTenantSubscriptionMutation,
+  useGetConfigurationCategoriesQuery,
+  useGetConfigurationOptionsQuery,
+  useCreateConfigurationOptionMutation,
+  useUpdateConfigurationOptionMutation,
+  useToggleConfigurationOptionMutation,
+  useDeleteConfigurationOptionMutation,
+  useReorderConfigurationOptionsMutation,
+  useGetInAppNotificationsQuery,
+  useGetUnreadInAppCountQuery,
+  useMarkInAppAsReadMutation,
+  useMarkAllInAppAsReadMutation,
+  useDeleteInAppNotificationMutation,
+  useGetUserNotificationPreferencesQuery,
+  useUpdateUserNotificationPreferencesMutation,
+  useResetUserNotificationPreferencesMutation,
+  useGetTenantNotificationPolicyQuery,
+  useUpdateTenantNotificationPolicyMutation,
 } = applicationApi;

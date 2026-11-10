@@ -23,20 +23,7 @@ import { Switch } from "@/components/ui/switch";
 import { useUpdateClientMutation } from "@/lib/services/api";
 import { toast } from "sonner";
 import { type Client } from "@/lib/types";
-
-const entityTypes = [
-  "Individual",
-  "Sole Proprietorship",
-  "Partnership Firm",
-  "Private Limited",
-  "One Person Company",
-  "LLP",
-  "Trust",
-  "NGO",
-  "HUF",
-  "Public Limited",
-  "Other",
-];
+import { DynamicConfigSelect } from "@/components/ui/dynamic-config-select";
 
 export function EditClientDialog({ client }: { client: Client }) {
   const [open, setOpen] = useState(false);
@@ -47,6 +34,7 @@ export function EditClientDialog({ client }: { client: Client }) {
     clientNumber: client.clientNumber || client.fileNo || "",
     fileNo: client.clientNumber || client.fileNo || "",
     entityType: client.entityType || "",
+    group: client.group || "",
     email: client.email || "",
     mobile: client.mobile || "",
     pan: client.pan || "",
@@ -110,22 +98,22 @@ export function EditClientDialog({ client }: { client: Client }) {
               </div>
               <div className="space-y-2">
                 <Label>Entity Type</Label>
-                <Select
+                <DynamicConfigSelect
+                  categoryKey="client_entity_types"
                   value={formData.entityType}
                   onValueChange={(val) => handleChange("entityType", val)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {entityTypes.map((t) => (
-                      <SelectItem key={t} value={t}>
-                        {t}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  placeholder="Select type"
+                />
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Client Group (Optional)</Label>
+              <DynamicConfigSelect
+                categoryKey="client_groups"
+                value={formData.group}
+                onValueChange={(val) => handleChange("group", val)}
+                placeholder="Select Group"
+              />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">

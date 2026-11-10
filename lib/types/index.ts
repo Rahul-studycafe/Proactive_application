@@ -30,6 +30,7 @@ export interface Client {
   pan?: string;
   gstin?: string;
   photoUrl?: string;
+  group?: string;
   groupId?: { _id: string; name: string };
   tags?: string[];
   assignedUsers?: User[];
@@ -58,6 +59,7 @@ export interface CreateClientPayload {
   pincode?: string;
   pan?: string;
   gstin?: string;
+  group?: string;
   groupId?: string;
   tags?: string[];
   assignedUsers?: string[];

@@ -186,16 +186,57 @@ export function ClientDocumentsTab({
   const [deleteDoc] = useDeleteClientDocumentMutation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [vaultSearch, setVaultSearch] = useState("");
+  const [sourceFilter, setSourceFilter] = useState<"all" | "client" | "firm">("all");
+
+  const clientCount = useMemo(() => {
+    return rawDocuments.filter(
+      (d: any) =>
+        d.source === "portal_client_upload" ||
+        d.source === "magic_link" ||
+        d.source === "client_portal" ||
+        Boolean(d.clientUserId) ||
+        d.uploadedByModel === "ClientUser"
+    ).length;
+  }, [rawDocuments]);
+
+  const firmCount = useMemo(() => {
+    return rawDocuments.length - clientCount;
+  }, [rawDocuments, clientCount]);
 
   const filteredDocuments = useMemo(() => {
-    if (!vaultSearch.trim()) return rawDocuments;
+    let docs = rawDocuments;
+    if (sourceFilter === "client") {
+      docs = docs.filter(
+        (doc: any) =>
+          doc.source === "portal_client_upload" ||
+          doc.source === "magic_link" ||
+          doc.source === "client_portal" ||
+          Boolean(doc.clientUserId) ||
+          doc.uploadedByModel === "ClientUser"
+      );
+    } else if (sourceFilter === "firm") {
+      docs = docs.filter(
+        (doc: any) =>
+          doc.source !== "portal_client_upload" &&
+          doc.source !== "magic_link" &&
+          doc.source !== "client_portal" &&
+          !doc.clientUserId &&
+          doc.uploadedByModel !== "ClientUser"
+      );
+    }
+
+    if (!vaultSearch.trim()) return docs;
     const q = vaultSearch.toLowerCase();
-    return rawDocuments.filter(
+    return docs.filter(
       (doc: any) =>
         doc.fileName?.toLowerCase().includes(q) ||
-        doc.uploadedBy?.name?.toLowerCase().includes(q),
+        doc.uploadedBy?.name?.toLowerCase().includes(q) ||
+        doc.clientUserId?.name?.toLowerCase().includes(q) ||
+        doc.clientUserId?.email?.toLowerCase().includes(q) ||
+        doc.category?.toLowerCase().includes(q) ||
+        doc.notes?.toLowerCase().includes(q)
     );
-  }, [rawDocuments, vaultSearch]);
+  }, [rawDocuments, sourceFilter, vaultSearch]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -458,27 +499,67 @@ export function ClientDocumentsTab({
       {/* SUB-TAB 1: DIGITAL VAULT */}
       {subTab === "vault" && (
         <Card className="shadow-sm border-border">
-          <div className="p-4 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-muted/20">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search uploaded files..."
-                value={vaultSearch}
-                onChange={(e) => setVaultSearch(e.target.value)}
-                className="pl-9 h-9 text-xs bg-background"
-              />
-              {vaultSearch && (
+          <div className="p-4 border-b flex flex-col md:flex-row md:items-center justify-between gap-3 bg-muted/20">
+            <div className="flex flex-wrap items-center gap-2 flex-1">
+              <div className="relative flex-1 max-w-sm min-w-[200px]">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search files by title, client name, note, or category..."
+                  value={vaultSearch}
+                  onChange={(e) => setVaultSearch(e.target.value)}
+                  className="pl-9 h-9 text-xs bg-background"
+                />
+                {vaultSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setVaultSearch("")}
+                    className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+
+              {/* Source filter tabs */}
+              <div className="flex items-center gap-1 bg-background border p-0.5 rounded-lg text-xs">
                 <button
                   type="button"
-                  onClick={() => setVaultSearch("")}
-                  className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground"
+                  onClick={() => setSourceFilter("all")}
+                  className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+                    sourceFilter === "all"
+                      ? "bg-primary text-primary-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
                 >
-                  <X className="h-4 w-4" />
+                  All ({rawDocuments.length})
                 </button>
-              )}
+                <button
+                  type="button"
+                  onClick={() => setSourceFilter("client")}
+                  className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                    sourceFilter === "client"
+                      ? "bg-emerald-600 text-white shadow-xs"
+                      : "text-emerald-700 dark:text-emerald-400 hover:text-foreground"
+                  }`}
+                >
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block" />
+                  Client Uploads ({clientCount})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSourceFilter("firm")}
+                  className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+                    sourceFilter === "firm"
+                      ? "bg-primary text-primary-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Firm Vault ({firmCount})
+                </button>
+              </div>
             </div>
 
-            <div className="text-xs text-muted-foreground flex items-center gap-2">
+            <div className="text-xs text-muted-foreground flex items-center gap-2 shrink-0">
               <span>
                 Showing <strong>{filteredDocuments.length}</strong> of{" "}
                 {rawDocuments.length} files
@@ -511,15 +592,19 @@ export function ClientDocumentsTab({
                   <p className="text-sm font-medium text-foreground">
                     {vaultSearch
                       ? "No matching documents found"
-                      : "No documents in client vault"}
+                      : sourceFilter === "client"
+                        ? "No client self-uploaded documents yet"
+                        : "No documents in client vault"}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1 max-w-sm">
                     {vaultSearch
                       ? "Try adjusting your search keywords."
-                      : "Upload files directly or send a document collection request to your client."}
+                      : sourceFilter === "client"
+                        ? "When your client uploads documents through the Client Self-Service Portal in advance, they will appear here."
+                        : "Upload files directly or send a document collection request to your client."}
                   </p>
                 </div>
-                {!vaultSearch && (
+                {!vaultSearch && sourceFilter !== "client" && (
                   <div className="flex items-center gap-2.5 mt-2">
                     <Can do="document:create">
                       <Button
@@ -545,66 +630,99 @@ export function ClientDocumentsTab({
               </div>
             ) : (
               <div className="divide-y">
-                {filteredDocuments.map((doc: any) => (
-                  <div
-                    key={doc._id}
-                    className="flex items-center justify-between p-4 hover:bg-muted/40 transition-colors"
-                  >
-                    <div className="flex items-center gap-3.5 min-w-0 pr-4">
-                      <div className="shrink-0 p-2 rounded-lg bg-muted/60">
-                        {getFileIcon(doc.fileName)}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate max-w-md">
-                          {doc.fileName}
-                        </p>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                          <span>
-                            {doc.uploadedBy?.name
-                              ? `Uploaded by ${doc.uploadedBy.name}`
-                              : "Uploaded via client portal"}
-                          </span>
-                          <span>•</span>
-                          <span>{formatDate(doc.createdAt)}</span>
-                          {doc.category && (
-                            <>
-                              <span>•</span>
+                {filteredDocuments.map((doc: any) => {
+                  const isClientUpload =
+                    doc.source === "portal_client_upload" ||
+                    doc.source === "magic_link" ||
+                    doc.source === "client_portal" ||
+                    Boolean(doc.clientUserId) ||
+                    doc.uploadedByModel === "ClientUser";
+                  const clientUploaderName =
+                    doc.clientUserId?.name ||
+                    doc.clientUserId?.email ||
+                    (doc.uploadedByModel === "ClientUser" && doc.uploadedBy?.name) ||
+                    "Client (Portal)";
+
+                  return (
+                    <div
+                      key={doc._id}
+                      className={`flex items-start justify-between p-4 transition-colors ${
+                        isClientUpload ? "bg-emerald-50/20 hover:bg-emerald-50/40 dark:bg-emerald-950/10 dark:hover:bg-emerald-950/20" : "hover:bg-muted/40"
+                      }`}
+                    >
+                      <div className="flex items-start gap-3.5 min-w-0 pr-4">
+                        <div className="shrink-0 p-2 rounded-lg bg-muted/60 mt-0.5">
+                          {getFileIcon(doc.fileName)}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="text-sm font-semibold text-foreground truncate max-w-md">
+                              {doc.fileName}
+                            </p>
+                            {isClientUpload ? (
                               <Badge
                                 variant="outline"
-                                className="text-[10px] px-1.5 py-0 font-normal uppercase"
+                                className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800 font-semibold gap-1 shrink-0"
                               >
-                                {doc.category}
+                                <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                                Client Self-Submission
                               </Badge>
-                            </>
+                            ) : (
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800 shrink-0 font-normal"
+                              >
+                                Firm Vault
+                              </Badge>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1 flex-wrap">
+                            <span className={isClientUpload ? "font-medium text-emerald-700 dark:text-emerald-400" : ""}>
+                              {isClientUpload
+                                ? `Uploaded by Client: ${clientUploaderName}`
+                                : doc.uploadedBy?.name
+                                  ? `Uploaded by ${doc.uploadedBy.name}`
+                                  : "Uploaded via practice vault"}
+                            </span>
+                            <span>•</span>
+                            <span>{formatDate(doc.createdAt)}</span>
+                          </div>
+
+                          {doc.notes && (
+                            <div className="mt-2 text-xs text-muted-foreground bg-background/80 border border-border/80 rounded px-2.5 py-1.5 max-w-xl">
+                              <span className="font-semibold text-foreground/90">Client Note:</span>{" "}
+                              <span className="italic">"{doc.notes}"</span>
+                            </div>
                           )}
                         </div>
                       </div>
-                    </div>
 
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
-                        onClick={() => window.open(doc.fileUrl, "_blank")}
-                      >
-                        <Eye className="h-3.5 w-3.5" />
-                        View
-                      </Button>
-                      <Can do="document:delete">
+                      <div className="flex items-center gap-1.5 shrink-0 pt-0.5">
                         <Button
                           variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                          onClick={() => handleDeleteDocument(doc._id)}
-                          title="Delete Document"
+                          size="sm"
+                          className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                          onClick={() => window.open(doc.fileUrl, "_blank")}
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Eye className="h-3.5 w-3.5" />
+                          View
                         </Button>
-                      </Can>
+                        <Can do="document:delete">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => handleDeleteDocument(doc._id)}
+                            title="Delete Document"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </Can>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </CardContent>

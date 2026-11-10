@@ -28,6 +28,8 @@ import {
   useGetClientsQuery,
 } from "@/lib/services/api";
 import { ClientPassword, PortalMaster } from "@/lib/types/passwords";
+import { DynamicConfigSelect } from "@/components/ui/dynamic-config-select";
+import { cn } from "@/lib/utils";
 import {
   KeyRound,
   ShieldCheck,
@@ -78,6 +80,7 @@ export function AddPasswordModal({
   const [selectedPortalMode, setSelectedPortalMode] = useState<string>("");
   const [portalName, setPortalName] = useState("");
   const [portalUrl, setPortalUrl] = useState("");
+  const [isUrlFromDb, setIsUrlFromDb] = useState(false);
   const [portalId, setPortalId] = useState<string | undefined>(undefined);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -91,6 +94,7 @@ export function AddPasswordModal({
       if (credentialToEdit) {
         setPortalName(credentialToEdit.portalName || "");
         setPortalUrl(credentialToEdit.portalUrl || "");
+        setIsUrlFromDb(Boolean(credentialToEdit.portalUrl));
         setPortalId(credentialToEdit.portalId);
         setUsername(credentialToEdit.username || "");
         setPassword(""); // Clear password field on edit for security
@@ -119,6 +123,7 @@ export function AddPasswordModal({
         setSelectedPortalMode("");
         setPortalName("");
         setPortalUrl("");
+        setIsUrlFromDb(false);
         setPortalId(undefined);
         setUsername("");
         setPassword("");
@@ -288,63 +293,84 @@ export function AddPasswordModal({
                 </a>
               )}
             </Label>
-            <Select
-              value={selectedPortalMode}
-              onValueChange={handlePortalSelect}
-              disabled={isLoadingPortals}
-            >
-              <SelectTrigger className="w-full h-9 text-sm">
-                <SelectValue placeholder="Choose portal (e.g. GST, Income Tax, MCA)" />
-              </SelectTrigger>
-              <SelectContent className="max-h-64">
-                {portals.map((p) => (
-                  <SelectItem key={p._id} value={p._id}>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{p.name}</span>
-                      <span className="text-xs text-muted-foreground">
-                        ({p.category})
-                      </span>
-                    </div>
-                  </SelectItem>
-                ))}
-                <SelectItem value="custom">
-                  <div className="flex items-center gap-2 text-primary font-medium">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    <span>+ Custom / Other Portal</span>
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <DynamicConfigSelect
+              categoryKey="portals_and_authorities"
+              value={portalName}
+              onValueChange={(val, opt) => {
+                setPortalName(opt?.label || val);
+                const dbUrl =
+                  opt?.metadata?.portalUrl ||
+                  opt?.metadata?.url ||
+                  (opt?.description && opt.description.startsWith("http")
+                    ? opt.description
+                    : "");
+                if (dbUrl) {
+                  setPortalUrl(dbUrl);
+                  setIsUrlFromDb(true);
+                } else {
+                  setPortalUrl("");
+                  setIsUrlFromDb(false);
+                }
+              }}
+              placeholder="Choose portal (e.g. GST, Income Tax, MCA)"
+            />
           </div>
 
-          {/* If Custom Portal Selected */}
-          {selectedPortalMode === "custom" && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-muted/40 rounded-lg border border-border/60">
-              <div className="space-y-1">
-                <Label className="text-[11px] font-medium text-foreground">
-                  Custom Portal Name <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  value={portalName}
-                  onChange={(e) => setPortalName(e.target.value)}
-                  placeholder="e.g. State Commercial Taxes, DGFT"
-                  className="h-8 text-xs"
-                  required
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-[11px] font-medium text-foreground">
-                  Portal URL (Optional)
-                </Label>
-                <Input
-                  value={portalUrl}
-                  onChange={(e) => setPortalUrl(e.target.value)}
-                  placeholder="https://example.gov.in"
-                  className="h-8 text-xs"
-                />
-              </div>
+          {/* Portal URL */}
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <Label className="text-[11px] font-medium text-foreground flex items-center gap-1.5">
+                <span>Portal URL (Optional)</span>
+                {isUrlFromDb && Boolean(portalUrl) && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-normal text-muted-foreground bg-muted px-1.5 py-0.5 rounded border border-border/50">
+                    <Lock className="h-2.5 w-2.5 text-primary" /> View Only (From Portal Master)
+                  </span>
+                )}
+              </Label>
+              {isUrlFromDb && Boolean(portalUrl) ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPortalUrl("");
+                    setIsUrlFromDb(false);
+                  }}
+                  className="text-[10px] text-primary hover:underline font-normal"
+                >
+                  Clear to enter custom URL
+                </button>
+              ) : null}
             </div>
-          )}
+            <div className="relative">
+              <Input
+                value={portalUrl}
+                readOnly={Boolean(isUrlFromDb && portalUrl)}
+                onChange={(e) => setPortalUrl(e.target.value)}
+                placeholder="https://example.gov.in"
+                className={cn(
+                  "h-8 text-xs pr-8",
+                  isUrlFromDb && portalUrl
+                    ? "bg-muted/60 text-muted-foreground font-mono cursor-default select-all focus-visible:ring-0"
+                    : "bg-background"
+                )}
+              />
+              {portalUrl && (
+                <a
+                  href={portalUrl.startsWith("http") ? portalUrl : `https://${portalUrl}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors p-1"
+                  title="Visit Portal in new tab"
+                >
+                  <Globe className="h-3.5 w-3.5" />
+                </a>
+              )}
+            </div>
+            {isUrlFromDb && Boolean(portalUrl) && (
+              <p className="text-[10px] text-muted-foreground">
+                Auto-fetched from organization portal registry.
+              </p>
+            )}
+          </div>
 
           {/* Username & Password Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

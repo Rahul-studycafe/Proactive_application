@@ -29,6 +29,7 @@ import {
   useGetTasksQuery,
 } from "@/lib/services/api";
 import { ClientExpense, ExpensePaymentMode } from "@/lib/types/expenses";
+import { DynamicConfigSelect } from "@/components/ui/dynamic-config-select";
 import {
   Receipt,
   UploadCloud,
@@ -380,23 +381,12 @@ export function AddExpenseModal({
                 <CreditCard className="h-3.5 w-3.5 text-muted-foreground" />
                 Payment Mode
               </Label>
-              <Select
+              <DynamicConfigSelect
+                categoryKey="payment_modes"
                 value={paymentMode}
                 onValueChange={(v) => setPaymentMode(v as ExpensePaymentMode)}
-              >
-                <SelectTrigger className="h-9 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Bank Transfer">
-                    Bank Transfer (NEFT/RTGS)
-                  </SelectItem>
-                  <SelectItem value="UPI">UPI / QR</SelectItem>
-                  <SelectItem value="Cash">Cash / Petty Cash</SelectItem>
-                  <SelectItem value="Credit Card">Credit Card</SelectItem>
-                  <SelectItem value="Cheque">Cheque</SelectItem>
-                </SelectContent>
-              </Select>
+                placeholder="Select payment mode..."
+              />
             </div>
           </div>
 

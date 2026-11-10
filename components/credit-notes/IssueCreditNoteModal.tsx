@@ -43,6 +43,7 @@ import {
   useGetInvoiceByIdQuery,
 } from "@/lib/services/api";
 import { CreditNoteReason } from "@/lib/types/credit-note";
+import { DynamicConfigSelect } from "@/components/ui/dynamic-config-select";
 
 interface IssueCreditNoteModalProps {
   open: boolean;
@@ -371,31 +372,12 @@ export function IssueCreditNoteModal({
 
               <div className="space-y-1.5">
                 <Label htmlFor="cnReason">Reason for Credit</Label>
-                <Select
+                <DynamicConfigSelect
+                  categoryKey="credit_note_reasons"
                   value={reason}
                   onValueChange={(val) => setReason(val as CreditNoteReason)}
-                >
-                  <SelectTrigger id="cnReason">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Overcharge Correction">
-                      Overcharge Correction
-                    </SelectItem>
-                    <SelectItem value="Service Cancellation">
-                      Service Cancellation
-                    </SelectItem>
-                    <SelectItem value="Goodwill Discount">
-                      Goodwill Discount
-                    </SelectItem>
-                    <SelectItem value="Deficiency of Service">
-                      Deficiency of Service
-                    </SelectItem>
-                    <SelectItem value="Other">
-                      Other Statutory Reason
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                  placeholder="Select reason for credit..."
+                />
               </div>
             </div>
 

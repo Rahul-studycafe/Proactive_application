@@ -60,6 +60,8 @@ import {
 } from "@/components/ui/card";
 import { PlanLimitModal } from "@/components/shared/PlanLimitModal";
 import { withPermission } from "@/components/shared/withPermission";
+import { DynamicConfigSelect } from "@/components/ui/dynamic-config-select";
+import { DynamicConfigMultiSelect } from "@/components/ui/dynamic-config-multi-select";
 
 const entityTypes = [
   "Individual",
@@ -73,12 +75,6 @@ const entityTypes = [
   "HUF",
   "Public Limited",
   "Other",
-];
-const groups = [
-  "Sharma Family",
-  "Patil Consultancy",
-  "Mehta Group",
-  "Joshi Holdings",
 ];
 const tagOptions = [
   "VIP",
@@ -447,6 +443,7 @@ function NewClientPage() {
         clientNumber: clientNumber || undefined,
         fileNo: clientNumber || undefined,
         entityType: clientType,
+        group: group || undefined,
         pan: pan || undefined,
         gstin: gstin || undefined,
         billingProfileId: billTo && billTo !== "self" ? billTo : undefined,
@@ -558,32 +555,20 @@ function NewClientPage() {
                   />
                 </Field>
                 <Field label="Client Type" required error={errors.clientType}>
-                  <Select value={clientType} onValueChange={setClientType}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select client type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {entityTypes.map((t) => (
-                        <SelectItem key={t} value={t}>
-                          {t}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <DynamicConfigSelect
+                    categoryKey="client_entity_types"
+                    value={clientType}
+                    onValueChange={setClientType}
+                    placeholder="Select client type"
+                  />
                 </Field>
                 <Field label="Group">
-                  <Select value={group} onValueChange={setGroup}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Group" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {groups.map((g) => (
-                        <SelectItem key={g} value={g}>
-                          {g}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <DynamicConfigSelect
+                    categoryKey="client_groups"
+                    value={group}
+                    onValueChange={setGroup}
+                    placeholder="Select Group"
+                  />
                 </Field>
                 <Field label="PAN Number" error={errors.pan}>
                   <Input
@@ -1060,25 +1045,16 @@ function NewClientPage() {
 
                 <Separator />
 
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <Label className="flex items-center gap-1.5">
-                    <Tag className="h-3.5 w-3.5" /> Tags
+                    <Tag className="h-3.5 w-3.5" /> Client Tags
                   </Label>
-                  <div className="flex flex-wrap gap-2">
-                    {tagOptions.map((t) => {
-                      const active = tags.includes(t);
-                      return (
-                        <Badge
-                          key={t}
-                          variant={active ? "secondary" : "outline"}
-                          className={`cursor-pointer transition-colors ${!active && "hover:bg-muted"}`}
-                          onClick={() => toggleTag(t)}
-                        >
-                          {t}
-                        </Badge>
-                      );
-                    })}
-                  </div>
+                  <DynamicConfigMultiSelect
+                    categoryKey="tags"
+                    value={tags}
+                    onValueChange={setTags}
+                    placeholder="Select or create client tags..."
+                  />
                 </div>
               </CardContent>
             </Card>

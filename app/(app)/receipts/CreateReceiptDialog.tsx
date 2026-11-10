@@ -29,6 +29,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { DynamicConfigSelect } from "@/components/ui/dynamic-config-select";
 import {
   Loader2,
   Sparkles,
@@ -299,20 +300,12 @@ export function CreateReceiptDialog({
               <Label htmlFor="paymentMode" className="text-xs font-semibold">
                 Payment Mode <span className="text-destructive">*</span>
               </Label>
-              <Select value={paymentMode} onValueChange={setPaymentMode}>
-                <SelectTrigger id="paymentMode" className="h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Bank Transfer">
-                    Bank Transfer (NEFT / RTGS / IMPS)
-                  </SelectItem>
-                  <SelectItem value="UPI">UPI / QR Code</SelectItem>
-                  <SelectItem value="Cheque">Cheque</SelectItem>
-                  <SelectItem value="Cash">Cash</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
-                </SelectContent>
-              </Select>
+              <DynamicConfigSelect
+                categoryKey="payment_modes"
+                value={paymentMode}
+                onValueChange={setPaymentMode}
+                placeholder="Select payment mode..."
+              />
             </div>
 
             <div className="space-y-1.5">

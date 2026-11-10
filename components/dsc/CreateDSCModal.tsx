@@ -33,6 +33,7 @@ import {
   DSCIssuingAuthority,
   DSCStatus,
 } from "@/lib/types/dsc";
+import { DynamicConfigSelect } from "@/components/ui/dynamic-config-select";
 
 interface CreateDSCModalProps {
   open: boolean;
@@ -231,39 +232,22 @@ export function CreateDSCModal({
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor="certificateClass">Certificate Class</Label>
-                <Select
+                <DynamicConfigSelect
+                  categoryKey="certificate_classes"
                   value={certificateClass}
                   onValueChange={(val) => setCertificateClass(val as DSCClass)}
-                >
-                  <SelectTrigger id="certificateClass">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Class 3">
-                      Class 3 (MCA/GST Standard)
-                    </SelectItem>
-                    <SelectItem value="Class 2">Class 2 (Legacy)</SelectItem>
-                  </SelectContent>
-                </Select>
+                  placeholder="Select certificate class..."
+                />
               </div>
 
               <div className="space-y-1.5">
                 <Label htmlFor="tokenType">USB Token Hardware Type</Label>
-                <Select
+                <DynamicConfigSelect
+                  categoryKey="usb_token_types"
                   value={tokenType}
                   onValueChange={(val) => setTokenType(val as DSCTokenType)}
-                >
-                  <SelectTrigger id="tokenType">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ePass2003">ePass2003 Auto</SelectItem>
-                    <SelectItem value="ProxKey">ProxKey Watchdata</SelectItem>
-                    <SelectItem value="mToken">mToken CryptoID</SelectItem>
-                    <SelectItem value="Watchdata">Watchdata</SelectItem>
-                    <SelectItem value="Other">Other Hardware Dongle</SelectItem>
-                  </SelectContent>
-                </Select>
+                  placeholder="Select USB token type..."
+                />
               </div>
             </div>
 
@@ -281,30 +265,14 @@ export function CreateDSCModal({
 
               <div className="space-y-1.5">
                 <Label htmlFor="issuingAuthority">Issuing Authority (CA)</Label>
-                <Select
+                <DynamicConfigSelect
+                  categoryKey="issuing_authorities"
                   value={issuingAuthority}
                   onValueChange={(val) =>
                     setIssuingAuthority(val as DSCIssuingAuthority)
                   }
-                >
-                  <SelectTrigger id="issuingAuthority">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="eMudhra">
-                      eMudhra Consumer Services
-                    </SelectItem>
-                    <SelectItem value="Capricorn">
-                      Capricorn Identity Services
-                    </SelectItem>
-                    <SelectItem value="Vsign">Vsign (Verasys CA)</SelectItem>
-                    <SelectItem value="Sify">Sify SafeScrypt</SelectItem>
-                    <SelectItem value="IDSign">IDSign CA</SelectItem>
-                    <SelectItem value="Other">
-                      Other Certifying Authority
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                  placeholder="Select issuing authority..."
+                />
               </div>
             </div>
 
@@ -344,12 +312,11 @@ export function CreateDSCModal({
                   Physical Storage Location{" "}
                   <span className="text-destructive">*</span>
                 </Label>
-                <Input
-                  id="physicalLocation"
-                  placeholder='e.g. "Safe Box 1, Slot D-14"'
+                <DynamicConfigSelect
+                  categoryKey="office_storage_locations"
                   value={physicalLocation}
-                  onChange={(e) => setPhysicalLocation(e.target.value)}
-                  required
+                  onValueChange={setPhysicalLocation}
+                  placeholder='e.g. "Safe Box 1, Slot D-14"'
                 />
               </div>
 

@@ -49,6 +49,7 @@ import {
   PhysicalDocCategory,
   PhysicalDocType,
 } from "@/lib/types/physical-document";
+import { DynamicConfigSelect } from "@/components/ui/dynamic-config-select";
 import {
   ArrowDownLeft,
   ArrowUpRight,
@@ -446,21 +447,12 @@ export function InOutEntryModal({
               <Label htmlFor="doc-type">
                 Document Type <span className="text-destructive">*</span>
               </Label>
-              <Select
+              <DynamicConfigSelect
+                categoryKey="document_types"
                 value={documentType}
                 onValueChange={(val) => setDocumentType(val as PhysicalDocType)}
-              >
-                <SelectTrigger id="doc-type">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {DOCUMENT_TYPES.map((t) => (
-                    <SelectItem key={t} value={t}>
-                      {t}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                placeholder="Select document type..."
+              />
             </div>
 
             {/* Document Description / Name: Searchable Dropdown or Input */}
@@ -790,12 +782,11 @@ export function InOutEntryModal({
                 </span>
               )}
             </div>
-            <Input
-              id="doc-location"
-              placeholder="e.g. Cabinet A, Shelf 1 or Safe Box 2"
+            <DynamicConfigSelect
+              categoryKey="office_storage_locations"
               value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              required
+              onValueChange={setLocation}
+              placeholder="e.g. Cabinet A, Shelf 1 or Safe Box 2"
             />
             {storageUnits.length > 0 && (
               <div className="flex items-center gap-1.5 flex-wrap pt-1">

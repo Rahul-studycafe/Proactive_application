@@ -15,6 +15,7 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useRouter } from "next/navigation";
 import { WebPunchWidget } from "@/components/attendance/WebPunchWidget";
 import { BranchSwitcher } from "@/components/layout/BranchSwitcher";
+import { NotificationBellDropdown } from "@/components/notifications/NotificationBellDropdown";
 
 export function TopBar() {
   const { user, logout } = useAuth();
@@ -49,13 +50,8 @@ export function TopBar() {
         {/* Global Theme Switcher */}
         <ThemeToggle />
 
-        <button
-          className="relative rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-          aria-label="Notifications"
-        >
-          <Bell className="h-4 w-4" />
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive" />
-        </button>
+        {/* Real-time In-App Notification Hub */}
+        <NotificationBellDropdown />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

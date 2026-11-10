@@ -43,6 +43,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { DynamicConfigMultiSelect } from "@/components/ui/dynamic-config-multi-select";
 
 import {
   useGetClientsQuery,
@@ -764,125 +765,14 @@ export function CreateTaskDialog({
             )}
           </div>
 
-          <div className="grid gap-2">
-            <Label>Tags (Optional)</Label>
-            <Popover open={tagPopoverOpen} onOpenChange={setTagPopoverOpen}>
-              <PopoverTrigger asChild>
-                <div
-                  className="flex flex-wrap gap-2 p-2 border rounded-md min-h-[40px] items-center cursor-text bg-background"
-                  onClick={() => setTagPopoverOpen(true)}
-                >
-                  {selectedTags.map((tag) => (
-                    <Badge
-                      key={tag}
-                      variant="secondary"
-                      className="gap-1 px-2 py-0.5 rounded-full font-normal"
-                    >
-                      {tag}
-                      <X
-                        className="h-3 w-3 cursor-pointer opacity-70 hover:opacity-100"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedTags(
-                            selectedTags.filter((t) => t !== tag),
-                          );
-                        }}
-                      />
-                    </Badge>
-                  ))}
-                  {selectedTags.length === 0 && (
-                    <span className="text-muted-foreground text-sm pl-1">
-                      Select or create tags...
-                    </span>
-                  )}
-                </div>
-              </PopoverTrigger>
-              <PopoverContent className="w-[300px] p-0" align="start">
-                <Command>
-                  <CommandInput
-                    placeholder="Search or create a tag..."
-                    value={tagInput}
-                    onValueChange={setTagInput}
-                  />
-                  <CommandList>
-                    <CommandEmpty>
-                      {tagInput ? (
-                        <div
-                          className="px-4 py-2 text-sm cursor-pointer hover:bg-accent hover:text-accent-foreground rounded-sm"
-                          onClick={() => {
-                            if (!selectedTags.includes(tagInput.trim())) {
-                              setSelectedTags([
-                                ...selectedTags,
-                                tagInput.trim(),
-                              ]);
-                            }
-                            setTagInput("");
-                            setTagPopoverOpen(false);
-                          }}
-                        >
-                          Create tag &quot;
-                          <span className="font-medium">{tagInput}</span>&quot;
-                        </div>
-                      ) : (
-                        "No tags found."
-                      )}
-                    </CommandEmpty>
-                    {availableTags.length > 0 && (
-                      <CommandGroup heading="Existing Tags">
-                        {availableTags.map((tag: string) => (
-                          <CommandItem
-                            key={tag}
-                            value={tag}
-                            onSelect={(currentValue) => {
-                              if (!selectedTags.includes(currentValue)) {
-                                setSelectedTags([
-                                  ...selectedTags,
-                                  currentValue,
-                                ]);
-                              }
-                              setTagInput("");
-                              setTagPopoverOpen(false);
-                            }}
-                          >
-                            <Check
-                              className={`mr-2 h-4 w-4 ${
-                                selectedTags.includes(tag)
-                                  ? "opacity-100"
-                                  : "opacity-0"
-                              }`}
-                            />
-                            {tag}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    )}
-                    {tagInput &&
-                      !availableTags.some(
-                        (t: string) =>
-                          t.toLowerCase() === tagInput.toLowerCase(),
-                      ) && (
-                        <CommandGroup heading="Create New">
-                          <CommandItem
-                            onSelect={() => {
-                              if (!selectedTags.includes(tagInput.trim())) {
-                                setSelectedTags([
-                                  ...selectedTags,
-                                  tagInput.trim(),
-                                ]);
-                              }
-                              setTagInput("");
-                              setTagPopoverOpen(false);
-                            }}
-                          >
-                            <Plus className="mr-2 h-4 w-4" />
-                            Create &quot;{tagInput}&quot;
-                          </CommandItem>
-                        </CommandGroup>
-                      )}
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold">Tags (Optional)</Label>
+            <DynamicConfigMultiSelect
+              categoryKey="tags"
+              value={selectedTags}
+              onValueChange={setSelectedTags}
+              placeholder="Select or create tags..."
+            />
           </div>
 
           <div className="grid gap-2">
