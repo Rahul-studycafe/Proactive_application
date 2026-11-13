@@ -5,7 +5,6 @@ import {
   Bell,
   Mail,
   MessageSquare,
-  Smartphone,
   Lock,
   RotateCcw,
   Save,
@@ -164,7 +163,6 @@ export function UserNotificationsSettingsView() {
           inApp: p.inApp,
           email: p.email,
           whatsapp: p.whatsapp,
-          sms: p.sms,
         })),
       }).unwrap();
       toast.success("Notification preferences saved successfully");
@@ -356,9 +354,6 @@ export function UserNotificationsSettingsView() {
                         <span className="w-20 text-center flex items-center justify-center gap-1 opacity-50">
                           <MessageSquare className="h-3.5 w-3.5" /> WhatsApp
                         </span>
-                        <span className="w-16 text-center flex items-center justify-center gap-1 opacity-50">
-                          <Smartphone className="h-3.5 w-3.5" /> SMS
-                        </span>
                       </div>
                     </div>
 
@@ -437,23 +432,6 @@ export function UserNotificationsSettingsView() {
                                 </TooltipTrigger>
                                 <TooltipContent>
                                   WhatsApp alerts coming soon in future channel update.
-                                </TooltipContent>
-                              </Tooltip>
-                            </div>
-
-                            {/* SMS (Coming Soon) */}
-                            <div className="w-16 flex flex-col items-center gap-1 opacity-50">
-                              <span className="md:hidden text-[10px] text-muted-foreground">
-                                SMS
-                              </span>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <div>
-                                    <Switch disabled checked={false} />
-                                  </div>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  SMS gateway integration coming soon.
                                 </TooltipContent>
                               </Tooltip>
                             </div>

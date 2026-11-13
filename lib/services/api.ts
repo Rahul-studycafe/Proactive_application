@@ -42,7 +42,9 @@ const baseQueryWithReauth: BaseQueryFn<
 
   const url = typeof args === "string" ? args : args.url;
   const isAuthEndpoint =
-    url?.includes("/auth/login") || url?.includes("/auth/refresh");
+    url?.includes("/auth/login") ||
+    url?.includes("/auth/refresh") ||
+    url?.includes("/auth/sso/exchange");
 
   if (result.error && result.error.status === 401 && !isAuthEndpoint) {
     // checking whether the mutex is locked
@@ -290,6 +292,24 @@ export const applicationApi = createApi({
         url: "/auth/login",
         method: "POST",
         body: credentials,
+      }),
+      invalidatesTags: ["User", "Role"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    exchangeSsoTicket: builder.mutation<any, { ticket: string }>({
+      query: (body) => ({
+        url: "/auth/sso/exchange",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["User", "Role"],
+      transformResponse: (response: { data: any }) => response.data,
+    }),
+    updateSsoOrganizationName: builder.mutation<any, { name: string }>({
+      query: (body) => ({
+        url: "/auth/sso/organization",
+        method: "PUT",
+        body,
       }),
       invalidatesTags: ["User", "Role"],
       transformResponse: (response: { data: any }) => response.data,
@@ -2553,6 +2573,8 @@ export const applicationApi = createApi({
 
 export const {
   useLoginMutation,
+  useExchangeSsoTicketMutation,
+  useUpdateSsoOrganizationNameMutation,
   useForgotPasswordMutation,
   useResetPasswordMutation,
   useGetMeQuery,

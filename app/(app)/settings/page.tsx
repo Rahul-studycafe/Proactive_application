@@ -171,19 +171,6 @@ const SETTING_MODULES: SettingModule[] = [
     requiredPermission: ["user:edit", "user:create", "user:delete", "settings:manage"],
   },
 
-  // Client Section
-  {
-    id: "client-groups",
-    title: "Client Groups",
-    description: "Manage client management and family groups for consolidated accounts.",
-    icon: FolderPlus,
-    colorClass:
-      "bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400",
-    category: "Client",
-    requiredPermission: ["configuration:view", "settings:manage", "client:edit"],
-  },
-  
-
   // Billing Section
   {
     id: "payment-gateways",
@@ -197,21 +184,7 @@ const SETTING_MODULES: SettingModule[] = [
     requiredPermission: ["billing:manage", "settings:manage"],
     superAdminOnly: true,
   },
-  {
-    id: "billing-preferences",
-    title: "Billing Preferences",
-    description: "Manage invoice templates, currency, and payment terms.",
-    icon: CreditCard,
-    colorClass:
-      "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400",
-    category: "Billing",
-    requiredPermission: [
-      "invoice:edit",
-      "invoice:create",
-      "billing:manage",
-      "settings:manage",
-    ],
-  },
+  
   {
     id: "billing-entities",
     title: "Billing Entities",

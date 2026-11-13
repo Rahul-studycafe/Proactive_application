@@ -126,7 +126,7 @@ const navItems: NavItem[] = [
   },
   {
     type: "group",
-    label: "Vaults",
+    label: "DSC",
     icon: Lock,
     children: [
       {
@@ -286,7 +286,7 @@ export function Sidebar() {
         </div>
         {!collapsed && (
           <span className="text-base font-semibold tracking-tight">
-            Proactive
+            PMS
           </span>
         )}
       </div>

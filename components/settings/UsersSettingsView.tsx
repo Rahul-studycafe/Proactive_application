@@ -477,8 +477,8 @@ export function UsersSettingsView() {
 
       {/* Invite Member Dialog (Option B: Email Invitation Link) */}
       <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-md max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden">
+          <DialogHeader className="p-6 pb-4 border-b shrink-0 pr-12">
             <DialogTitle className="flex items-center gap-2">
               <UserPlus className="h-5 w-5 text-primary" />
               <span>Invite Team Member</span>
@@ -489,118 +489,120 @@ export function UsersSettingsView() {
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleInviteSubmit} className="space-y-4 pt-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="inv-name">Full Name *</Label>
-              <Input
-                id="inv-name"
-                placeholder="e.g. Rahul Sharma"
-                value={name}
-                onChange={(e) => handleNameChange(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="inv-username">Username *</Label>
-              <Input
-                id="inv-username"
-                placeholder="e.g. rahul_acc"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="inv-email">Email Address *</Label>
-              <Input
-                id="inv-email"
-                type="email"
-                placeholder="e.g. rahul@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-              <p className="text-[11px] text-muted-foreground">
-                The invitation link will be sent directly to this address.
-              </p>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="inv-role">Primary Role *</Label>
-              <Select value={roleId} onValueChange={setRoleId}>
-                <SelectTrigger id="inv-role">
-                  <SelectValue placeholder="Select member role" />
-                </SelectTrigger>
-                <SelectContent>
-                  {assignableRoles.map((r) => (
-                    <SelectItem key={r._id} value={r._id}>
-                      {r.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {assignableRoles.filter((r) => r._id !== roleId).length > 0 && (
-              <div className="space-y-2 pt-1 border-t border-border/50">
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs font-medium text-foreground">
-                    Additional Secondary Roles (Optional)
-                  </Label>
-                  <span className="text-[10px] text-muted-foreground font-mono">
-                    Union evaluation
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-2 bg-muted/20 p-2.5 rounded-lg border">
-                  {assignableRoles
-                    .filter((r) => r._id !== roleId)
-                    .map((r) => {
-                      const isChecked = secondaryRoleIds.includes(r._id);
-                      return (
-                        <label
-                          key={r._id}
-                          className={`flex items-center gap-2 p-1.5 rounded cursor-pointer text-xs transition-colors ${
-                            isChecked
-                              ? "bg-primary/10 text-primary font-medium"
-                              : "hover:bg-muted text-foreground"
-                          }`}
-                        >
-                          <Checkbox
-                            checked={isChecked}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setSecondaryRoleIds([
-                                  ...secondaryRoleIds,
-                                  r._id,
-                                ]);
-                              } else {
-                                setSecondaryRoleIds(
-                                  secondaryRoleIds.filter((id) => id !== r._id),
-                                );
-                              }
-                            }}
-                          />
-                          <span className="truncate">{r.name}</span>
-                        </label>
-                      );
-                    })}
-                </div>
+          <form onSubmit={handleInviteSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="inv-name">Full Name *</Label>
+                <Input
+                  id="inv-name"
+                  placeholder="e.g. Rahul Sharma"
+                  value={name}
+                  onChange={(e) => handleNameChange(e.target.value)}
+                  required
+                />
               </div>
-            )}
 
-            <div className="space-y-1.5">
-              <Label htmlFor="inv-mobile">Mobile Number (Optional)</Label>
-              <Input
-                id="inv-mobile"
-                placeholder="+91 98765 43210"
-                value={mobile}
-                onChange={(e) => setMobile(e.target.value)}
-              />
+              <div className="space-y-1.5">
+                <Label htmlFor="inv-username">Username *</Label>
+                <Input
+                  id="inv-username"
+                  placeholder="e.g. rahul_acc"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="inv-email">Email Address *</Label>
+                <Input
+                  id="inv-email"
+                  type="email"
+                  placeholder="e.g. rahul@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  The invitation link will be sent directly to this address.
+                </p>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="inv-role">Primary Role *</Label>
+                <Select value={roleId} onValueChange={setRoleId}>
+                  <SelectTrigger id="inv-role">
+                    <SelectValue placeholder="Select member role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {assignableRoles.map((r) => (
+                      <SelectItem key={r._id} value={r._id}>
+                        {r.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {assignableRoles.filter((r) => r._id !== roleId).length > 0 && (
+                <div className="space-y-2 pt-1 border-t border-border/50">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-medium text-foreground">
+                      Additional Secondary Roles (Optional)
+                    </Label>
+                    <span className="text-[10px] text-muted-foreground font-mono">
+                      Union evaluation
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 bg-muted/20 p-2.5 rounded-lg border">
+                    {assignableRoles
+                      .filter((r) => r._id !== roleId)
+                      .map((r) => {
+                        const isChecked = secondaryRoleIds.includes(r._id);
+                        return (
+                          <label
+                            key={r._id}
+                            className={`flex items-center gap-2 p-1.5 rounded cursor-pointer text-xs transition-colors ${
+                              isChecked
+                                ? "bg-primary/10 text-primary font-medium"
+                                : "hover:bg-muted text-foreground"
+                            }`}
+                          >
+                            <Checkbox
+                              checked={isChecked}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSecondaryRoleIds([
+                                    ...secondaryRoleIds,
+                                    r._id,
+                                  ]);
+                                } else {
+                                  setSecondaryRoleIds(
+                                    secondaryRoleIds.filter((id) => id !== r._id),
+                                  );
+                                }
+                              }}
+                            />
+                            <span className="truncate">{r.name}</span>
+                          </label>
+                        );
+                      })}
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                <Label htmlFor="inv-mobile">Mobile Number (Optional)</Label>
+                <Input
+                  id="inv-mobile"
+                  placeholder="+91 98765 43210"
+                  value={mobile}
+                  onChange={(e) => setMobile(e.target.value)}
+                />
+              </div>
             </div>
 
-            <DialogFooter className="pt-2">
+            <DialogFooter className="p-4 px-6 border-t bg-muted/20 shrink-0">
               <Button
                 type="button"
                 variant="outline"
@@ -628,8 +630,8 @@ export function UsersSettingsView() {
 
       {/* Edit Member Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-md max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden">
+          <DialogHeader className="p-6 pb-4 border-b shrink-0 pr-12">
             <DialogTitle className="flex items-center gap-2">
               <Pencil className="h-5 w-5 text-primary" />
               <span>Edit Team Member</span>
@@ -639,110 +641,112 @@ export function UsersSettingsView() {
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleEditSubmit} className="space-y-4 pt-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="edit-name">Full Name</Label>
-              <Input
-                id="edit-name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
+          <form onSubmit={handleEditSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-name">Full Name</Label>
+                <Input
+                  id="edit-name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="edit-role">Primary Role</Label>
-              {selectedUser?.isOwner ? (
-                <div className="p-2.5 rounded-lg border bg-muted/40 text-sm flex items-center justify-between text-muted-foreground">
-                  <span className="font-medium text-foreground">
-                    Super Admin
-                  </span>
-                  <Badge
-                    variant="outline"
-                    className="gap-1 border-amber-300 text-amber-700 bg-amber-50"
-                  >
-                    <Lock className="w-3 h-3" />
-                    <span>Immutable Owner Role</span>
-                  </Badge>
-                </div>
-              ) : (
-                <>
-                  <Select value={roleId} onValueChange={setRoleId}>
-                    <SelectTrigger id="edit-role">
-                      <SelectValue placeholder="Select member role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {assignableRoles.map((r) => (
-                        <SelectItem key={r._id} value={r._id}>
-                          {r.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-role">Primary Role</Label>
+                {selectedUser?.isOwner ? (
+                  <div className="p-2.5 rounded-lg border bg-muted/40 text-sm flex items-center justify-between text-muted-foreground">
+                    <span className="font-medium text-foreground">
+                      Super Admin
+                    </span>
+                    <Badge
+                      variant="outline"
+                      className="gap-1 border-amber-300 text-amber-700 bg-amber-50"
+                    >
+                      <Lock className="w-3 h-3" />
+                      <span>Immutable Owner Role</span>
+                    </Badge>
+                  </div>
+                ) : (
+                  <>
+                    <Select value={roleId} onValueChange={setRoleId}>
+                      <SelectTrigger id="edit-role">
+                        <SelectValue placeholder="Select member role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {assignableRoles.map((r) => (
+                          <SelectItem key={r._id} value={r._id}>
+                            {r.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
 
-                  {assignableRoles.filter((r) => r._id !== roleId).length >
-                    0 && (
-                    <div className="space-y-2 pt-2 border-t border-border/50">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-xs font-medium text-foreground">
-                          Additional Secondary Roles (Optional)
-                        </Label>
-                        <span className="text-[10px] text-muted-foreground font-mono">
-                          Union evaluation
-                        </span>
+                    {assignableRoles.filter((r) => r._id !== roleId).length >
+                      0 && (
+                      <div className="space-y-2 pt-2 border-t border-border/50">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs font-medium text-foreground">
+                            Additional Secondary Roles (Optional)
+                          </Label>
+                          <span className="text-[10px] text-muted-foreground font-mono">
+                            Union evaluation
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 bg-muted/20 p-2.5 rounded-lg border">
+                          {assignableRoles
+                            .filter((r) => r._id !== roleId)
+                            .map((r) => {
+                              const isChecked = secondaryRoleIds.includes(r._id);
+                              return (
+                                <label
+                                  key={r._id}
+                                  className={`flex items-center gap-2 p-1.5 rounded cursor-pointer text-xs transition-colors ${
+                                    isChecked
+                                      ? "bg-primary/10 text-primary font-medium"
+                                      : "hover:bg-muted text-foreground"
+                                  }`}
+                                >
+                                  <Checkbox
+                                    checked={isChecked}
+                                    onCheckedChange={(checked) => {
+                                      if (checked) {
+                                        setSecondaryRoleIds([
+                                          ...secondaryRoleIds,
+                                          r._id,
+                                        ]);
+                                      } else {
+                                        setSecondaryRoleIds(
+                                          secondaryRoleIds.filter(
+                                            (id) => id !== r._id,
+                                          ),
+                                        );
+                                      }
+                                    }}
+                                  />
+                                  <span className="truncate">{r.name}</span>
+                                </label>
+                              );
+                            })}
+                        </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-2 bg-muted/20 p-2.5 rounded-lg border">
-                        {assignableRoles
-                          .filter((r) => r._id !== roleId)
-                          .map((r) => {
-                            const isChecked = secondaryRoleIds.includes(r._id);
-                            return (
-                              <label
-                                key={r._id}
-                                className={`flex items-center gap-2 p-1.5 rounded cursor-pointer text-xs transition-colors ${
-                                  isChecked
-                                    ? "bg-primary/10 text-primary font-medium"
-                                    : "hover:bg-muted text-foreground"
-                                }`}
-                              >
-                                <Checkbox
-                                  checked={isChecked}
-                                  onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setSecondaryRoleIds([
-                                        ...secondaryRoleIds,
-                                        r._id,
-                                      ]);
-                                    } else {
-                                      setSecondaryRoleIds(
-                                        secondaryRoleIds.filter(
-                                          (id) => id !== r._id,
-                                        ),
-                                      );
-                                    }
-                                  }}
-                                />
-                                <span className="truncate">{r.name}</span>
-                              </label>
-                            );
-                          })}
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
+                    )}
+                  </>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-mobile">Mobile Number</Label>
+                <Input
+                  id="edit-mobile"
+                  value={mobile}
+                  onChange={(e) => setMobile(e.target.value)}
+                />
+              </div>
             </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="edit-mobile">Mobile Number</Label>
-              <Input
-                id="edit-mobile"
-                value={mobile}
-                onChange={(e) => setMobile(e.target.value)}
-              />
-            </div>
-
-            <DialogFooter className="pt-2">
+            <DialogFooter className="p-4 px-6 border-t bg-muted/20 shrink-0">
               <Button
                 type="button"
                 variant="outline"
