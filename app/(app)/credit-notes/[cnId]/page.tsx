@@ -151,7 +151,7 @@ function ViewCreditNotePage() {
   const totals = creditNote.totals || ({} as any);
 
   const firmName =
-    user?.workspace || user?.tenant || "Proactive Advisory & Associates";
+    user?.workspace || user?.tenant || "PMS Advisory & Associates";
 
   const getStatusBadge = (status: CreditNoteStatus) => {
     switch (status) {

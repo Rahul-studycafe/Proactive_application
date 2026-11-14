@@ -266,7 +266,7 @@ function SsoExchangeContent() {
       </div>
 
       <div className="mt-6 text-center text-xs text-muted-foreground">
-        &copy; {new Date().getFullYear()} ProActive Practice Management. Secure Unified Authentication.
+        &copy; {new Date().getFullYear()} PMS Practice Management. Secure Unified Authentication.
       </div>
     </div>
   );

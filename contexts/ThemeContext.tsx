@@ -17,7 +17,8 @@ interface ThemeContextType {
   toggleTheme: () => void;
 }
 
-const THEME_STORAGE_KEY = "proactive-theme";
+const THEME_STORAGE_KEY = "pms-theme";
+const LEGACY_THEME_STORAGE_KEY = "proactive-theme";
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
@@ -52,7 +53,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Initialize theme from storage
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null;
+      const saved = (localStorage.getItem(THEME_STORAGE_KEY) ||
+        localStorage.getItem(LEGACY_THEME_STORAGE_KEY)) as Theme | null;
       const initialTheme: Theme =
         saved === "light" || saved === "dark" || saved === "system"
           ? saved

@@ -21,7 +21,7 @@ export interface BackButtonProps {
 }
 
 /**
- * Standard Proactive back button component.
+ * Standard PMS back button component.
  * Renders an inline back breadcrumb link with an ArrowLeft icon,
  * matching the established pattern across tasks, clients, and settings.
  */

@@ -39,7 +39,7 @@ import {
   User,
 } from "lucide-react";
 
-const AVATAR_STORAGE_KEY = "proactive.avatar";
+const AVATAR_STORAGE_KEY = "pms.avatar";
 
 import {
   useUploadAvatarMutation,

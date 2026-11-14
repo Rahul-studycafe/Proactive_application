@@ -16,7 +16,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Proactive — Office OS for CAs & Accountants",
+  title: "PMS — Office OS for CAs & Accountants",
   description:
     "Smart practice management, task tracking, and billing for modern accounting firms.",
 };
@@ -37,7 +37,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `(function(){
               try {
-                var saved = localStorage.getItem('proactive-theme');
+                var saved = localStorage.getItem('pms-theme') || localStorage.getItem('proactive-theme');
                 var theme = saved || 'system';
                 var isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
                 if (isDark) {

@@ -155,7 +155,7 @@ export function QueueHealthCard() {
                   API & Host Health
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  Proactive runtime environment
+                  PMS runtime environment
                 </CardDescription>
               </div>
             </div>

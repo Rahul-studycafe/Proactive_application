@@ -1,4 +1,4 @@
-// Mock data for the Proactive MVP
+// Mock data for the PMS MVP
 
 export type EntityType =
   | "Individual"

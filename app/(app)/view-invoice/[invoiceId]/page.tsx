@@ -208,7 +208,7 @@ function ViewInvoicePage() {
   };
   const items = invoice.items || [];
   const firmName =
-    user?.workspace || user?.tenant || "Proactive Advisory & Associates";
+    user?.workspace || user?.tenant || "PMS Advisory & Associates";
 
   return (
     <div className="space-y-6 pb-16">
@@ -294,7 +294,7 @@ function ViewInvoicePage() {
                   "101, Corporate Heights, C.G. Road, Ahmedabad - 380009"}
               </p>
               <p>
-                Email: {user?.email || "billing@proactive.os"}{" "}
+                Email: {user?.email || "billing@pms.os"}{" "}
                 {user?.phone ? `· Mobile: ${user.phone}` : ""}
               </p>
               <p className="font-mono pt-1 text-foreground/80">
