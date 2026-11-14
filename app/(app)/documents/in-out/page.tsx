@@ -71,6 +71,7 @@ import { MovementHistoryModal } from "@/components/documents/MovementHistoryModa
 import { History as HistoryIcon } from "lucide-react";
 import { withPermission } from "@/components/shared/withPermission";
 import { Can } from "@/contexts/PermissionsContext";
+import { getApiUrl } from "@/lib/utils";
 
 function DocsInOutPage() {
   const [activeView, setActiveView] = useState<"register" | "storage">(
@@ -149,8 +150,8 @@ function DocsInOutPage() {
       typeof window !== "undefined"
         ? localStorage.getItem("accessToken")
         : null;
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-    const exportUrl = `${baseUrl}/api/v1/docs-in-out/export${token ? `?token=${encodeURIComponent(token)}` : ""}`;
+    const apiUrl = getApiUrl();
+    const exportUrl = `${apiUrl}/docs-in-out/export${token ? `?token=${encodeURIComponent(token)}` : ""}`;
     window.open(exportUrl, "_blank");
   };
 

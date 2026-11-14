@@ -29,6 +29,7 @@ import { type Client } from "@/lib/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Can } from "@/components/shared/Can";
 import { withPermission } from "@/components/shared/withPermission";
+import { getAssetUrl } from "@/lib/utils";
 
 const entityTypes = [
   "Individual",
@@ -135,11 +136,7 @@ function ClientsPage() {
                     <div className="flex items-center gap-3">
                       <Avatar className="h-9 w-9">
                         <AvatarImage
-                          src={
-                            c.photoUrl
-                              ? `http://localhost:5000${c.photoUrl}`
-                              : undefined
-                          }
+                          src={c.photoUrl ? getAssetUrl(c.photoUrl) : undefined}
                         />
                         <AvatarFallback>
                           {c.name.charAt(0).toUpperCase()}

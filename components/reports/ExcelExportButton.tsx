@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { FileSpreadsheet, Loader2, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getApiUrl } from "@/lib/utils";
 
 interface ExcelExportButtonProps {
   reportType: "tasks" | "invoices" | "debtors-aging" | "services";
@@ -33,8 +34,7 @@ export function ExcelExportButton({
     const toastId = toast.loading(`Generating ${label || "Excel report"}...`);
 
     try {
-      const baseUrl =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+      const baseUrl = getApiUrl();
 
       // Filter out undefined/null/empty params
       const cleanParams = new URLSearchParams();

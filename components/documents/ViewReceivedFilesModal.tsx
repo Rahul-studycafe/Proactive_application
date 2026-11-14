@@ -20,6 +20,7 @@ import {
   RequestedFileItem,
   UploadedDocumentRef,
 } from "@/lib/types/document-request";
+import { getAssetUrl } from "@/lib/utils";
 import {
   Eye,
   Download,
@@ -46,14 +47,7 @@ interface ViewReceivedFilesModalProps {
 }
 
 export function getDocumentDownloadUrl(fileUrl?: string): string {
-  if (!fileUrl) return "";
-  if (fileUrl.startsWith("http://") || fileUrl.startsWith("https://")) {
-    return fileUrl;
-  }
-  const backendBase =
-    process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/v1\/?$/, "") ||
-    "http://localhost:5000";
-  return `${backendBase}${fileUrl.startsWith("/") ? "" : "/"}${fileUrl}`;
+  return getAssetUrl(fileUrl);
 }
 
 function getFileIcon(fileName: string) {

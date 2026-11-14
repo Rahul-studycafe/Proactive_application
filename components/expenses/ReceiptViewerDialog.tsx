@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ClientExpense } from "@/lib/types/expenses";
+import { getAssetUrl } from "@/lib/utils";
 import {
   Download,
   ExternalLink,
@@ -32,14 +33,8 @@ export function ReceiptViewerDialog({
 }: ReceiptViewerDialogProps) {
   if (!expense) return null;
 
-  const backendBaseUrl =
-    process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/v1\/?$/, "") ||
-    "http://localhost:5000";
-
   const fileUrl = expense.receiptFileUrl
-    ? expense.receiptFileUrl.startsWith("http")
-      ? expense.receiptFileUrl
-      : `${backendBaseUrl}${expense.receiptFileUrl}`
+    ? getAssetUrl(expense.receiptFileUrl)
     : null;
 
   const isPdf =

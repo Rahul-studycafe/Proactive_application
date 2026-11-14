@@ -51,7 +51,7 @@ import {
   useUpdateClientMutation,
   useUnsubscribeClientFromServiceMutation,
 } from "@/lib/services/api";
-import { formatDate } from "@/lib/utils";
+import { formatDate, getAssetUrl } from "@/lib/utils";
 import { SubscribeDialog } from "./SubscribeDialog";
 import { EditClientDialog } from "./EditClientDialog";
 import { Button } from "@/components/ui/button";
@@ -187,11 +187,6 @@ function ClientDetailPage() {
     (t: any) => t.isBillable && !t.isBilled,
   ).length;
 
-  const baseUrl =
-    process.env.NEXT_PUBLIC_API_BASE_URL ||
-    process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "") ||
-    "http://localhost:5000";
-
   return (
     <div className="space-y-6">
       <Breadcrumbs
@@ -215,7 +210,7 @@ function ClientDetailPage() {
             {client.photoUrl ? (
               <Avatar className="h-14 w-14 rounded-xl ring-2 ring-border">
                 <AvatarImage
-                  src={`${baseUrl}${client.photoUrl}`}
+                  src={getAssetUrl(client.photoUrl)}
                   alt={client.name}
                   className={`object-cover ${isUploadingPhoto ? "opacity-50" : ""}`}
                 />
